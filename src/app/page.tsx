@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Code2,
@@ -29,6 +28,7 @@ import {
   Home,
   Briefcase,
 } from "lucide-react";
+import HeroAnimation from "@/components/ui/HeroAnimation";
 import SectionHeader from "@/components/ui/SectionHeader";
 import ServiceCard from "@/components/ui/ServiceCard";
 import ProductCard from "@/components/ui/ProductCard";
@@ -176,24 +176,9 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right: Hero image */}
+            {/* Right: Hero animation */}
             <div className="relative lg:pl-4 xl:pl-8">
-              {/* Ambient glow behind image */}
-              <div className="absolute -inset-4 bg-blue-600/10 rounded-3xl blur-2xl pointer-events-none" />
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.6)]">
-                {/* Left-edge gradient to blend with hero bg */}
-                <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#050816] to-transparent z-10 pointer-events-none" />
-                {/* Bottom-edge vignette */}
-                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#050816]/50 to-transparent z-10 pointer-events-none" />
-                <Image
-                  src="/img/hero1.png"
-                  alt="RaveSoft team building digital solutions for businesses"
-                  width={1920}
-                  height={1080}
-                  priority
-                  className="w-full object-cover aspect-[4/3] lg:aspect-auto lg:h-[480px]"
-                />
-              </div>
+              <HeroAnimation />
             </div>
           </div>
         </div>
