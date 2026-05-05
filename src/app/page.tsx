@@ -37,6 +37,8 @@ import IndustryCard from "@/components/ui/IndustryCard";
 import ProcessStep from "@/components/ui/ProcessStep";
 import CTASection from "@/components/ui/CTASection";
 import ProofBar from "@/components/ui/ProofBar";
+import TestimonialsSection from "@/components/ui/TestimonialsSection";
+import FAQAccordion from "@/components/ui/FAQAccordion";
 import {
   SERVICES,
   PRODUCTS,
@@ -46,6 +48,8 @@ import {
   TECH_STACK,
   WHY_RAVESOFT,
   PROOF_ITEMS,
+  TESTIMONIALS,
+  FAQ_ITEMS,
 } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -150,7 +154,7 @@ export default function HomePage() {
                     boxShadow: "0 8px 32px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
                   }}
                 >
-                  Start a Project
+                  Get a Free Quote
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
@@ -434,6 +438,66 @@ export default function HomePage() {
                 <p className="text-sm text-gray-500 leading-relaxed">{item.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="bg-white section-padding">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <SectionHeader
+            eyebrow="Client Reviews"
+            title="Real businesses. Real results. Real feedback."
+            description="Our products and systems are running in businesses across Ghana, Nigeria, Kenya, and beyond. Here's what our clients say."
+            className="mb-14"
+          />
+          <TestimonialsSection testimonials={TESTIMONIALS} />
+
+          {/* Star aggregate */}
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <svg key={i} className="w-6 h-6 fill-amber-400 text-amber-400" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              ))}
+            </div>
+            <p className="text-sm text-gray-500 font-medium">5.0 average · 500+ businesses served across Africa</p>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="bg-[#F8FAFB] section-padding">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+            <div className="lg:sticky lg:top-24">
+              <SectionHeader
+                eyebrow="FAQ"
+                title="Questions we get asked most often"
+                description="Straight answers about cost, timelines, support, ownership, and how we work."
+                align="left"
+              />
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <Link
+                  href="/contact"
+                  className="flex items-center gap-2 px-6 py-3.5 rounded-xl text-white font-semibold text-sm transition-all"
+                  style={{ background: "linear-gradient(135deg, #3B82F6, #2563eb)", boxShadow: "0 4px 20px rgba(59,130,246,0.35)" }}
+                >
+                  Get a Free Quote
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/contact"
+                  className="flex items-center gap-2 px-6 py-3.5 rounded-xl border border-gray-300 hover:border-blue-300 text-gray-700 hover:text-blue-700 font-semibold text-sm transition-all hover:bg-blue-50"
+                >
+                  Book a Free Call
+                </Link>
+              </div>
+            </div>
+            <div>
+              <FAQAccordion items={FAQ_ITEMS} />
+            </div>
           </div>
         </div>
       </section>

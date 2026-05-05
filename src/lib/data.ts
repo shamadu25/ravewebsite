@@ -751,6 +751,124 @@ export const BUDGET_RANGES = [
   "$25,000+",
 ];
 
+export const TESTIMONIALS = [
+  {
+    id: 1,
+    name: "Kwame Asante",
+    role: "Owner",
+    company: "Asante Retail Group",
+    location: "Kumasi, Ghana",
+    avatar: "KA",
+    avatarColor: "#3b82f6",
+    rating: 5,
+    text: "CliqPOS transformed how we run our 3 retail branches. Sales reports that used to take hours now happen instantly. We caught a stock discrepancy in week one that saved us over GH₵12,000.",
+    product: "CliqPOS",
+  },
+  {
+    id: 2,
+    name: "Dr. Amina Bello",
+    role: "Medical Director",
+    company: "Bello Medical Centre",
+    location: "Abuja, Nigeria",
+    avatar: "AB",
+    avatarColor: "#ef4444",
+    rating: 5,
+    text: "Our Hospital Management System handles patient records, billing, lab, and pharmacy in one place. We've eliminated paper files entirely. RaveSoft's support team is always available when we need them.",
+    product: "Hospital System",
+  },
+  {
+    id: 3,
+    name: "James Kariuki",
+    role: "Director",
+    company: "Kariuki Academy Group",
+    location: "Nairobi, Kenya",
+    avatar: "JK",
+    avatarColor: "#10b981",
+    rating: 5,
+    text: "The school management system handles our 4 campuses seamlessly — admissions, fees, results, and parent communication all automated. Parents love the updates on their phones. Worth every cent.",
+    product: "School System",
+  },
+  {
+    id: 4,
+    name: "Fatima Mensah",
+    role: "General Manager",
+    company: "Palm View Hotel",
+    location: "Accra, Ghana",
+    avatar: "FM",
+    avatarColor: "#8b5cf6",
+    rating: 5,
+    text: "Bookings, housekeeping, billing, and guest management — all in one dashboard. Overbookings dropped to zero after we switched. RaveSoft actually listened to how hotels work before building anything.",
+    product: "Hotel System",
+  },
+  {
+    id: 5,
+    name: "Emmanuel Osei",
+    role: "CEO",
+    company: "Osei Manufacturing Ltd",
+    location: "Tema, Ghana",
+    avatar: "EO",
+    avatarColor: "#f97316",
+    rating: 5,
+    text: "We replaced 5 separate spreadsheets with RaveSoft's ERP. Procurement, inventory, sales, and HR are now connected. Our team spends less time on admin and more time on what actually matters.",
+    product: "ERP System",
+  },
+  {
+    id: 6,
+    name: "Sandra Acheampong",
+    role: "HR Manager",
+    company: "BuildRight Construction",
+    location: "Accra, Ghana",
+    avatar: "SA",
+    avatarColor: "#f59e0b",
+    rating: 5,
+    text: "Payroll used to take 3 days every month. Now it takes 30 minutes. Staff attendance, leave tracking, payslips — all automated. No more payroll errors, no more complaints from staff.",
+    product: "HR & Payroll",
+  },
+];
+
+export const FAQ_ITEMS = [
+  {
+    question: "How much does a project cost?",
+    answer:
+      "Projects are priced based on scope, features, and complexity. A simple business website starts from $500. Custom software and SaaS platforms typically start from $2,000–$5,000. Our software products (CliqPOS, Hotel, Hospital, School, ERP, HR) have fixed subscription pricing. Contact us for a free quote — we'll give you a clear estimate within 24 hours.",
+  },
+  {
+    question: "How long does it take to deliver a project?",
+    answer:
+      "A standard website takes 1–3 weeks. A custom software system typically takes 4–12 weeks depending on complexity. Our off-the-shelf products (CliqPOS, Hotel System, etc.) can be set up and live within 1–5 business days. We provide a clear timeline before we start every project.",
+  },
+  {
+    question: "Do you provide support after the project is delivered?",
+    answer:
+      "Yes. All our projects come with a post-launch support period. We also offer ongoing monthly maintenance and support packages. Our team is reachable by WhatsApp, email, and phone — we don't disappear after delivery.",
+  },
+  {
+    question: "Can you work with my existing systems or data?",
+    answer:
+      "Absolutely. We regularly integrate with existing databases, ERPs, payment gateways, accounting tools, and third-party APIs. If you have existing data (e.g. a spreadsheet or old system), we can migrate it into your new platform.",
+  },
+  {
+    question: "Do you work with businesses outside Ghana?",
+    answer:
+      "Yes — we serve businesses across all 54 African countries and internationally. We have clients in Nigeria, Kenya, South Africa, Ivory Coast, the UK, and the US. All project communication, meetings, and support happen remotely with no issues.",
+  },
+  {
+    question: "Who owns the code and software after delivery?",
+    answer:
+      "You do. For custom-built projects, full source code and intellectual property is transferred to you on final delivery. You're never locked into paying us ongoing licence fees for your own software.",
+  },
+  {
+    question: "What if I'm not sure exactly what I need?",
+    answer:
+      "That's completely normal. Book a free consultation call and we'll help you define the right solution for your business, your team size, your budget, and your goals. No obligation, no pressure.",
+  },
+  {
+    question: "Do you build mobile apps?",
+    answer:
+      "Yes. We build iOS and Android apps using React Native, giving you a single codebase for both platforms. We've built customer apps, staff apps, delivery tracking apps, and companion apps for our software products.",
+  },
+];
+
 export const FOOTER_LINKS = {
   services: [
     { label: "Custom Software", href: "/services/custom-software" },
