@@ -3,139 +3,149 @@
 const CX = 360;
 const CY = 310;
 
-// 6 services at 60° intervals on R=190
-const SERVICES = [
+const PRODUCTS = [
   {
     x: 360, y: 120,
-    title: "Custom Software",
-    del1: "ERP · CRM · Portals",
-    del2: "Dashboards · Workflows",
-    tech: "Next.js · Node.js · PostgreSQL",
+    name: "CliqPOS",
+    tag: "POS & Business Management",
+    feat1: "Sales · Inventory · Receipts",
+    feat2: "Multi-branch · Staff Accounts",
+    badge: "Most Popular",
     color: "#3b82f6",
-    icon: "code",
+    icon: "pos",
     floatKf: "ha-float-a",
     floatDur: "5s",
     delay: "0s",
   },
   {
     x: 524, y: 215,
-    title: "SaaS Platforms",
-    del1: "MVPs · Subscriptions",
-    del2: "Multi-tenant · Billing",
-    tech: "React · Stripe · Paystack",
+    name: "Hotel System",
+    tag: "Full Hotel Operations",
+    feat1: "Bookings · Guests · Rooms",
+    feat2: "Billing · Housekeeping · Reports",
+    badge: null,
     color: "#8b5cf6",
-    icon: "layers",
+    icon: "hotel",
     floatKf: "ha-float-b",
     floatDur: "6.5s",
     delay: "0.3s",
   },
   {
     x: 524, y: 405,
-    title: "Mobile Apps",
-    del1: "iOS · Android Apps",
-    del2: "Delivery · Booking · Staff",
-    tech: "Flutter · React Native",
-    color: "#f97316",
-    icon: "phone",
+    name: "Hospital System",
+    tag: "Healthcare Management",
+    feat1: "Patients · Billing · Pharmacy",
+    feat2: "Lab · Appointments · Records",
+    badge: null,
+    color: "#ef4444",
+    icon: "hospital",
     floatKf: "ha-float-a",
     floatDur: "5.5s",
     delay: "0.6s",
   },
   {
     x: 360, y: 500,
-    title: "POS & ERP Systems",
-    del1: "Retail · Restaurant",
-    del2: "Hotel · School · Hospital",
-    tech: "CliqPOS · Custom ERP",
-    color: "#ef4444",
-    icon: "grid",
+    name: "School System",
+    tag: "Academic Management",
+    feat1: "Admissions · Fees · Attendance",
+    feat2: "Results · Parents · Staff",
+    badge: null,
+    color: "#10b981",
+    icon: "school",
     floatKf: "ha-float-c",
     floatDur: "7s",
     delay: "0.9s",
   },
   {
     x: 196, y: 405,
-    title: "AI Automation",
-    del1: "WhatsApp · Workflows",
-    del2: "CRM · Auto-Reports",
-    tech: "Python · GPT · n8n",
+    name: "HR & Payroll",
+    tag: "Human Resource Software",
+    feat1: "Staff · Attendance · Leave",
+    feat2: "Payroll · Payslips · Appraisals",
+    badge: "New",
     color: "#f59e0b",
-    icon: "zap",
+    icon: "hr",
     floatKf: "ha-float-b",
     floatDur: "6s",
     delay: "1.2s",
   },
   {
     x: 196, y: 215,
-    title: "Website Design",
-    del1: "Corporate · E-Commerce",
-    del2: "Landing Pages · SEO",
-    tech: "Next.js · Tailwind · CMS",
-    color: "#10b981",
-    icon: "globe",
+    name: "ERP System",
+    tag: "Business Operations Platform",
+    feat1: "Sales · Inventory · Accounting",
+    feat2: "Procurement · HR · Reports",
+    badge: null,
+    color: "#f97316",
+    icon: "erp",
     floatKf: "ha-float-a",
     floatDur: "5.8s",
     delay: "1.5s",
   },
 ];
 
-const TECH_DOTS = [
-  { x: 475, y: 310, label: "React",   color: "#61dafb" },
-  { x: 460, y: 368, label: "AWS",     color: "#ff9900" },
-  { x: 260, y: 368, label: "Python",  color: "#fbbf24" },
-  { x: 245, y: 310, label: "PgSQL",   color: "#60a5fa" },
-  { x: 260, y: 252, label: "Flutter", color: "#54c5f8" },
-  { x: 460, y: 252, label: "Node.js", color: "#6ee7b7" },
+// Inner orbit tech / industry dots
+const DOTS = [
+  { x: 475, y: 310, label: "Retail",    color: "#60a5fa" },
+  { x: 460, y: 368, label: "Health",    color: "#f87171" },
+  { x: 260, y: 368, label: "Schools",   color: "#34d399" },
+  { x: 245, y: 310, label: "Hotels",    color: "#a78bfa" },
+  { x: 260, y: 252, label: "Finance",   color: "#fbbf24" },
+  { x: 460, y: 252, label: "Logistics", color: "#fb923c" },
 ];
 
-function ServiceIcon({ type, color }: { type: string; color: string }) {
-  const p = {
-    stroke: color,
-    strokeWidth: 2,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    fill: "none",
-  };
+// Lucide-style SVG icon paths (24×24 viewport)
+function ProdIcon({ type, color }: { type: string; color: string }) {
+  const s = { stroke: color, strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" };
   switch (type) {
-    case "code":
+    case "pos": // shopping-cart style
       return (
         <>
-          <polyline points="16 18 22 12 16 6" {...p} />
-          <polyline points="8 6 2 12 8 18" {...p} />
+          <circle cx="9" cy="21" r="1.5" fill={color} />
+          <circle cx="20" cy="21" r="1.5" fill={color} />
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" {...s} />
         </>
       );
-    case "layers":
+    case "hotel": // building
       return (
         <>
-          <polygon points="12 2 2 7 12 12 22 7 12 2" {...p} />
-          <polyline points="2 17 12 22 22 17" {...p} />
-          <polyline points="2 12 12 17 22 12" {...p} />
+          <rect x="3" y="3" width="18" height="18" rx="2" {...s} />
+          <path d="M3 9h18" {...s} />
+          <path d="M9 21V9" {...s} />
+          <rect x="13" y="13" width="3" height="4" {...s} />
         </>
       );
-    case "globe":
+    case "hospital": // heart with cross
       return (
         <>
-          <circle cx="12" cy="12" r="10" {...p} />
-          <line x1="2" y1="12" x2="22" y2="12" {...p} />
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" {...p} />
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" {...s} />
+          <line x1="12" y1="9" x2="12" y2="15" {...s} />
+          <line x1="9" y1="12" x2="15" y2="12" {...s} />
         </>
       );
-    case "phone":
+    case "school": // graduation cap
       return (
         <>
-          <rect x="5" y="2" width="14" height="20" rx="2" ry="2" {...p} />
-          <line x1="12" y1="18" x2="12.01" y2="18" {...p} />
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z" {...s} />
+          <path d="M6 12v5c3 3 9 3 12 0v-5" {...s} />
         </>
       );
-    case "zap":
-      return <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" {...p} />;
-    case "grid":
+    case "hr": // users
       return (
         <>
-          <rect x="3" y="3" width="7" height="7" {...p} />
-          <rect x="14" y="3" width="7" height="7" {...p} />
-          <rect x="14" y="14" width="7" height="7" {...p} />
-          <rect x="3" y="14" width="7" height="7" {...p} />
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" {...s} />
+          <circle cx="9" cy="7" r="4" {...s} />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" {...s} />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" {...s} />
+        </>
+      );
+    case "erp": // layout-dashboard
+      return (
+        <>
+          <rect x="3" y="3" width="7" height="9" rx="1" {...s} />
+          <rect x="14" y="3" width="7" height="5" rx="1" {...s} />
+          <rect x="14" y="12" width="7" height="9" rx="1" {...s} />
+          <rect x="3" y="16" width="7" height="5" rx="1" {...s} />
         </>
       );
     default:
@@ -145,161 +155,140 @@ function ServiceIcon({ type, color }: { type: string; color: string }) {
 
 export default function HeroAnimation() {
   return (
-    <div
-      className="relative w-full flex items-center justify-center select-none"
-      style={{ minHeight: 480 }}
-    >
+    <div className="relative w-full flex items-center justify-center select-none" style={{ minHeight: 480 }}>
       <style>{`
         @keyframes ha-spin-cw  { to { transform: rotate(360deg);  } }
         @keyframes ha-spin-ccw { to { transform: rotate(-360deg); } }
-        @keyframes ha-float-a  { 0%,100% { transform:translateY(0);    } 50% { transform:translateY(-9px); } }
-        @keyframes ha-float-b  { 0%,100% { transform:translateY(0);    } 50% { transform:translateY(8px);  } }
-        @keyframes ha-float-c  { 0%,100% { transform:translateY(0);    } 50% { transform:translateY(-5px); } }
-        @keyframes ha-center-g { 0%,100% { filter:drop-shadow(0 0 10px #3b82f6); } 50% { filter:drop-shadow(0 0 28px #6366f1); } }
+        @keyframes ha-float-a  { 0%,100%{transform:translateY(0)}    50%{transform:translateY(-9px)} }
+        @keyframes ha-float-b  { 0%,100%{transform:translateY(0)}    50%{transform:translateY(8px)}  }
+        @keyframes ha-float-c  { 0%,100%{transform:translateY(0)}    50%{transform:translateY(-5px)} }
+        @keyframes ha-center-g { 0%,100%{filter:drop-shadow(0 0 10px #3b82f6)} 50%{filter:drop-shadow(0 0 28px #6366f1)} }
         @keyframes ha-line-flow {
-          0%   { stroke-dashoffset:90; opacity:0; }
-          15%  { opacity:.8; }
-          85%  { opacity:.8; }
-          100% { stroke-dashoffset:0; opacity:0; }
+          0%  {stroke-dashoffset:90;opacity:0}
+          15% {opacity:.8}
+          85% {opacity:.8}
+          100%{stroke-dashoffset:0;opacity:0}
         }
-        @keyframes ha-fade-in { from { opacity:0; } to { opacity:1; } }
+        @keyframes ha-fade-in { from{opacity:0} to{opacity:1} }
         @keyframes ha-dot-pop { 0%{opacity:0;transform:scale(.3)} 70%{transform:scale(1.15)} 100%{opacity:1;transform:scale(1)} }
+        @keyframes ha-badge    { 0%,100%{opacity:.85} 50%{opacity:1} }
 
-        .ha-ring-1 { transform-origin:${CX}px ${CY}px; animation:ha-spin-cw  30s linear infinite; }
-        .ha-ring-2 { transform-origin:${CX}px ${CY}px; animation:ha-spin-ccw 20s linear infinite; }
-        .ha-center { transform-origin:${CX}px ${CY}px; animation:ha-center-g  3s ease-in-out infinite; }
-        .ha-line-flow { stroke-dasharray:12 6; animation:ha-line-flow 3s ease-in-out infinite; }
+        .ha-ring-1{transform-origin:${CX}px ${CY}px;animation:ha-spin-cw  32s linear infinite}
+        .ha-ring-2{transform-origin:${CX}px ${CY}px;animation:ha-spin-ccw 22s linear infinite}
+        .ha-center{transform-origin:${CX}px ${CY}px;animation:ha-center-g  3s ease-in-out infinite}
+        .ha-line-flow{stroke-dasharray:12 6;animation:ha-line-flow 3s ease-in-out infinite}
+        .ha-badge{animation:ha-badge 2.5s ease-in-out infinite}
       `}</style>
 
-      <svg
-        viewBox="0 0 720 620"
-        className="w-full max-w-[680px]"
-        style={{ overflow: "visible" }}
-        aria-hidden="true"
-      >
+      <svg viewBox="0 0 720 620" className="w-full max-w-[680px]" style={{ overflow: "visible" }} aria-hidden="true">
         <defs>
-          <radialGradient id="ha-bg" cx="50%" cy="50%" r="50%">
+          <radialGradient id="hb-bg" cx="50%" cy="50%" r="50%">
             <stop offset="0%"   stopColor="#3b82f6" stopOpacity="0.14" />
             <stop offset="100%" stopColor="#3b82f6" stopOpacity="0"    />
           </radialGradient>
-          <radialGradient id="ha-cg" cx="50%" cy="50%" r="50%">
+          <radialGradient id="hb-cg" cx="50%" cy="50%" r="50%">
             <stop offset="0%"   stopColor="#818cf8" />
             <stop offset="100%" stopColor="#1d4ed8" />
           </radialGradient>
-          <filter id="ha-glow-sm">
+          <filter id="hb-glow-sm">
             <feGaussianBlur stdDeviation="2.5" result="b"/>
             <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
-          <filter id="ha-glow-lg">
+          <filter id="hb-glow-lg">
             <feGaussianBlur stdDeviation="10" result="b"/>
             <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
         </defs>
 
-        {/* Background glow */}
-        <circle cx={CX} cy={CY} r="230" fill="url(#ha-bg)" />
+        {/* Ambient bg glow */}
+        <circle cx={CX} cy={CY} r="240" fill="url(#hb-bg)" />
 
         {/* Orbital rings */}
         <circle cx={CX} cy={CY} r="200"
-          fill="none" stroke="#3b82f6" strokeWidth="0.8"
-          strokeOpacity="0.18" strokeDasharray="6 10"
-          className="ha-ring-1"
-        />
-        <circle cx={CX} cy={CY} r="120"
-          fill="none" stroke="#8b5cf6" strokeWidth="0.7"
-          strokeOpacity="0.2" strokeDasharray="3 12"
-          className="ha-ring-2"
-        />
+          fill="none" stroke="#3b82f6" strokeWidth="0.8" strokeOpacity="0.18" strokeDasharray="6 10"
+          className="ha-ring-1" />
+        <circle cx={CX} cy={CY} r="125"
+          fill="none" stroke="#818cf8" strokeWidth="0.7" strokeOpacity="0.18" strokeDasharray="3 13"
+          className="ha-ring-2" />
         <circle cx={CX} cy={CY} r="88"
-          fill="none" stroke="#3b82f6" strokeWidth="1"
-          strokeOpacity="0.12"
-        />
+          fill="none" stroke="#3b82f6" strokeWidth="0.8" strokeOpacity="0.1" />
 
-        {/* Connection lines: center to each service card */}
-        {SERVICES.map((n, i) => (
-          <g key={`line-${i}`}>
-            <line x1={CX} y1={CY} x2={n.x} y2={n.y}
-              stroke={n.color} strokeWidth="0.5" strokeOpacity="0.1" />
-            <line x1={CX} y1={CY} x2={n.x} y2={n.y}
-              stroke={n.color} strokeWidth="1.2"
+        {/* Connection lines */}
+        {PRODUCTS.map((p, i) => (
+          <g key={`ln-${i}`}>
+            <line x1={CX} y1={CY} x2={p.x} y2={p.y}
+              stroke={p.color} strokeWidth="0.5" strokeOpacity="0.1" />
+            <line x1={CX} y1={CY} x2={p.x} y2={p.y}
+              stroke={p.color} strokeWidth="1.4"
               className="ha-line-flow"
-              style={{
-                animationDelay: `${i * 0.55}s`,
-                animationDuration: `${2.5 + i * 0.2}s`,
-              }}
-            />
+              style={{ animationDelay: `${i * 0.55}s`, animationDuration: `${2.5 + i * 0.2}s` }} />
           </g>
         ))}
 
-        {/* Inner tech-stack dots */}
-        {TECH_DOTS.map((d, i) => (
-          <g key={`tech-${i}`}
+        {/* Inner industry dots */}
+        {DOTS.map((d, i) => (
+          <g key={`dt-${i}`}
             style={{
               animation: `ha-dot-pop 0.4s ${0.8 + i * 0.12}s ease forwards, ${i % 2 === 0 ? "ha-float-a" : "ha-float-b"} ${4.5 + i * 0.5}s ${i * 0.2}s ease-in-out infinite`,
               opacity: 0,
-            }}
-          >
+            }}>
             <circle cx={d.x} cy={d.y} r="17" fill={d.color} opacity="0.06" />
-            <circle cx={d.x} cy={d.y} r="6"  fill={d.color} opacity="0.9" filter="url(#ha-glow-sm)" />
+            <circle cx={d.x} cy={d.y} r="6"  fill={d.color} opacity="0.9"  filter="url(#hb-glow-sm)" />
             <text x={d.x} y={d.y - 12}
-              textAnchor="middle"
-              fill={d.color} fontSize="10.5" fontWeight="700" opacity="0.9"
-              fontFamily="system-ui, sans-serif"
-            >{d.label}</text>
+              textAnchor="middle" fill={d.color} fontSize="10" fontWeight="700" opacity="0.9"
+              fontFamily="system-ui, sans-serif">{d.label}</text>
           </g>
         ))}
 
-        {/* Service cards */}
-        {SERVICES.map((n, i) => {
-          const tx = n.x - 90;
-          const ty = n.y - 50;
+        {/* Product cards */}
+        {PRODUCTS.map((p, i) => {
+          const tx = p.x - 90;
+          const ty = p.y - 52;
           return (
-            <g key={`card-${i}`}
+            <g key={`cd-${i}`}
               style={{
-                animation: `ha-fade-in 0.5s ${n.delay} ease forwards, ${n.floatKf} ${n.floatDur} ${n.delay} ease-in-out infinite`,
+                animation: `ha-fade-in 0.5s ${p.delay} ease forwards, ${p.floatKf} ${p.floatDur} ${p.delay} ease-in-out infinite`,
                 opacity: 0,
-              }}
-            >
-              {/* Glow halo */}
-              <rect x={tx - 4} y={ty - 4} width="188" height="108" rx="16"
-                fill={n.color} fillOpacity="0.07" />
+              }}>
+              {/* Outer glow */}
+              <rect x={tx - 4} y={ty - 4} width="188" height="112" rx="16" fill={p.color} fillOpacity="0.07" />
               {/* Card body */}
-              <rect x={tx} y={ty} width="180" height="100" rx="13"
-                fill="#060c28" fillOpacity="0.94"
-                stroke={n.color} strokeWidth="1.2" strokeOpacity="0.45" />
+              <rect x={tx} y={ty} width="180" height="104" rx="13"
+                fill="#060c28" fillOpacity="0.95"
+                stroke={p.color} strokeWidth="1.2" strokeOpacity="0.45" />
               {/* Left accent bar */}
-              <rect x={tx} y={ty} width="5" height="100" rx="2.5"
-                fill={n.color} fillOpacity="0.95" />
+              <rect x={tx} y={ty} width="5" height="104" rx="2.5" fill={p.color} fillOpacity="0.95" />
               {/* Icon badge */}
-              <rect x={tx + 14} y={ty + 14} width="28" height="28" rx="7"
-                fill={n.color} fillOpacity="0.2" />
-              {/* Icon (24×24 source scaled 0.9×, placed in badge) */}
-              <g transform={`translate(${tx + 16}, ${ty + 15}) scale(0.9)`}>
-                <ServiceIcon type={n.icon} color={n.color} />
+              <rect x={tx + 13} y={ty + 14} width="30" height="30" rx="8" fill={p.color} fillOpacity="0.2" />
+              <g transform={`translate(${tx + 16}, ${ty + 17}) scale(0.88)`}>
+                <ProdIcon type={p.icon} color={p.color} />
               </g>
-              {/* Service name */}
-              <text x={tx + 50} y={ty + 28}
-                fill="white" fontSize="13" fontWeight="800"
-                fontFamily="system-ui, sans-serif"
-              >{n.title}</text>
-              {/* Deliverable 1 */}
-              <text x={tx + 50} y={ty + 44}
-                fill="#94a3b8" fontSize="11"
-                fontFamily="system-ui, sans-serif"
-              >{n.del1}</text>
-              {/* Deliverable 2 */}
-              <text x={tx + 50} y={ty + 58}
-                fill="#94a3b8" fontSize="11"
-                fontFamily="system-ui, sans-serif"
-              >{n.del2}</text>
-              {/* Tech tag pill */}
-              <rect x={tx + 14} y={ty + 76} width="152" height="16" rx="8"
-                fill={n.color} fillOpacity="0.13" />
-              <text x={tx + 90} y={ty + 88}
-                textAnchor="middle"
-                fill={n.color} fontSize="10" fontWeight="700"
-                fontFamily="system-ui, sans-serif"
-              >{n.tech}</text>
+              {/* Product name */}
+              <text x={tx + 52} y={ty + 28}
+                fill="white" fontSize="13.5" fontWeight="900"
+                fontFamily="system-ui, sans-serif">{p.name}</text>
+              {/* Tag line */}
+              <text x={tx + 52} y={ty + 42}
+                fill={p.color} fontSize="9.5" fontWeight="700" opacity="0.9"
+                fontFamily="system-ui, sans-serif">{p.tag}</text>
+              {/* Feature 1 */}
+              <text x={tx + 13} y={ty + 61}
+                fill="#94a3b8" fontSize="10.5"
+                fontFamily="system-ui, sans-serif">{p.feat1}</text>
+              {/* Feature 2 */}
+              <text x={tx + 13} y={ty + 75}
+                fill="#94a3b8" fontSize="10.5"
+                fontFamily="system-ui, sans-serif">{p.feat2}</text>
+              {/* Badge pill (if any) */}
+              {p.badge && (
+                <g className="ha-badge">
+                  <rect x={tx + 13} y={ty + 84} width={p.badge.length * 7 + 12} height="14" rx="7"
+                    fill={p.color} fillOpacity="0.2" stroke={p.color} strokeWidth="0.8" strokeOpacity="0.6" />
+                  <text x={tx + 19} y={ty + 94}
+                    fill={p.color} fontSize="9" fontWeight="700"
+                    fontFamily="system-ui, sans-serif">{p.badge}</text>
+                </g>
+              )}
             </g>
           );
         })}
@@ -308,23 +297,20 @@ export default function HeroAnimation() {
         <circle cx={CX} cy={CY} r="65" fill="#3b82f6" opacity="0.04" />
         <circle cx={CX} cy={CY} r="48"
           fill="none" stroke="#6366f1" strokeWidth="1.5" strokeOpacity="0.35"
-          filter="url(#ha-glow-sm)"
-        />
+          filter="url(#hb-glow-sm)" />
         <circle cx={CX} cy={CY} r="38"
-          fill="url(#ha-cg)" filter="url(#ha-glow-lg)"
-          className="ha-center"
-        />
-        <circle cx={CX} cy={CY} r="28" fill="url(#ha-cg)" />
-        <text x={CX} y={CY + 7}
-          textAnchor="middle"
-          fill="white" fontSize="18" fontWeight="900" letterSpacing="-0.5"
-          fontFamily="system-ui, sans-serif"
-        >RS</text>
-        <text x={CX} y={CY + 64}
-          textAnchor="middle"
-          fill="#475569" fontSize="10" fontWeight="500"
-          fontFamily="system-ui, sans-serif"
-        >RaveSoft · 6 Services · 54 Countries</text>
+          fill="url(#hb-cg)" filter="url(#hb-glow-lg)"
+          className="ha-center" />
+        <circle cx={CX} cy={CY} r="28" fill="url(#hb-cg)" />
+        <text x={CX} y={CY - 4}
+          textAnchor="middle" fill="white" fontSize="11" fontWeight="900"
+          fontFamily="system-ui, sans-serif">Rave</text>
+        <text x={CX} y={CY + 10}
+          textAnchor="middle" fill="white" fontSize="11" fontWeight="900"
+          fontFamily="system-ui, sans-serif">Soft</text>
+        <text x={CX} y={CY + 66}
+          textAnchor="middle" fill="#475569" fontSize="10" fontWeight="500"
+          fontFamily="system-ui, sans-serif">6 Products · 54 Countries</text>
       </svg>
     </div>
   );
