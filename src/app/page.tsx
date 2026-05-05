@@ -110,7 +110,7 @@ export default function HomePage() {
         </div>
 
         <div className="relative max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10 pt-32 pb-16 lg:pt-40 lg:pb-24 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-8 items-center">
             {/* Left: Text content */}
             <div>
               {/* Badge */}

@@ -1,12 +1,12 @@
 "use client";
 
-const CX = 330;
-const CY = 290;
+const CX = 360;
+const CY = 310;
 
-// 6 services at 60° intervals on a circle of R=200
+// 6 services at 60° intervals on R=190
 const SERVICES = [
   {
-    x: 330, y: 90,
+    x: 360, y: 120,
     title: "Custom Software",
     del1: "ERP · CRM · Portals",
     del2: "Dashboards · Workflows",
@@ -18,7 +18,7 @@ const SERVICES = [
     delay: "0s",
   },
   {
-    x: 503, y: 190,
+    x: 524, y: 215,
     title: "SaaS Platforms",
     del1: "MVPs · Subscriptions",
     del2: "Multi-tenant · Billing",
@@ -30,7 +30,7 @@ const SERVICES = [
     delay: "0.3s",
   },
   {
-    x: 503, y: 390,
+    x: 524, y: 405,
     title: "Mobile Apps",
     del1: "iOS · Android Apps",
     del2: "Delivery · Booking · Staff",
@@ -42,7 +42,7 @@ const SERVICES = [
     delay: "0.6s",
   },
   {
-    x: 330, y: 490,
+    x: 360, y: 500,
     title: "POS & ERP Systems",
     del1: "Retail · Restaurant",
     del2: "Hotel · School · Hospital",
@@ -54,7 +54,7 @@ const SERVICES = [
     delay: "0.9s",
   },
   {
-    x: 157, y: 390,
+    x: 196, y: 405,
     title: "AI Automation",
     del1: "WhatsApp · Workflows",
     del2: "CRM · Auto-Reports",
@@ -66,7 +66,7 @@ const SERVICES = [
     delay: "1.2s",
   },
   {
-    x: 157, y: 190,
+    x: 196, y: 215,
     title: "Website Design",
     del1: "Corporate · E-Commerce",
     del2: "Landing Pages · SEO",
@@ -80,12 +80,12 @@ const SERVICES = [
 ];
 
 const TECH_DOTS = [
-  { x: 450, y: 290, label: "React",   color: "#61dafb" },
-  { x: 390, y: 394, label: "AWS",     color: "#ff9900" },
-  { x: 270, y: 394, label: "Python",  color: "#fbbf24" },
-  { x: 210, y: 290, label: "PgSQL",   color: "#60a5fa" },
-  { x: 270, y: 186, label: "Flutter", color: "#54c5f8" },
-  { x: 390, y: 186, label: "Node.js", color: "#6ee7b7" },
+  { x: 475, y: 310, label: "React",   color: "#61dafb" },
+  { x: 460, y: 368, label: "AWS",     color: "#ff9900" },
+  { x: 260, y: 368, label: "Python",  color: "#fbbf24" },
+  { x: 245, y: 310, label: "PgSQL",   color: "#60a5fa" },
+  { x: 260, y: 252, label: "Flutter", color: "#54c5f8" },
+  { x: 460, y: 252, label: "Node.js", color: "#6ee7b7" },
 ];
 
 function ServiceIcon({ type, color }: { type: string; color: string }) {
@@ -172,8 +172,8 @@ export default function HeroAnimation() {
       `}</style>
 
       <svg
-        viewBox="0 0 660 580"
-        className="w-full max-w-[580px]"
+        viewBox="0 0 720 620"
+        className="w-full max-w-[680px]"
         style={{ overflow: "visible" }}
         aria-hidden="true"
       >
@@ -239,11 +239,11 @@ export default function HeroAnimation() {
               opacity: 0,
             }}
           >
-            <circle cx={d.x} cy={d.y} r="14" fill={d.color} opacity="0.06" />
-            <circle cx={d.x} cy={d.y} r="5"  fill={d.color} opacity="0.9" filter="url(#ha-glow-sm)" />
-            <text x={d.x} y={d.y - 10}
+            <circle cx={d.x} cy={d.y} r="17" fill={d.color} opacity="0.06" />
+            <circle cx={d.x} cy={d.y} r="6"  fill={d.color} opacity="0.9" filter="url(#ha-glow-sm)" />
+            <text x={d.x} y={d.y - 12}
               textAnchor="middle"
-              fill={d.color} fontSize="8" fontWeight="700" opacity="0.9"
+              fill={d.color} fontSize="10.5" fontWeight="700" opacity="0.9"
               fontFamily="system-ui, sans-serif"
             >{d.label}</text>
           </g>
@@ -251,8 +251,8 @@ export default function HeroAnimation() {
 
         {/* Service cards */}
         {SERVICES.map((n, i) => {
-          const tx = n.x - 68;
-          const ty = n.y - 38;
+          const tx = n.x - 90;
+          const ty = n.y - 50;
           return (
             <g key={`card-${i}`}
               style={{
@@ -261,43 +261,43 @@ export default function HeroAnimation() {
               }}
             >
               {/* Glow halo */}
-              <rect x={tx - 3} y={ty - 3} width="142" height="82" rx="15"
-                fill={n.color} fillOpacity="0.06" />
+              <rect x={tx - 4} y={ty - 4} width="188" height="108" rx="16"
+                fill={n.color} fillOpacity="0.07" />
               {/* Card body */}
-              <rect x={tx} y={ty} width="136" height="76" rx="12"
-                fill="#070e2e" fillOpacity="0.9"
-                stroke={n.color} strokeWidth="1" strokeOpacity="0.4" />
+              <rect x={tx} y={ty} width="180" height="100" rx="13"
+                fill="#060c28" fillOpacity="0.94"
+                stroke={n.color} strokeWidth="1.2" strokeOpacity="0.45" />
               {/* Left accent bar */}
-              <rect x={tx} y={ty} width="4" height="76" rx="2"
-                fill={n.color} fillOpacity="0.9" />
+              <rect x={tx} y={ty} width="5" height="100" rx="2.5"
+                fill={n.color} fillOpacity="0.95" />
               {/* Icon badge */}
-              <rect x={tx + 11} y={ty + 14} width="22" height="22" rx="6"
-                fill={n.color} fillOpacity="0.18" />
-              {/* Icon (24×24 source scaled 0.75×, placed in badge) */}
-              <g transform={`translate(${tx + 13}, ${ty + 16}) scale(0.75)`}>
+              <rect x={tx + 14} y={ty + 14} width="28" height="28" rx="7"
+                fill={n.color} fillOpacity="0.2" />
+              {/* Icon (24×24 source scaled 0.9×, placed in badge) */}
+              <g transform={`translate(${tx + 16}, ${ty + 15}) scale(0.9)`}>
                 <ServiceIcon type={n.icon} color={n.color} />
               </g>
               {/* Service name */}
-              <text x={tx + 39} y={ty + 25}
-                fill="white" fontSize="9.5" fontWeight="800"
+              <text x={tx + 50} y={ty + 28}
+                fill="white" fontSize="13" fontWeight="800"
                 fontFamily="system-ui, sans-serif"
               >{n.title}</text>
               {/* Deliverable 1 */}
-              <text x={tx + 39} y={ty + 37}
-                fill="#94a3b8" fontSize="8.5"
+              <text x={tx + 50} y={ty + 44}
+                fill="#94a3b8" fontSize="11"
                 fontFamily="system-ui, sans-serif"
               >{n.del1}</text>
               {/* Deliverable 2 */}
-              <text x={tx + 39} y={ty + 48}
-                fill="#94a3b8" fontSize="8.5"
+              <text x={tx + 50} y={ty + 58}
+                fill="#94a3b8" fontSize="11"
                 fontFamily="system-ui, sans-serif"
               >{n.del2}</text>
               {/* Tech tag pill */}
-              <rect x={tx + 11} y={ty + 56} width="113" height="13" rx="6.5"
-                fill={n.color} fillOpacity="0.12" />
-              <text x={tx + 67} y={ty + 66}
+              <rect x={tx + 14} y={ty + 76} width="152" height="16" rx="8"
+                fill={n.color} fillOpacity="0.13" />
+              <text x={tx + 90} y={ty + 88}
                 textAnchor="middle"
-                fill={n.color} fontSize="7.5" fontWeight="700"
+                fill={n.color} fontSize="10" fontWeight="700"
                 fontFamily="system-ui, sans-serif"
               >{n.tech}</text>
             </g>
@@ -305,24 +305,24 @@ export default function HeroAnimation() {
         })}
 
         {/* Center hub */}
-        <circle cx={CX} cy={CY} r="55" fill="#3b82f6" opacity="0.04" />
-        <circle cx={CX} cy={CY} r="40"
+        <circle cx={CX} cy={CY} r="65" fill="#3b82f6" opacity="0.04" />
+        <circle cx={CX} cy={CY} r="48"
           fill="none" stroke="#6366f1" strokeWidth="1.5" strokeOpacity="0.35"
           filter="url(#ha-glow-sm)"
         />
-        <circle cx={CX} cy={CY} r="32"
+        <circle cx={CX} cy={CY} r="38"
           fill="url(#ha-cg)" filter="url(#ha-glow-lg)"
           className="ha-center"
         />
-        <circle cx={CX} cy={CY} r="24" fill="url(#ha-cg)" />
-        <text x={CX} y={CY + 6}
+        <circle cx={CX} cy={CY} r="28" fill="url(#ha-cg)" />
+        <text x={CX} y={CY + 7}
           textAnchor="middle"
-          fill="white" fontSize="15" fontWeight="900" letterSpacing="-0.5"
+          fill="white" fontSize="18" fontWeight="900" letterSpacing="-0.5"
           fontFamily="system-ui, sans-serif"
         >RS</text>
-        <text x={CX} y={CY + 54}
+        <text x={CX} y={CY + 64}
           textAnchor="middle"
-          fill="#475569" fontSize="8.5" fontWeight="500"
+          fill="#475569" fontSize="10" fontWeight="500"
           fontFamily="system-ui, sans-serif"
         >RaveSoft · 6 Services · 54 Countries</text>
       </svg>
