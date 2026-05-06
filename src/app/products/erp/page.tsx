@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
+import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
 
 export const metadata: Metadata = {
   title: "ERP System — Enterprise Resource Planning for African Businesses | RaveSoft",
@@ -55,6 +56,14 @@ const FAQS = [
 export default function ERPSystemPage() {
   return (
     <>
+      <SoftwareAppSchema
+        name="ERP System"
+        description="Enterprise Resource Planning software for businesses needing sales, inventory, HR, accounting, procurement, and multi-department management in one unified platform across Africa."
+        applicationCategory="BusinessApplication"
+        url="https://ravesoftsolutions.com/products/erp"
+        features={FEATURES}
+        offers={{ priceDescription: "Contact for pricing" }}
+      />
       {/* HERO */}
       <section className="relative bg-[#050816] pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">

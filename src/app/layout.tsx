@@ -3,6 +3,8 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
+import OrganizationSchema from "@/components/seo/OrganizationSchema";
+import GoogleAnalytics from "@/components/seo/GoogleAnalytics";
 
 export const metadata: Metadata = {
   title: {
@@ -143,6 +145,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="min-h-full flex flex-col antialiased bg-white text-gray-900">
+        <OrganizationSchema />
+        <GoogleAnalytics />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

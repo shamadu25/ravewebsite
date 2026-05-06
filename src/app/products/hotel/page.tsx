@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
+import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
 
 export const metadata: Metadata = {
   title: "Hotel Management System | RaveSoft Digital Solutions",
@@ -48,6 +49,14 @@ const FAQS = [
 export default function HotelSystemPage() {
   return (
     <>
+      <SoftwareAppSchema
+        name="Hotel Management System"
+        description="Hotel management software covering room booking, guest management, billing, housekeeping, staff operations, and revenue reporting for hotels and hospitality businesses across Africa."
+        applicationCategory="BusinessApplication"
+        url="https://ravesoftsolutions.com/products/hotel"
+        features={FEATURES}
+        offers={{ priceDescription: "Contact for pricing" }}
+      />
       {/* HERO */}
       <section className="relative bg-[#050816] pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Clock, Tag, User, Calendar } from "lucide-react";
 import { BLOG_POSTS } from "@/lib/data";
 import CTASection from "@/components/ui/CTASection";
+import ArticleSchema from "@/components/seo/ArticleSchema";
 
 type BlogSlugParams = { params: Promise<{ slug: string }> };
 
@@ -1283,6 +1284,12 @@ export default async function BlogPostPage({ params }: BlogSlugParams) {
 
   return (
     <>
+      <ArticleSchema
+        title={post.title}
+        description={post.excerpt}
+        datePublished={post.date}
+        slug={post.slug}
+      />
       {/* HERO */}
       <section className="bg-[#050816] pt-32 pb-16 lg:pt-40">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 lg:px-10">

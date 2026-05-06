@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
+import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
 
 export const metadata: Metadata = {
   title: "Hospital Management System | RaveSoft Digital Solutions",
@@ -48,6 +49,14 @@ const FAQS = [
 export default function HospitalSystemPage() {
   return (
     <>
+      <SoftwareAppSchema
+        name="Hospital Management System"
+        description="Hospital management software covering patient records, appointments, billing, pharmacy, lab management, and staff operations for hospitals and clinics in Nigeria and Ghana."
+        applicationCategory="MedicalApplication"
+        url="https://ravesoftsolutions.com/products/hospital"
+        features={FEATURES}
+        offers={{ priceDescription: "Contact for pricing" }}
+      />
       {/* HERO */}
       <section className="relative bg-[#050816] pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import FAQSchema from "@/components/seo/FAQSchema";
 import {
   Code2,
   Layers,
@@ -101,6 +102,7 @@ const INDUSTRY_ICONS: Record<string, React.ReactNode> = {
 export default function HomePage() {
   return (
     <>
+      <FAQSchema items={FAQ_ITEMS.map((f) => ({ question: f.question, answer: f.answer }))} />
       {/* HERO */}
       <section className="relative bg-[#050816] overflow-hidden">
         {/* Background elements */}

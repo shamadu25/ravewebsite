@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
+import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
 
 export const metadata: Metadata = {
   title: "School Management System | RaveSoft Digital Solutions",
@@ -48,6 +49,14 @@ const FAQS = [
 export default function SchoolSystemPage() {
   return (
     <>
+      <SoftwareAppSchema
+        name="School Management System"
+        description="School management software covering admissions, fees, attendance, results, parent communication, and staff management for schools and colleges in Ghana and Nigeria."
+        applicationCategory="EducationalApplication"
+        url="https://ravesoftsolutions.com/products/school"
+        features={FEATURES}
+        offers={{ priceDescription: "Contact for pricing" }}
+      />
       {/* HERO */}
       <section className="relative bg-[#050816] pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">

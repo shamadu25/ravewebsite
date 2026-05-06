@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2, ShoppingCart, Utensils, Pill, Package, Buildi
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
+import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
 
 export const metadata: Metadata = {
   title: "CliqPOS — Cloud POS System for Retail & Hospitality | RaveSoft",
@@ -58,6 +59,14 @@ const FAQS = [
 export default function CliqPOSPage() {
   return (
     <>
+      <SoftwareAppSchema
+        name="CliqPOS"
+        description="Cloud-based Point of Sale and business management system for retail, restaurants, supermarkets, pharmacies, and multi-branch businesses in Ghana and Africa."
+        applicationCategory="BusinessApplication"
+        url="https://ravesoftsolutions.com/products/cliqpos"
+        features={FEATURES}
+        offers={{ priceDescription: "Contact for pricing" }}
+      />
       {/* HERO */}
       <section className="relative bg-[#050816] pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
