@@ -1,0 +1,6 @@
+User-Agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+
+Sitemap: https://ravesoftsolutions.com/sitemap.xml

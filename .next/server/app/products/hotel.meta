@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/products/layout,_N_T_/products/hotel/layout,_N_T_/products/hotel/page,_N_T_/products/hotel"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/products/hotel/__PAGE__",
+    "/products/hotel",
+    "/products",
+    "/_index",
+    "/_head"
+  ]
+}
