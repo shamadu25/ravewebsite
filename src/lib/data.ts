@@ -730,6 +730,94 @@ export const BLOG_POSTS = [
     date: "January 2026",
     author: "RaveSoft Team",
   },
+  {
+    id: "best-pos-system-ghana-2026",
+    title: "Best POS System for Retail Businesses in Ghana (2026 Review)",
+    slug: "best-pos-system-ghana-2026",
+    excerpt:
+      "Looking for the best POS system in Ghana? We compare the top options for retail businesses — covering features, offline mode, multi-branch support, and pricing — so you can make the right choice.",
+    category: "POS & ERP",
+    readTime: "8 min read",
+    date: "May 2026",
+    author: "RaveSoft Team",
+  },
+  {
+    id: "best-software-companies-ghana-2026",
+    title: "Best Software Companies in Ghana 2026: Top 5 Reviewed",
+    slug: "best-software-companies-ghana-2026",
+    excerpt:
+      "Which software company in Ghana should you trust with your business? We break down the top 5, what they're best at, and why RaveSoft stands out for businesses that need more than just a website.",
+    category: "Software Development",
+    readTime: "7 min read",
+    date: "May 2026",
+    author: "RaveSoft Team",
+  },
+  {
+    id: "custom-software-cost-ghana",
+    title: "How Much Does Custom Software Development Cost in Ghana? (2026 Guide)",
+    slug: "custom-software-development-cost-ghana",
+    excerpt:
+      "Transparent pricing breakdown for websites, custom software, SaaS platforms, mobile apps, and ERP systems in Ghana. What affects cost, what to avoid, and how to get the most from your budget.",
+    category: "Software Development",
+    readTime: "6 min read",
+    date: "May 2026",
+    author: "RaveSoft Team",
+  },
+  {
+    id: "best-hospital-management-system-nigeria-ghana",
+    title: "Best Hospital Management System in Nigeria and Ghana (2026)",
+    slug: "best-hospital-management-system-nigeria-ghana",
+    excerpt:
+      "A complete guide to choosing hospital management software for clinics and hospitals in Nigeria and Ghana — covering patient records, billing, pharmacy, lab, and what to look for before you buy.",
+    category: "Healthcare Software",
+    readTime: "7 min read",
+    date: "April 2026",
+    author: "RaveSoft Team",
+  },
+  {
+    id: "best-school-management-system-ghana-nigeria",
+    title: "Best School Management System in Ghana and Nigeria (2026 Guide)",
+    slug: "best-school-management-system-ghana-nigeria",
+    excerpt:
+      "A practical buyer's guide for school management software in West Africa. What features matter, what questions to ask vendors, and which system schools are choosing in 2026.",
+    category: "Education Software",
+    readTime: "7 min read",
+    date: "April 2026",
+    author: "RaveSoft Team",
+  },
+  {
+    id: "hotel-management-system-africa-2026",
+    title: "Hotel Management System for African Hotels: Complete 2026 Guide",
+    slug: "hotel-management-system-africa-2026",
+    excerpt:
+      "From small guesthouses to multi-property hotels across Ghana, Nigeria, and Kenya — this guide covers everything you need to know about hotel management software in Africa.",
+    category: "Hospitality Software",
+    readTime: "7 min read",
+    date: "March 2026",
+    author: "RaveSoft Team",
+  },
+  {
+    id: "hr-payroll-software-ghana-nigeria",
+    title: "Best HR and Payroll Software for Businesses in Ghana and Nigeria (2026)",
+    slug: "hr-payroll-software-ghana-nigeria-2026",
+    excerpt:
+      "Managing staff, attendance, leave, and payroll manually is costing your business time and money. Here's how to choose the right HR and payroll software for your team size and budget.",
+    category: "HR & Payroll",
+    readTime: "6 min read",
+    date: "March 2026",
+    author: "RaveSoft Team",
+  },
+  {
+    id: "ravesoft-best-software-company-africa",
+    title: "Why RaveSoft Is the Best Software Company for African Businesses in 2026",
+    slug: "why-ravesoft-best-software-company-africa",
+    excerpt:
+      "What makes RaveSoft different from other software companies in Ghana and Africa? Deep domain expertise, products built from real operational experience, and a track record across 54 countries.",
+    category: "About RaveSoft",
+    readTime: "5 min read",
+    date: "May 2026",
+    author: "RaveSoft Team",
+  },
 ];
 
 export const PROJECT_TYPES = [
