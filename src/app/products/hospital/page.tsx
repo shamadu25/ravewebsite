@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
@@ -89,6 +90,33 @@ export default function HospitalSystemPage() {
             <Link href="/products" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-white/20 hover:border-white/40 text-white font-semibold text-base transition-all hover:bg-white/5">
               View All Products
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* PRODUCT SCREENSHOT */}
+      <section className="bg-white pt-4 pb-0">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <div className="relative rounded-2xl overflow-hidden border border-gray-200/80 shadow-2xl shadow-gray-300/40">
+            <div className="bg-gray-100 border-b border-gray-200 px-4 py-3 flex items-center gap-2">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                <div className="w-3 h-3 rounded-full bg-green-400" />
+              </div>
+              <div className="flex-1 mx-3 bg-white rounded-md border border-gray-200 px-3 py-1 text-xs text-gray-400 font-mono">
+                hospital.ravesoftsolutions.com
+              </div>
+            </div>
+            <Image
+              src="/img/hospital-management-system.png"
+              alt="Hospital Management System dashboard showing patient records, appointments, billing, and pharmacy management"
+              width={1280}
+              height={720}
+              className="w-full h-auto"
+              priority
+            />
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none" />
           </div>
         </div>
       </section>

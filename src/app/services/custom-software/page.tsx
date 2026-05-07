@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
@@ -85,18 +86,35 @@ export default function CustomSoftwarePage() {
       <section className="bg-white section-padding">
         <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
-            <SectionHeader
-              eyebrow="Who This Is For"
-              title="Custom software is the right choice when off-the-shelf tools aren't enough"
-              align="left"
-            />
-            <div className="space-y-3">
-              {WHO_FOR.map((item, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-[#F5F7FA] border border-gray-100">
-                  <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
-                  <span className="text-gray-700 text-sm">{item}</span>
-                </div>
-              ))}
+            <div>
+              <SectionHeader
+                eyebrow="Who This Is For"
+                title="Custom software is the right choice when off-the-shelf tools aren't enough"
+                align="left"
+              />
+              <div className="space-y-3 mt-8">
+                {WHO_FOR.map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-[#F5F7FA] border border-gray-100">
+                    <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                    <span className="text-gray-700 text-sm">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Custom software visual */}
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-gray-200/60 border border-gray-100">
+              <Image
+                src="/img/custom-software-development.png"
+                alt="RaveSoft engineers building custom software solutions for African businesses"
+                width={700}
+                height={500}
+                className="w-full h-auto object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <p className="text-white font-semibold text-sm">Built for Your Exact Workflow</p>
+                <p className="text-gray-300 text-xs mt-0.5">No templates · No compromises · Built from scratch</p>
+              </div>
             </div>
           </div>
         </div>

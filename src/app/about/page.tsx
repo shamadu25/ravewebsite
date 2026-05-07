@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, CheckCircle2, Target, Lightbulb, Users, Globe } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
@@ -124,28 +125,45 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Mission & Vision */}
-            <div className="space-y-6">
-              <div className="p-7 rounded-2xl bg-[#050816] border border-white/10">
-                <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center mb-4">
-                  <Target className="w-5 h-5 text-blue-400" />
-                </div>
-                <h3 className="font-bold text-white mb-2 text-lg">Our Mission</h3>
-                <p className="text-gray-400 leading-relaxed text-sm">
-                  To help businesses build smarter digital systems that improve efficiency,
-                  visibility, customer experience, and growth.
-                </p>
+            {/* Team in action photo */}
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-gray-200/60 border border-gray-100">
+              <Image
+                src="/img/custom-software-development.png"
+                alt="RaveSoft team building software and digital systems for African businesses"
+                width={800}
+                height={533}
+                className="w-full h-auto object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-5 left-5 right-5">
+                <p className="text-white font-semibold text-sm">RaveSoft HQ · Accra, Ghana</p>
+                <p className="text-gray-300 text-xs mt-0.5">Engineering & Design team at work</p>
               </div>
-              <div className="p-7 rounded-2xl bg-[#050816] border border-white/10">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-4">
-                  <Globe className="w-5 h-5 text-amber-400" />
-                </div>
-                <h3 className="font-bold text-white mb-2 text-lg">Our Vision</h3>
-                <p className="text-gray-400 leading-relaxed text-sm">
-                  To become one of Africa&apos;s most trusted software and digital transformation
-                  companies, building systems that power businesses across the continent and beyond.
-                </p>
+            </div>
+          </div>
+
+          {/* Mission & Vision — below the split */}
+          <div className="grid sm:grid-cols-2 gap-6 mt-10">
+            <div className="p-7 rounded-2xl bg-[#050816] border border-white/10">
+              <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center mb-4">
+                <Target className="w-5 h-5 text-blue-400" />
               </div>
+              <h3 className="font-bold text-white mb-2 text-lg">Our Mission</h3>
+              <p className="text-gray-400 leading-relaxed text-sm">
+                To help businesses build smarter digital systems that improve efficiency,
+                visibility, customer experience, and growth.
+              </p>
+            </div>
+            <div className="p-7 rounded-2xl bg-[#050816] border border-white/10">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-4">
+                <Globe className="w-5 h-5 text-amber-400" />
+              </div>
+              <h3 className="font-bold text-white mb-2 text-lg">Our Vision</h3>
+              <p className="text-gray-400 leading-relaxed text-sm">
+                To become one of Africa&apos;s most trusted software and digital transformation
+                companies, building systems that power businesses across the continent and beyond.
+              </p>
             </div>
           </div>
         </div>
@@ -154,23 +172,56 @@ export default function AboutPage() {
       {/* WHAT MAKES US DIFFERENT */}
       <section className="bg-[#F8FAFB] section-padding">
         <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <SectionHeader
-              eyebrow="What Makes Us Different"
-              title="We build with business intelligence, not just technical skill"
-              description="Our approach combines deep software engineering expertise with a genuine understanding of how businesses operate across all African countries and beyond."
-              align="left"
-            />
-            <div className="grid grid-cols-1 gap-3">
-              {DIFFERENTIATORS.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 p-4 rounded-xl bg-white border border-gray-100 hover:border-blue-100 hover:shadow-sm transition-all"
-                >
-                  <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
-                  <span className="text-gray-700 font-medium text-sm">{item}</span>
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            <div>
+              <SectionHeader
+                eyebrow="What Makes Us Different"
+                title="We build with business intelligence, not just technical skill"
+                description="Our approach combines deep software engineering expertise with a genuine understanding of how businesses operate across all African countries and beyond."
+                align="left"
+              />
+              <div className="grid grid-cols-1 gap-3 mt-8">
+                {DIFFERENTIATORS.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 p-4 rounded-xl bg-white border border-gray-100 hover:border-blue-100 hover:shadow-sm transition-all"
+                  >
+                    <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                    <span className="text-gray-700 font-medium text-sm">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Visuals */}
+            <div className="space-y-5">
+              <div className="relative rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+                <Image
+                  src="/img/security&cloud.png"
+                  alt="Enterprise-grade cloud infrastructure and security powering RaveSoft systems"
+                  width={700}
+                  height={420}
+                  className="w-full h-auto object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <span className="text-white text-sm font-semibold">Enterprise-grade Security & Cloud</span>
+                  <p className="text-gray-300 text-xs mt-0.5">Built on secure, scalable cloud infrastructure</p>
                 </div>
-              ))}
+              </div>
+              <div className="relative rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+                <Image
+                  src="/img/support-training-onboarding.png"
+                  alt="RaveSoft client onboarding, training, and ongoing support services"
+                  width={700}
+                  height={420}
+                  className="w-full h-auto object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <span className="text-white text-sm font-semibold">Dedicated Support & Training</span>
+                  <p className="text-gray-300 text-xs mt-0.5">Full onboarding, team training, and ongoing assistance</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -208,8 +259,23 @@ export default function AboutPage() {
             eyebrow="The Team"
             title="People who build your systems"
             dark
-            className="mb-14"
+            className="mb-10"
           />
+          {/* Team photo */}
+          <div className="relative rounded-2xl overflow-hidden mb-10 border border-white/10 shadow-2xl shadow-black/40">
+            <Image
+              src="/img/ravesoft-team.png"
+              alt="RaveSoft Digital Solutions full team — engineers, designers, and product specialists"
+              width={1280}
+              height={600}
+              className="w-full h-auto object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050816] via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-6 left-6">
+              <p className="text-white font-bold text-lg">The RaveSoft Team</p>
+              <p className="text-gray-300 text-sm mt-0.5">Engineering, Design & Product — Accra, Ghana</p>
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
             {TEAM.map((member) => (
               <div

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import FAQSchema from "@/components/seo/FAQSchema";
 import {
   Code2,
@@ -29,7 +30,6 @@ import {
   Home,
   Briefcase,
 } from "lucide-react";
-import HeroAnimation from "@/components/ui/HeroAnimation";
 import SectionHeader from "@/components/ui/SectionHeader";
 import ServiceCard from "@/components/ui/ServiceCard";
 import ProductCard from "@/components/ui/ProductCard";
@@ -182,9 +182,34 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right: Hero animation */}
+            {/* Right: Hero image */}
             <div className="relative lg:pl-4 xl:pl-8">
-              <HeroAnimation />
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-900/30 border border-white/10">
+                <Image
+                  src="/img/hero1.png"
+                  alt="RaveSoft Digital Solutions team — building software systems for businesses across Africa"
+                  width={900}
+                  height={600}
+                  className="w-full h-auto object-cover"
+                  priority
+                />
+                {/* Subtle blue gradient overlay for depth */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-indigo-900/20 pointer-events-none" />
+                {/* Glow ring */}
+                <div className="absolute inset-0 rounded-2xl ring-1 ring-blue-500/20 pointer-events-none" />
+              </div>
+              {/* Floating stat badge */}
+              <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-[#050816] border border-white/15 rounded-xl px-4 py-3 shadow-xl">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600/25 border border-blue-500/30 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                  </div>
+                  <div>
+                    <p className="text-white text-xs font-bold leading-none mb-0.5">500+ businesses</p>
+                    <p className="text-gray-400 text-[10px] leading-none">across Africa</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -192,6 +217,70 @@ export default function HomePage() {
 
       {/* PROOF BAR */}
       <ProofBar stats={PROOF_ITEMS} dark />
+
+      {/* TEAM IN ACTION */}
+      <section className="bg-[#050816] pb-16 pt-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-dark opacity-40 pointer-events-none" />
+        <div className="relative max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Left — image */}
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-white/8 order-2 lg:order-1">
+              <Image
+                src="/img/custom-software-development.png"
+                alt="RaveSoft Digital Solutions team building software systems"
+                width={800}
+                height={533}
+                className="w-full h-auto object-cover"
+                priority
+              />
+              {/* overlay badge */}
+              <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/70 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-2.5">
+                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-white text-sm font-medium">Ghana HQ · Serving all of Africa</span>
+              </div>
+            </div>
+            {/* Right — text */}
+            <div className="order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                <span className="text-sm text-blue-400 font-medium">Built by real engineers, for real businesses</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black text-white leading-[1.1] tracking-tight mb-5">
+                A team that understands{" "}
+                <span style={{ background: "linear-gradient(135deg,#60A5FA,#818CF8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  how your business works
+                </span>
+              </h2>
+              <p className="text-gray-400 text-base leading-relaxed mb-8">
+                RaveSoft is a Ghana-based software and digital transformation company. Our engineers,
+                designers, and product thinkers have built systems used daily by 500+ businesses
+                across retail, hospitality, healthcare, education, and more.
+              </p>
+              <div className="space-y-3 mb-8">
+                {[
+                  "Custom systems built for your exact workflow",
+                  "Not just developers — business technology partners",
+                  "Serving all 54 African countries from Ghana HQ",
+                  "Ongoing support long after your system goes live",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                    </div>
+                    <span className="text-gray-300 text-sm">{item}</span>
+                  </div>
+                ))}
+              </div>
+              <Link href="/about"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 hover:border-white/35 text-white font-semibold text-sm transition-all hover:bg-white/5"
+              >
+                About RaveSoft
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* AFRICA COVERAGE BELT */}
       <section className="bg-white border-b border-gray-100 py-10">
@@ -293,6 +382,23 @@ export default function HomePage() {
             title="Technology solutions for businesses that run real operations"
             className="mb-14"
           />
+          {/* Industry collage visual */}
+          <div className="relative rounded-2xl overflow-hidden mb-10 border border-gray-100 shadow-lg shadow-gray-200/60">
+            <Image
+              src="/img/industry-solution-collage.png"
+              alt="RaveSoft digital solutions across retail, hospitality, healthcare, education and more industries in Africa"
+              width={1280}
+              height={500}
+              className="w-full h-auto object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-y-0 left-0 flex flex-col justify-center px-8 sm:px-12 max-w-md">
+              <span className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-2">Cross-Industry Expertise</span>
+              <p className="text-gray-900 text-xl sm:text-2xl font-black leading-tight">
+                One technology partner. Unlimited industry applications.
+              </p>
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {INDUSTRIES.slice(0, 9).map((industry, i) => (
               <IndustryCard
@@ -420,12 +526,25 @@ export default function HomePage() {
       {/* WHY RAVESOFT */}
       <section className="bg-[#F8FAFB] section-padding">
         <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <SectionHeader
-            eyebrow="Why Choose RaveSoft"
-            title="More than developers. We are business technology partners."
-            description="We understand that technology only has value when it solves real business problems and helps you grow."
-            className="mb-14"
-          />
+          <div className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-center mb-14">
+            <div>
+              <SectionHeader
+                eyebrow="Why Choose RaveSoft"
+                title="More than developers. We are business technology partners."
+                description="We understand that technology only has value when it solves real business problems and helps you grow."
+                align="left"
+              />
+            </div>
+            <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-gray-200/80 border border-gray-100">
+              <Image
+                src="/img/digital-transformstion.png"
+                alt="Digital transformation and cloud technology powering business growth across Africa"
+                width={700}
+                height={467}
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {WHY_RAVESOFT.map((item) => (
               <div key={item.title}

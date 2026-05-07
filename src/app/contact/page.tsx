@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import ContactForm from "@/components/ui/ContactForm";
 import { COMPANY } from "@/lib/data";
@@ -53,21 +54,38 @@ export default function ContactPage() {
           <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[260px] h-[260px] bg-indigo-700/7 rounded-full blur-[90px]" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-24 bg-gradient-to-b from-transparent to-blue-500/30" />
         </div>
-        <div className="relative max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10 text-center">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-500/12 border border-blue-500/25 mb-7">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-            <span className="text-sm text-blue-400 font-semibold">Let&#39;s Talk</span>
+        <div className="relative max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Left: Text */}
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-500/12 border border-blue-500/25 mb-7">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                <span className="text-sm text-blue-400 font-semibold">Let&#39;s Talk</span>
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-black text-white leading-[1.08] tracking-tighter mb-6">
+                Tell Us About{" "}
+                <span style={{background:"linear-gradient(135deg,#60A5FA,#818CF8)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
+                  Your Project
+                </span>
+              </h1>
+              <p className="text-gray-400 text-lg leading-relaxed max-w-xl">
+                Fill out the form below and one of our team members will get back to you within one
+                business day to discuss your project and next steps.
+              </p>
+            </div>
+            {/* Right: Consultation photo */}
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-white/10 hidden lg:block">
+              <Image
+                src="/img/CTA-contact-us.png"
+                alt="RaveSoft team consulting with a client on their software project"
+                width={800}
+                height={534}
+                className="w-full h-auto object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#050816]/40 via-transparent to-transparent pointer-events-none" />
+            </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-black text-white leading-[1.08] tracking-tighter mb-6 max-w-4xl mx-auto">
-            Tell Us About{" "}
-            <span style={{background:"linear-gradient(135deg,#60A5FA,#818CF8)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
-              Your Project
-            </span>
-          </h1>
-          <p className="text-gray-400 text-lg leading-relaxed max-w-2xl mx-auto">
-            Fill out the form below and one of our team members will get back to you within one
-            business day to discuss your project and next steps.
-          </p>
         </div>
       </section>
 
