@@ -7,6 +7,7 @@ import OrganizationSchema from "@/components/seo/OrganizationSchema";
 import GoogleAnalytics from "@/components/seo/GoogleAnalytics";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ravesoftsolutions.com"),
   title: {
     default: "RaveSoft Digital Solutions | Software Company in Ghana, Nigeria, Kenya & Africa",
     template: "%s | RaveSoft Digital Solutions",
