@@ -16,6 +16,8 @@ app.prepare().then(() => {
   }
 
   createServer((req, res) => {
+    // Ensure Next.js always sees the real hostname, not "localhost"
+    req.headers["host"] = "ravesoftsolutions.com";
     const parsedUrl = parse(req.url, true);
     handle(req, res, parsedUrl);
   }).listen(SOCKET, (err) => {
