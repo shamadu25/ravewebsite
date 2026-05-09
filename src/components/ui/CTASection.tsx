@@ -12,10 +12,10 @@ interface CTASectionProps {
 }
 
 export default function CTASection({
-  headline = "Let's Build the Digital System Your Business Needs Next",
+  headline = "Ready to Build the Digital System Your Business Needs?",
   subheadline = "Tell us what you want to build. We will help you turn it into a clear strategy, modern design, scalable software, and a system your business can depend on.",
-  primaryCTA = { label: "Start a Project", href: "/contact" },
-  secondaryCTA = { label: "Book Consultation", href: "/book-consultation" },
+  primaryCTA = { label: "Book a Free Consultation", href: "/book-consultation" },
+  secondaryCTA = { label: "Contact Us", href: "/contact" },
   showWhatsApp = true,
   dark = true,
 }: CTASectionProps) {
@@ -53,8 +53,8 @@ export default function CTASection({
               href={primaryCTA.href}
               className="flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base transition-all"
               style={{
-                background: "linear-gradient(135deg, #3B82F6, #2563eb)",
-                boxShadow: "0 8px 32px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
+                background: "linear-gradient(135deg, #F59E0B, #D97706)",
+                boxShadow: "0 8px 32px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
               }}
             >
               {primaryCTA.label}

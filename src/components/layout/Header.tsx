@@ -116,19 +116,19 @@ export default function Header() {
 
           {/* CTAs */}
           <div className="hidden lg:flex items-center gap-3">
-            <Link href="/book-consultation"
+            <Link href="/contact"
               className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white transition-colors"
             >
-              Book a Call
+              Contact
             </Link>
-            <Link href="/contact"
+            <Link href="/book-consultation"
               className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
               style={{
-                background: "linear-gradient(135deg, #3B82F6 0%, #2563eb 100%)",
-                boxShadow: "0 4px 20px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
+                background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
+                boxShadow: "0 4px 20px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
               }}
             >
-              Start a Project
+              Book a Free Consultation
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -173,16 +173,16 @@ export default function Header() {
             </div>
 
             <div className="pt-4 space-y-3">
-              <Link href="/book-consultation"
+              <Link href="/contact"
                 className="block w-full text-center px-5 py-3.5 rounded-xl text-sm font-semibold border border-white/20 text-white hover:bg-white/5 transition-all"
               >
-                Book a Consultation
+                Contact Us
               </Link>
-              <Link href="/contact"
+              <Link href="/book-consultation"
                 className="flex items-center justify-center gap-2 w-full px-5 py-3.5 rounded-xl text-sm font-bold text-white transition-all"
-                style={{ background: "linear-gradient(135deg, #3B82F6, #2563eb)", boxShadow: "0 4px 20px rgba(59,130,246,0.3)" }}
+                style={{ background: "linear-gradient(135deg, #F59E0B, #D97706)", boxShadow: "0 4px 20px rgba(245,158,11,0.3)" }}
               >
-                Start a Project
+                Book a Free Consultation
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

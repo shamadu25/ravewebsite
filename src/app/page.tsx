@@ -54,9 +54,9 @@ import {
 } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "RaveSoft Digital Solutions | Software Company in Ghana",
+  title: "RaveSoft Digital Solutions | #1 Software Company in Ghana & Africa",
   description:
-    "RaveSoft Digital Solutions builds premium websites, custom software, SaaS platforms, POS systems, ERP solutions, mobile apps, and automation systems for businesses across all African countries and international markets.",
+    "RaveSoft Digital Solutions builds custom software, SaaS platforms, POS & ERP systems, mobile apps, AI automation, and premium websites for businesses across Ghana, Nigeria, Kenya, South Africa, and all 54 African countries.",
 };
 
 const SERVICE_ICONS: Record<string, React.ReactNode> = {
@@ -120,59 +120,61 @@ export default function HomePage() {
             {/* Left: Text content */}
             <div>
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 mb-7">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                <span className="text-sm text-blue-400 font-medium">Software · SaaS · Automation · Digital Transformation</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-7">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-sm text-amber-400 font-medium">Ghana&apos;s #1 Software Company · Serving All 54 African Countries</span>
               </div>
 
               {/* Headline */}
               <h1 className="text-[2.75rem] sm:text-[3.5rem] lg:text-[4rem] xl:text-[4.5rem] font-black text-white leading-[1.05] tracking-tighter mb-6">
-                Build Software That{" "}
+                Software Solutions Built to{" "}
                 <span style={{
-                  background: "linear-gradient(135deg, #60A5FA 0%, #818CF8 40%, #FFB200 100%)",
+                  background: "linear-gradient(135deg, #60A5FA 0%, #818CF8 40%, #F59E0B 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text"
                 }}>
-                  Moves Your Business
+                  Power Modern African
                 </span>{" "}
-                Forward
+                Businesses
               </h1>
 
               {/* Subheadline */}
               <p className="text-gray-400 text-lg leading-relaxed mb-8 max-w-xl">
-                RaveSoft builds premium websites, custom software, SaaS platforms, POS &amp; ERP systems,
-                mobile apps, and AI-powered automation for businesses across every African country
-                — and beyond.
+                We design, build, and support custom software, SaaS platforms, POS &amp; ERP systems,
+                mobile apps, and AI automation that help businesses across Africa run smarter,
+                grow faster, and compete at a world-class level.
               </p>
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
                 <Link
-                  href="/contact"
+                  href="/book-consultation"
                   className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base transition-all"
                   style={{
-                    background: "linear-gradient(135deg, #3B82F6, #2563eb)",
-                    boxShadow: "0 8px 32px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
+                    background: "linear-gradient(135deg, #F59E0B, #D97706)",
+                    boxShadow: "0 8px 32px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.15)"
                   }}
                 >
-                  Get a Free Quote
+                  Book a Free Consultation
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link
-                  href="/case-studies"
+                <a
+                  href={`https://wa.me/233503319610?text=Hi%20RaveSoft%2C%20I%27d%20like%20to%20discuss%20a%20project`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/20 hover:border-white/35 text-white font-semibold text-base transition-all hover:bg-white/5"
                 >
-                  View Case Studies
-                </Link>
+                  Chat on WhatsApp
+                </a>
               </div>
 
               {/* Trust indicators */}
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                 {[
-                  "500+ businesses served",
-                  "All 54 African countries",
-                  "Ghana HQ · global delivery"
+                  "100+ businesses served",
+                  "20+ industries covered",
+                  "Ghana HQ · serving all Africa"
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
@@ -201,12 +203,12 @@ export default function HomePage() {
               {/* Floating stat badge */}
               <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-[#050816] border border-white/15 rounded-xl px-4 py-3 shadow-xl">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-600/25 border border-blue-500/30 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                   </div>
                   <div>
-                    <p className="text-white text-xs font-bold leading-none mb-0.5">500+ businesses</p>
-                    <p className="text-gray-400 text-[10px] leading-none">across Africa</p>
+                    <p className="text-white text-xs font-bold leading-none mb-0.5">100+ businesses</p>
+                    <p className="text-gray-400 text-[10px] leading-none">served across Africa</p>
                   </div>
                 </div>
               </div>
@@ -241,27 +243,27 @@ export default function HomePage() {
             </div>
             {/* Right — text */}
             <div className="order-1 lg:order-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                <span className="text-sm text-blue-400 font-medium">Built by real engineers, for real businesses</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                <span className="text-sm text-amber-400 font-medium">Built from inside African business, for African business</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-black text-white leading-[1.1] tracking-tight mb-5">
-                A team that understands{" "}
+                We don&apos;t just build software.{" "}
                 <span style={{ background: "linear-gradient(135deg,#60A5FA,#818CF8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                  how your business works
+                  We solve business problems.
                 </span>
               </h2>
               <p className="text-gray-400 text-base leading-relaxed mb-8">
                 RaveSoft is a Ghana-based software and digital transformation company. Our engineers,
-                designers, and product thinkers have built systems used daily by 500+ businesses
-                across retail, hospitality, healthcare, education, and more.
+                designers, and product strategists have built systems running daily inside
+                retail chains, hospitals, schools, hotels, and enterprises across Africa.
               </p>
               <div className="space-y-3 mb-8">
                 {[
-                  "Custom systems built for your exact workflow",
-                  "Not just developers — business technology partners",
-                  "Serving all 54 African countries from Ghana HQ",
-                  "Ongoing support long after your system goes live",
+                  "Deep domain experience across 20+ industries",
+                  "Your tech partner for strategy, design, build, and support",
+                  "Serving all 54 African countries from our Ghana HQ",
+                  "Ongoing support and product evolution after launch",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
@@ -308,9 +310,9 @@ export default function HomePage() {
       <section className="bg-[#F8FAFB] section-padding">
         <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
           <SectionHeader
-            eyebrow="What We Build"
-            title="Digital systems built for growth, automation, and scale"
-            description="We combine strategy, design, software engineering, automation, and ongoing support to help businesses replace manual processes with modern digital systems."
+            eyebrow="Our Services"
+            title="Everything your business needs to compete and grow"
+            description="Strategy, design, software engineering, automation, and long-term support — we replace manual bottlenecks with modern digital systems that scale with you."
             className="mb-14"
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -344,8 +346,8 @@ export default function HomePage() {
         <div className="relative max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
           <SectionHeader
             eyebrow="Our Software Products"
-            title="Business platforms built from real operational experience"
-            description="RaveSoft is more than a development agency. We build and operate software products used by real businesses every day."
+            title="Ready-to-deploy platforms built from real operational experience"
+            description="Not template software. These are products built from years of working with real businesses — refined, proven, and deployable in days."
             dark
             className="mb-14"
           />
@@ -379,7 +381,8 @@ export default function HomePage() {
         <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
           <SectionHeader
             eyebrow="Industries We Serve"
-            title="Technology solutions for businesses that run real operations"
+            title="Proven solutions across every major industry in Africa"
+            description="From retail and healthcare to education and hospitality — we understand the workflows, challenges, and growth pressures of each industry we serve."
             className="mb-14"
           />
           {/* Industry collage visual */}
@@ -425,8 +428,9 @@ export default function HomePage() {
       <section className="bg-[#F8FAFB] section-padding">
         <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
           <SectionHeader
-            eyebrow="Case Studies"
-            title="Proof that our systems solve real business problems"
+            eyebrow="Client Results"
+            title="Real businesses. Real systems. Real results."
+            description="Each project in our portfolio is a business challenge solved — with measurable impact on operations, revenue, and growth."
             className="mb-14"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -469,11 +473,11 @@ export default function HomePage() {
                 align="left"
               />
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                <Link href="/contact"
+                <Link href="/book-consultation"
                   className="flex items-center gap-2 px-6 py-3.5 rounded-xl text-white font-semibold text-sm transition-all"
-                  style={{ background: "linear-gradient(135deg, #3B82F6, #2563eb)", boxShadow: "0 4px 20px rgba(59,130,246,0.35)" }}
+                  style={{ background: "linear-gradient(135deg, #F59E0B, #D97706)", boxShadow: "0 4px 20px rgba(245,158,11,0.35)" }}
                 >
-                  Start Your Project
+                  Book a Free Consultation
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link href="/about"
@@ -568,8 +572,8 @@ export default function HomePage() {
         <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
           <SectionHeader
             eyebrow="Client Reviews"
-            title="Real businesses. Real results. Real feedback."
-            description="Our products and systems are running in businesses across Ghana, Nigeria, Kenya, and beyond. Here's what our clients say."
+            title="What our clients say about working with RaveSoft"
+            description="These are real businesses running on systems we built. From retail POS to hospital software — here's what they experienced."
             className="mb-14"
           />
           <TestimonialsSection testimonials={TESTIMONIALS} />
@@ -583,7 +587,7 @@ export default function HomePage() {
                 </svg>
               ))}
             </div>
-            <p className="text-sm text-gray-500 font-medium">5.0 average · 500+ businesses served across Africa</p>
+            <p className="text-sm text-gray-500 font-medium">5.0 average · 100+ businesses served across Africa</p>
           </div>
         </div>
       </section>
@@ -601,18 +605,18 @@ export default function HomePage() {
               />
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/contact"
+                  href="/book-consultation"
                   className="flex items-center gap-2 px-6 py-3.5 rounded-xl text-white font-semibold text-sm transition-all"
-                  style={{ background: "linear-gradient(135deg, #3B82F6, #2563eb)", boxShadow: "0 4px 20px rgba(59,130,246,0.35)" }}
+                  style={{ background: "linear-gradient(135deg, #F59E0B, #D97706)", boxShadow: "0 4px 20px rgba(245,158,11,0.35)" }}
                 >
-                  Get a Free Quote
+                  Book a Free Consultation
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   href="/contact"
                   className="flex items-center gap-2 px-6 py-3.5 rounded-xl border border-gray-300 hover:border-blue-300 text-gray-700 hover:text-blue-700 font-semibold text-sm transition-all hover:bg-blue-50"
                 >
-                  Book a Free Call
+                  Send Us a Message
                 </Link>
               </div>
             </div>

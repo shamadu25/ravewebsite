@@ -20,31 +20,31 @@ export default function Footer() {
         <div className="relative max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10 py-14 lg:py-18">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
             <div>
-              <p className="text-xs font-bold tracking-widest uppercase text-blue-400 mb-3">Get Started</p>
+              <p className="text-xs font-bold tracking-widest uppercase text-amber-400 mb-3">Ready to build?</p>
               <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-2 leading-tight">
-                Ready to build something great?
+                Let's build the system your business needs.
               </h2>
               <p className="text-gray-400 max-w-lg text-sm leading-relaxed">
-                Tell us what you want to build. We will help you create a clear strategy and a system your business can depend on.
+                Tell us what you want to build. We'll help you create a clear strategy, modern design, and a system your business can depend on.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
               <Link
-                href="/contact"
+                href="/book-consultation"
                 className="flex items-center gap-2 px-6 py-3.5 rounded-xl text-white font-semibold text-sm transition-all"
                 style={{
-                  background: "linear-gradient(135deg, #3B82F6, #2563eb)",
-                  boxShadow: "0 4px 20px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.12)"
+                  background: "linear-gradient(135deg, #F59E0B, #D97706)",
+                  boxShadow: "0 4px 20px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.12)"
                 }}
               >
-                Start a Project
+                Book a Free Consultation
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/book-consultation"
+                href="/contact"
                 className="flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 hover:border-white/30 text-white font-semibold text-sm transition-all hover:bg-white/5"
               >
-                Book Consultation
+                Contact Us
               </Link>
             </div>
           </div>

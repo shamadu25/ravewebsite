@@ -5,9 +5,9 @@
 export const COMPANY = {
   name: "RaveSoft Digital Solutions Ltd",
   shortName: "RaveSoft",
-  tagline: "Software, Automation & Digital Transformation for Businesses Across Africa",
+  tagline: "Software Solutions Built to Power Modern African Businesses",
   description:
-    "RaveSoft Digital Solutions Ltd builds premium websites, custom software, SaaS platforms, POS systems, ERP solutions, mobile apps, and automation systems for businesses in Ghana, Nigeria, Kenya, South Africa, Ivory Coast, Senegal, Tanzania, Uganda, Ethiopia, Rwanda, Cameroon, and every country across Africa.",
+    "RaveSoft Digital Solutions Ltd builds custom software, SaaS platforms, POS & ERP systems, mobile apps, AI automation, and premium websites for businesses across Ghana, Nigeria, Kenya, South Africa, Ivory Coast, Senegal, Tanzania, Uganda, Ethiopia, Rwanda, Cameroon, and all 54 African countries.",
   email: "info@ravesoftsolutions.com",
   phone: "0503319610",
   phoneGhana: "0503319610",
@@ -618,49 +618,49 @@ export const TECH_STACK = [
 
 export const WHY_RAVESOFT = [
   {
-    title: "Business-first approach",
+    title: "Business-first thinking",
     description:
-      "We do not just write code. We understand your operations, goals, customers, and growth challenges before we build anything.",
+      "We understand your operations, goals, customers, and growth challenges before writing a single line of code. Technology is just the tool — solving your problem is the goal.",
     icon: "Target",
   },
   {
-    title: "Custom-built systems",
+    title: "Built around your workflow",
     description:
-      "We build around your real workflows instead of forcing your business into generic templates or one-size-fits-all tools.",
+      "We build around how your business actually works, not the other way around. No forcing your processes into a generic template.",
     icon: "Wrench",
   },
   {
-    title: "Software product experience",
+    title: "Products from real experience",
     description:
-      "We have built and operated real software products used by hundreds of businesses, so we understand what it takes to build systems that work in the real world.",
+      "We've built and operated real software products used daily by businesses across Africa — so we know what it takes to build systems that actually work in the real world.",
     icon: "Package",
   },
   {
-    title: "African market understanding",
+    title: "Deep African market knowledge",
     description:
-      "We understand how businesses operate in Ghana, Nigeria, Kenya, South Africa, Ivory Coast, Senegal, Tanzania, Uganda, Ethiopia, Rwanda, Cameroon, and every African market — the challenges, the infrastructure, the local dynamics, and what it takes to build systems that actually work.",
+      "We understand the operational realities of businesses in Ghana, Nigeria, Kenya, South Africa, and every African market — the infrastructure, the people, and what makes software work here.",
     icon: "Globe",
   },
   {
-    title: "Scalable architecture",
+    title: "Built to grow with you",
     description:
-      "We build systems that can grow with your business — from 10 users to 10,000, from one branch to fifty.",
+      "We build systems designed to scale — from 10 users to 10,000, from one branch to fifty, from your first product to your next funding round.",
     icon: "TrendingUp",
   },
   {
-    title: "Long-term support",
+    title: "Long-term partnership",
     description:
-      "We support your system after launch so it continues to improve, adapt, and perform as your business grows.",
+      "We don't disappear after delivery. We support, improve, and evolve your system as your business grows — because your success is how we measure ours.",
     icon: "Shield",
   },
 ];
 
 export const PROOF_ITEMS = [
-  { value: "500+", label: "Businesses supported through our software products" },
-  { value: "100+", label: "Digital solutions delivered" },
-  { value: "10+", label: "Industries served" },
-  { value: "54 Countries", label: "Serving businesses across all 54 African countries" },
-  { value: "End-to-end", label: "Design, development, deployment, and support" },
+  { value: "100+", label: "Businesses running on systems we built" },
+  { value: "20+", label: "Industries served across Africa" },
+  { value: "54", label: "African countries we actively serve" },
+  { value: "5+", label: "Ready-to-deploy software products" },
+  { value: "End-to-end", label: "Strategy, design, build, and support" },
 ];
 
 export const BLOG_POSTS = [
