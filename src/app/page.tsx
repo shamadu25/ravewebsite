@@ -104,114 +104,95 @@ export default function HomePage() {
     <>
       <FAQSchema items={FAQ_ITEMS.map((f) => ({ question: f.question, answer: f.answer }))} />
       {/* HERO */}
-      <section className="relative bg-[#050816] overflow-hidden">
-        {/* Background elements */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Grid */}
-          <div className="absolute inset-0 bg-grid-dark" />
-          {/* Glows */}
-          <div className="absolute top-[-15%] left-[-10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-blue-700/12 rounded-full blur-[140px]" />
-          <div className="absolute bottom-[-10%] right-[-5%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] bg-indigo-800/12 rounded-full blur-[100px]" />
-          <div className="absolute top-1/3 left-1/2 w-[30vw] h-[30vw] max-w-[400px] max-h-[400px] bg-amber-500/4 rounded-full blur-[120px]" />
+      <section className="relative bg-[#050816] overflow-hidden min-h-[90vh] flex items-center">
+        {/* Full-bleed background image */}
+        <div className="absolute inset-0">
+          <Image
+            src="/img/hero1.png"
+            alt="RaveSoft Digital Solutions team — building software systems for businesses across Africa"
+            fill
+            className="object-cover object-[right_top]"
+            priority
+          />
+          {/* Dark base overlay for readability */}
+          <div className="absolute inset-0 bg-[#050816]/65" />
+          {/* Directional gradient — darker left (text area), lighter right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050816]/80 via-[#050816]/50 to-transparent" />
+          {/* Bottom fade so section blends into next */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#050816] to-transparent" />
+          {/* Subtle grid overlay */}
+          <div className="absolute inset-0 bg-grid-dark opacity-20" />
+          {/* Blue glow accent */}
+          <div className="absolute top-[-10%] left-[-5%] w-[50vw] h-[50vw] max-w-[700px] max-h-[700px] bg-blue-700/10 rounded-full blur-[120px]" />
+          <div className="absolute top-1/3 left-1/4 w-[25vw] h-[25vw] max-w-[350px] max-h-[350px] bg-amber-500/5 rounded-full blur-[100px]" />
         </div>
 
-        <div className="relative max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10 pt-32 pb-16 lg:pt-40 lg:pb-24 w-full">
-          <div className="grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-8 items-center">
-            {/* Left: Text content */}
-            <div>
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-7">
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                <span className="text-sm text-amber-400 font-medium">Ghana&apos;s #1 Software Company · Serving All 54 African Countries</span>
-              </div>
-
-              {/* Headline */}
-              <h1 className="text-[2.75rem] sm:text-[3.5rem] lg:text-[4rem] xl:text-[4.5rem] font-black text-white leading-[1.05] tracking-tighter mb-6">
-                Software Solutions Built to{" "}
-                <span style={{
-                  background: "linear-gradient(135deg, #60A5FA 0%, #818CF8 40%, #F59E0B 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text"
-                }}>
-                  Power Modern African
-                </span>{" "}
-                Businesses
-              </h1>
-
-              {/* Subheadline */}
-              <p className="text-gray-400 text-lg leading-relaxed mb-8 max-w-xl">
-                We design, build, and support custom software, SaaS platforms, POS &amp; ERP systems,
-                mobile apps, and AI automation that help businesses across Africa run smarter,
-                grow faster, and compete at a world-class level.
-              </p>
-
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <Link
-                  href="/book-consultation"
-                  className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base transition-all"
-                  style={{
-                    background: "linear-gradient(135deg, #F59E0B, #D97706)",
-                    boxShadow: "0 8px 32px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.15)"
-                  }}
-                >
-                  Book a Free Consultation
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <a
-                  href={`https://wa.me/233503319610?text=Hi%20RaveSoft%2C%20I%27d%20like%20to%20discuss%20a%20project`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/20 hover:border-white/35 text-white font-semibold text-base transition-all hover:bg-white/5"
-                >
-                  Chat on WhatsApp
-                </a>
-              </div>
-
-              {/* Trust indicators */}
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-                {[
-                  "100+ businesses served",
-                  "20+ industries covered",
-                  "Ghana HQ · serving all Africa"
-                ].map((item) => (
-                  <div key={item} className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    <span className="text-sm text-gray-400 font-medium">{item}</span>
-                  </div>
-                ))}
-              </div>
+        <div className="relative w-full max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10 pt-36 pb-20 lg:pt-44 lg:pb-28">
+          {/* Text content — left-aligned, max width to keep readable */}
+          <div className="max-w-[700px]">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 mb-7">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-sm text-amber-300 font-medium">Ghana&apos;s #1 Software Company · Serving All 54 African Countries</span>
             </div>
 
-            {/* Right: Hero image */}
-            <div className="relative lg:pl-4 xl:pl-8">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-900/30 border border-white/10">
-                <Image
-                  src="/img/hero1.png"
-                  alt="RaveSoft Digital Solutions team — building software systems for businesses across Africa"
-                  width={900}
-                  height={600}
-                  className="w-full h-auto object-cover"
-                  priority
-                />
-                {/* Subtle blue gradient overlay for depth */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-indigo-900/20 pointer-events-none" />
-                {/* Glow ring */}
-                <div className="absolute inset-0 rounded-2xl ring-1 ring-blue-500/20 pointer-events-none" />
-              </div>
-              {/* Floating stat badge */}
-              <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-[#050816] border border-white/15 rounded-xl px-4 py-3 shadow-xl">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                  </div>
-                  <div>
-                    <p className="text-white text-xs font-bold leading-none mb-0.5">100+ businesses</p>
-                    <p className="text-gray-400 text-[10px] leading-none">served across Africa</p>
-                  </div>
+            {/* Headline */}
+            <h1 className="text-[2.75rem] sm:text-[3.5rem] lg:text-[4.25rem] xl:text-[5rem] font-black text-white leading-[1.05] tracking-tighter mb-6">
+              Software Solutions{" "}
+              <span className="block">Built to</span>
+              <span style={{
+                background: "linear-gradient(135deg, #60A5FA 0%, #818CF8 45%, #F59E0B 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text"
+              }}>
+                Power Modern African
+              </span>{" "}
+              <span className="block">Businesses</span>
+            </h1>
+
+            {/* Subheadline */}
+            <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-[580px]">
+              We design, build, and support custom software, SaaS platforms, POS &amp; ERP systems,
+              mobile apps, and AI automation that help businesses across Africa run smarter,
+              grow faster, and compete at a world-class level.
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-wrap gap-4 mb-10">
+              <Link
+                href="/book-consultation"
+                className="flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base whitespace-nowrap transition-all"
+                style={{
+                  background: "linear-gradient(135deg, #F59E0B, #D97706)",
+                  boxShadow: "0 8px 32px rgba(245,158,11,0.40), inset 0 1px 0 rgba(255,255,255,0.15)"
+                }}
+              >
+                Book a Free Consultation
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <a
+                href={`https://wa.me/233503319610?text=Hi%20RaveSoft%2C%20I%27d%20like%20to%20discuss%20a%20project`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base whitespace-nowrap transition-all"
+              >
+                Chat on WhatsApp
+              </a>
+            </div>
+
+            {/* Trust indicators */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              {[
+                "100+ businesses served",
+                "20+ industries covered",
+                "Ghana HQ · serving all Africa"
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                  <span className="text-sm text-gray-300 font-medium">{item}</span>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>

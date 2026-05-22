@@ -74,7 +74,7 @@ export default function Header() {
                     onMouseEnter={() => setServicesOpen(true)}
                     onMouseLeave={() => setServicesOpen(false)}
                   >
-                    <button className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-white/6`}>
+                    <button className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 text-gray-300 hover:text-white hover:bg-white/6`}>
                       Services
                       <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${servicesOpen ? "rotate-180 text-blue-400" : ""}`} />
                     </button>
@@ -102,7 +102,7 @@ export default function Header() {
               }
               return (
                 <Link key={link.href} href={link.href}
-                  className={`px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`px-3 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                     pathname === link.href
                       ? "text-blue-400 bg-blue-500/10"
                       : "text-gray-300 hover:text-white hover:bg-white/6"
@@ -122,7 +122,7 @@ export default function Header() {
               Contact
             </Link>
             <Link href="/book-consultation"
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap text-white transition-all duration-200"
               style={{
                 background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
                 boxShadow: "0 4px 20px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"
