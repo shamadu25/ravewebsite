@@ -54,7 +54,7 @@ export default function ProofBar({ stats, dark = false }: ProofBarProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.07 }}
               className={`text-center px-6 py-6 relative ${
-                i < stats.length - 1 ? (dark ? "border-r border-white/8" : "border-r border-gray-100") : ""
+                i < stats.length - 1 ? (dark ? "md:border-r md:border-white/8" : "md:border-r md:border-gray-100") : ""
               } ${i === stats.length - 1 && stats.length % 2 !== 0 ? "col-span-2 md:col-span-1" : ""}`}
             >
               <div className={`text-3xl lg:text-4xl font-black mb-1.5 tracking-tight tabular-nums ${

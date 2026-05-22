@@ -48,7 +48,7 @@ export default function CTASection({
             {subheadline}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-4">
             <Link
               href={primaryCTA.href}
               className="flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base transition-all"

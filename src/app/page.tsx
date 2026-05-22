@@ -143,9 +143,9 @@ export default function HomePage() {
           {/* Text content — left-aligned, max width to keep readable */}
           <div className="max-w-[700px]">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 mb-7 animate-fade-in-up animation-delay-200">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-sm text-amber-300 font-medium">Ghana&apos;s #1 Software Company · Serving All 54 African Countries</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 mb-7 animate-fade-in-up animation-delay-200">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              <span className="text-xs sm:text-sm text-amber-300 font-medium">Ghana&apos;s #1 Software Company · Serving All 54 African Countries</span>
             </div>
 
             {/* Headline */}
@@ -171,10 +171,10 @@ export default function HomePage() {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap gap-4 mb-10 animate-fade-in-up animation-delay-500">
+            <div className="flex flex-col sm:flex-row gap-4 mb-10 animate-fade-in-up animation-delay-500">
               <Link
                 href="/book-consultation"
-                className="flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base whitespace-nowrap transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(245,158,11,0.55)]"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(245,158,11,0.55)]"
                 style={{
                   background: "linear-gradient(135deg, #F59E0B, #D97706)",
                   boxShadow: "0 8px 32px rgba(245,158,11,0.40), inset 0 1px 0 rgba(255,255,255,0.15)"
@@ -187,7 +187,7 @@ export default function HomePage() {
                 href={`https://wa.me/233503319610?text=Hi%20RaveSoft%2C%20I%27d%20like%20to%20discuss%20a%20project`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base whitespace-nowrap transition-all hover:-translate-y-0.5"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all hover:-translate-y-0.5"
               >
                 Chat on WhatsApp
               </a>
