@@ -53,14 +53,16 @@ export default function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0">
-            <Image
-              src="/img/logo.png"
-              alt="RaveSoft Digital Solutions"
-              width={134}
-              height={80}
-              className="h-10 w-auto rounded-lg"
-              priority
-            />
+            <div className="bg-white rounded-xl px-2.5 py-1.5 shadow-sm border border-white/20">
+              <Image
+                src="/img/logo.png"
+                alt="RaveSoft Digital Solutions"
+                width={134}
+                height={80}
+                className="h-8 w-auto"
+                priority
+              />
+            </div>
           </Link>
 
           {/* Desktop Nav */}

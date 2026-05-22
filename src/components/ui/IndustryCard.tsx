@@ -31,10 +31,12 @@ export default function IndustryCard({
     >
       <Link
         href={href}
-        className="group flex flex-col p-7 rounded-2xl bg-white border border-gray-100/80 hover:border-blue-200/80 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 h-full hover:-translate-y-1 relative overflow-hidden"
+        className="group flex flex-col p-7 rounded-2xl bg-white border border-gray-100 hover:border-blue-300/70 hover:shadow-[0_24px_64px_rgba(59,130,246,0.15),0_4px_16px_rgba(59,130,246,0.07)] transition-all duration-300 h-full hover:-translate-y-2 relative overflow-hidden"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/50 group-hover:to-indigo-50/20 transition-all duration-500 pointer-events-none rounded-2xl" />
-        <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center text-blue-600 mb-5 transition-all duration-300 shrink-0"
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/60 group-hover:to-indigo-50/25 transition-all duration-500 pointer-events-none rounded-2xl" />
+        <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          style={{ boxShadow: "inset 0 0 0 1px rgba(59,130,246,0.25)" }} />
+        <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center text-blue-600 mb-5 transition-all duration-300 shrink-0 group-hover:scale-110 group-hover:rotate-3"
           style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(99,102,241,0.07) 100%)", border: "1px solid rgba(59,130,246,0.2)" }}
         >
           <div className="w-5 h-5 [&>svg]:w-5 [&>svg]:h-5">{icon}</div>

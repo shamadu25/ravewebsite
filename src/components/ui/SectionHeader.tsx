@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface SectionHeaderProps {
@@ -18,7 +21,11 @@ export default function SectionHeader({
   className,
 }: SectionHeaderProps) {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         "max-w-3xl",
         align === "center" ? "mx-auto text-center" : "text-left",
@@ -53,6 +60,6 @@ export default function SectionHeader({
           {description}
         </p>
       )}
-    </div>
+    </motion.div>
   );
 }

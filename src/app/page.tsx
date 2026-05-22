@@ -131,13 +131,13 @@ export default function HomePage() {
           {/* Text content — left-aligned, max width to keep readable */}
           <div className="max-w-[700px]">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 mb-7">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 mb-7 animate-fade-in-up animation-delay-200">
               <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
               <span className="text-sm text-amber-300 font-medium">Ghana&apos;s #1 Software Company · Serving All 54 African Countries</span>
             </div>
 
             {/* Headline */}
-            <h1 className="text-[2.75rem] sm:text-[3.5rem] lg:text-[4.25rem] xl:text-[5rem] font-black text-white leading-[1.05] tracking-tighter mb-6">
+            <h1 className="text-[2.75rem] sm:text-[3.5rem] lg:text-[4.25rem] xl:text-[5rem] font-black text-white leading-[1.05] tracking-tighter mb-6 animate-fade-in-up animation-delay-300">
               Software Solutions{" "}
               <span className="block">Built to</span>
               <span style={{
@@ -152,17 +152,17 @@ export default function HomePage() {
             </h1>
 
             {/* Subheadline */}
-            <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-[580px]">
+            <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-[580px] animate-fade-in-up animation-delay-400">
               We design, build, and support custom software, SaaS platforms, POS &amp; ERP systems,
               mobile apps, and AI automation that help businesses across Africa run smarter,
               grow faster, and compete at a world-class level.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap gap-4 mb-10">
+            <div className="flex flex-wrap gap-4 mb-10 animate-fade-in-up animation-delay-500">
               <Link
                 href="/book-consultation"
-                className="flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base whitespace-nowrap transition-all"
+                className="flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base whitespace-nowrap transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(245,158,11,0.55)]"
                 style={{
                   background: "linear-gradient(135deg, #F59E0B, #D97706)",
                   boxShadow: "0 8px 32px rgba(245,158,11,0.40), inset 0 1px 0 rgba(255,255,255,0.15)"
@@ -175,14 +175,14 @@ export default function HomePage() {
                 href={`https://wa.me/233503319610?text=Hi%20RaveSoft%2C%20I%27d%20like%20to%20discuss%20a%20project`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base whitespace-nowrap transition-all"
+                className="flex items-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base whitespace-nowrap transition-all hover:-translate-y-0.5"
               >
                 Chat on WhatsApp
               </a>
             </div>
 
             {/* Trust indicators */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 animate-fade-in-up animation-delay-600">
               {[
                 "100+ businesses served",
                 "20+ industries covered",
@@ -265,21 +265,66 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* AFRICA COVERAGE BELT */}
-      <section className="bg-white border-b border-gray-100 py-10">
-        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <p className="text-xs font-bold tracking-widest uppercase text-gray-400 text-center mb-5">Serving businesses across Africa</p>
-          <div className="flex flex-wrap justify-center gap-2">
+      {/* AFRICA COVERAGE BELT — scrolling marquee */}
+      <section className="bg-[#050816] border-y border-white/6 py-7 overflow-hidden">
+        <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-600 text-center mb-5 px-4">
+          Serving businesses across Africa
+        </p>
+        {/* Row 1 — scrolls left */}
+        <div
+          className="relative overflow-hidden mb-3"
+          style={{ maskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)" }}
+        >
+          <div className="flex animate-marquee whitespace-nowrap gap-3">
             {[
               "Ghana","Nigeria","Kenya","South Africa","Ivory Coast","Senegal",
               "Tanzania","Uganda","Ethiopia","Rwanda","Cameroon","Zimbabwe",
               "Zambia","Mozambique","Botswana","Namibia","Angola","DR Congo",
-              "Côte d'Ivoire","Mali","Burkina Faso","Niger","Chad","Sudan",
-              "Egypt","Morocco","Tunisia","Algeria","Libya","Mauritius",
-              "Madagascar","Malawi","Sierra Leone","Liberia","Guinea",
-              "Togo","Benin","Gambia","Gabon","Congo","Eritrea","Somalia",
-            ].map((country) => (
-              <span key={country} className="px-3 py-1 text-xs font-medium rounded-full bg-gray-50 border border-gray-200 text-gray-600">
+              "Mali","Burkina Faso","Niger","Chad","Sudan","Egypt","Morocco",
+              "Tunisia","Algeria","Mauritius","Madagascar","Malawi",
+              "Sierra Leone","Liberia","Guinea","Togo","Benin","Gambia",
+              "Gabon","Congo","Eritrea","Somalia",
+              "Ghana","Nigeria","Kenya","South Africa","Ivory Coast","Senegal",
+              "Tanzania","Uganda","Ethiopia","Rwanda","Cameroon","Zimbabwe",
+              "Zambia","Mozambique","Botswana","Namibia","Angola","DR Congo",
+              "Mali","Burkina Faso","Niger","Chad","Sudan","Egypt","Morocco",
+              "Tunisia","Algeria","Mauritius","Madagascar","Malawi",
+              "Sierra Leone","Liberia","Guinea","Togo","Benin","Gambia",
+              "Gabon","Congo","Eritrea","Somalia",
+            ].map((country, i) => (
+              <span
+                key={i}
+                className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/5 border border-white/8 text-gray-400"
+              >
+                {country}
+              </span>
+            ))}
+          </div>
+        </div>
+        {/* Row 2 — scrolls right (reversed) */}
+        <div
+          className="relative overflow-hidden"
+          style={{ maskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)" }}
+        >
+          <div className="flex animate-marquee-reverse whitespace-nowrap gap-3">
+            {[
+              "Morocco","Tunisia","Algeria","Libya","Egypt","Sudan","Ethiopia",
+              "Eritrea","Somalia","Kenya","Tanzania","Uganda","Rwanda","Burundi",
+              "Mozambique","Zimbabwe","Zambia","Malawi","Madagascar","Mauritius",
+              "South Africa","Botswana","Namibia","Angola","DR Congo","Congo",
+              "Gabon","Cameroon","Nigeria","Ghana","Ivory Coast","Senegal",
+              "Mali","Guinea","Sierra Leone","Liberia","Togo","Benin","Gambia",
+              "Morocco","Tunisia","Algeria","Libya","Egypt","Sudan","Ethiopia",
+              "Eritrea","Somalia","Kenya","Tanzania","Uganda","Rwanda","Burundi",
+              "Mozambique","Zimbabwe","Zambia","Malawi","Madagascar","Mauritius",
+              "South Africa","Botswana","Namibia","Angola","DR Congo","Congo",
+              "Gabon","Cameroon","Nigeria","Ghana","Ivory Coast","Senegal",
+              "Mali","Guinea","Sierra Leone","Liberia","Togo","Benin","Gambia",
+            ].map((country, i) => (
+              <span
+                key={i}
+                className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-blue-500/8 border border-blue-500/15 text-blue-400/70"
+              >
                 {country}
               </span>
             ))}

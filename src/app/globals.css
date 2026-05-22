@@ -281,3 +281,96 @@
     padding-bottom: 7rem;
   }
 }
+
+/* ============================================
+   MARQUEE ANIMATION
+   ============================================ */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse 40s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee:hover,
+.animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
+
+/* ============================================
+   HERO ENTRANCE ANIMATIONS
+   ============================================ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade-in-left {
+  animation: fadeInLeft 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+.animation-delay-500 { animation-delay: 500ms; }
+.animation-delay-600 { animation-delay: 600ms; }
+.animation-delay-700 { animation-delay: 700ms; }
+.animation-delay-800 { animation-delay: 800ms; }
+
+/* ============================================
+   PREMIUM CARD GLOW BORDER
+   ============================================ */
+.card-glow-hover {
+  position: relative;
+}
+
+.card-glow-hover::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(59,130,246,0.5), rgba(99,102,241,0.3), rgba(59,130,246,0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.card-glow-hover:hover::after {
+  opacity: 1;
+}
