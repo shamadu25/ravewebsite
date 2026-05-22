@@ -12,6 +12,36 @@
       "priority": true,
       "statusCode": 308,
       "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    },
+    {
+      "source": "/contacts",
+      "destination": "/contact",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/contacts(?:/)?$"
+    },
+    {
+      "source": "/about-us",
+      "destination": "/about",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/about-us(?:/)?$"
+    },
+    {
+      "source": "/portfolio",
+      "destination": "/case-studies",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/portfolio(?:/)?$"
+    },
+    {
+      "source": "/our-services",
+      "destination": "/services",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/our-services(?:/)?$"
+    },
+    {
+      "source": "/blog-post/:slug",
+      "destination": "/blog/:slug",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/blog-post(?:/([^/]+?))(?:/)?$"
     }
   ],
   "headers": [],

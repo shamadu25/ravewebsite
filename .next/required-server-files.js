@@ -306,7 +306,34 @@ self.__SERVER_FILES_MANIFEST={
     "turbopack": {
       "root": "/Users/saheedabdulhakeem/Documents/ravesoft-website/ravewebsite"
     },
-    "distDirRoot": ".next"
+    "distDirRoot": ".next",
+    "_originalRedirects": [
+      {
+        "source": "/contacts",
+        "destination": "/contact",
+        "permanent": true
+      },
+      {
+        "source": "/about-us",
+        "destination": "/about",
+        "permanent": true
+      },
+      {
+        "source": "/portfolio",
+        "destination": "/case-studies",
+        "permanent": true
+      },
+      {
+        "source": "/our-services",
+        "destination": "/services",
+        "permanent": true
+      },
+      {
+        "source": "/blog-post/:slug",
+        "destination": "/blog/:slug",
+        "permanent": true
+      }
+    ]
   },
   "appDir": "/Users/saheedabdulhakeem/Documents/ravesoft-website/ravewebsite",
   "relativeAppDir": "",

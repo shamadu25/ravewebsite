@@ -5,7 +5,7 @@ type AppRoutes = "/" | "/about" | "/blog" | "/blog/[slug]" | "/book-consultation
 type AppRouteHandlerRoutes = "/api/contact" | "/api/og"
 type PageRoutes = never
 type LayoutRoutes = "/"
-type RedirectRoutes = never
+type RedirectRoutes = "/about-us" | "/blog-post/[slug]" | "/contacts" | "/our-services" | "/portfolio"
 type RewriteRoutes = never
 type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRoutes | AppRouteHandlerRoutes
 
@@ -13,16 +13,21 @@ type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRo
 interface ParamMap {
   "/": {}
   "/about": {}
+  "/about-us": {}
   "/api/contact": {}
   "/api/og": {}
   "/blog": {}
+  "/blog-post/[slug]": { "slug": string; }
   "/blog/[slug]": { "slug": string; }
   "/book-consultation": {}
   "/case-studies": {}
   "/case-studies/[slug]": { "slug": string; }
   "/contact": {}
+  "/contacts": {}
   "/industries": {}
   "/industries/[id]": { "id": string; }
+  "/our-services": {}
+  "/portfolio": {}
   "/privacy": {}
   "/products": {}
   "/products/cliqpos": {}
