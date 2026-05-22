@@ -1,0 +1,4 @@
+Options -Indexes
+
+RewriteEngine On
+RewriteRule ^(.*)$ unix:/tmp/rave_ravesoft.sock|http://ravesoftsolutions.com/$1 [P,L,NE]
