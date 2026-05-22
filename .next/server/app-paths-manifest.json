@@ -5,15 +5,16 @@
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/robots.txt/route": "app/robots.txt/route.js",
   "/sitemap.xml/route": "app/sitemap.xml/route.js",
-  "/blog/page": "app/blog/page.js",
+  "/api/og/route": "app/api/og/route.js",
   "/about/page": "app/about/page.js",
-  "/case-studies/page": "app/case-studies/page.js",
+  "/blog/page": "app/blog/page.js",
   "/book-consultation/page": "app/book-consultation/page.js",
   "/case-studies/[slug]/page": "app/case-studies/[slug]/page.js",
+  "/case-studies/page": "app/case-studies/page.js",
   "/contact/page": "app/contact/page.js",
   "/blog/[slug]/page": "app/blog/[slug]/page.js",
-  "/industries/[id]/page": "app/industries/[id]/page.js",
   "/industries/page": "app/industries/page.js",
+  "/industries/[id]/page": "app/industries/[id]/page.js",
   "/privacy/page": "app/privacy/page.js",
   "/page": "app/page.js",
   "/products/cliqpos/page": "app/products/cliqpos/page.js",
@@ -29,6 +30,5 @@
   "/services/pos-erp/page": "app/services/pos-erp/page.js",
   "/services/saas-development/page": "app/services/saas-development/page.js",
   "/services/website-design/page": "app/services/website-design/page.js",
-  "/terms/page": "app/terms/page.js",
-  "/api/og/route": "app/api/og/route.js"
+  "/terms/page": "app/terms/page.js"
 }

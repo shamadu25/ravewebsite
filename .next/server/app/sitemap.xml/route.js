@@ -13,4 +13,4 @@
 `].filter(Boolean).join("\n");if(i.lastModified){let a=i.lastModified instanceof Date?i.lastModified.toISOString():i.lastModified;e+=`<lastmod>${a}</lastmod>
 `}i.changeFrequency&&(e+=`<changefreq>${i.changeFrequency}</changefreq>
 `),"number"==typeof i.priority&&(e+=`<priority>${i.priority}</priority>
-`),e+="</url>\n"}return e+"</urlset>\n"}function i(a){return JSON.stringify(a)}function j(a,b){return"robots"===b?g(a):"sitemap"===b?h(a):"manifest"===b?i(a):""}}};var b=require("../../webpack-runtime.js");b.C(a);var c=b.X(0,[445,813,21],()=>b(b.s=33460));module.exports=c})();
+`),e+="</url>\n"}return e+"</urlset>\n"}function i(a){return JSON.stringify(a)}function j(a,b){return"robots"===b?g(a):"sitemap"===b?h(a):"manifest"===b?i(a):""}}};var b=require("../../webpack-runtime.js");b.C(a);var c=b.X(0,[741,813,21],()=>b(b.s=33460));module.exports=c})();
