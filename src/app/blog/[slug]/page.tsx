@@ -5,6 +5,7 @@ import { ArrowRight, Clock, Tag, User, Calendar } from "lucide-react";
 import { BLOG_POSTS } from "@/lib/data";
 import CTASection from "@/components/ui/CTASection";
 import ArticleSchema from "@/components/seo/ArticleSchema";
+import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 
 type BlogSlugParams = { params: Promise<{ slug: string }> };
 
@@ -1290,6 +1291,11 @@ export default async function BlogPostPage({ params }: BlogSlugParams) {
         datePublished={post.date}
         slug={post.slug}
       />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "https://ravesoftsolutions.com" },
+        { name: "Blog", url: "https://ravesoftsolutions.com/blog" },
+        { name: post.title, url: `https://ravesoftsolutions.com/blog/${post.slug}` },
+      ]} />
       {/* HERO */}
       <section className="bg-[#050816] pt-32 pb-16 lg:pt-40">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 lg:px-10">

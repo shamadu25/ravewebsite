@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CheckCircle2, ArrowRight, Tag, Building2, Zap } from "lucide-react";
 import { CASE_STUDIES } from "@/lib/data";
 import CTASection from "@/components/ui/CTASection";
+import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 
 type CaseStudySlugParams = { params: Promise<{ slug: string }> };
 
@@ -37,6 +38,11 @@ export default async function CaseStudyPage({ params }: CaseStudySlugParams) {
 
   return (
     <>
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "https://ravesoftsolutions.com" },
+        { name: "Case Studies", url: "https://ravesoftsolutions.com/case-studies" },
+        { name: cs.title, url: `https://ravesoftsolutions.com/case-studies/${cs.slug}` },
+      ]} />
       {/* HERO */}
       <section className="bg-[#050816] pt-32 pb-16 lg:pt-40">
         <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">

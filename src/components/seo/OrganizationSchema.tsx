@@ -1,7 +1,7 @@
 export default function OrganizationSchema() {
   const schema = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "LocalBusiness", "ProfessionalService"],
     name: "RaveSoft Digital Solutions Ltd",
     alternateName: "RaveSoft",
     url: "https://ravesoftsolutions.com",

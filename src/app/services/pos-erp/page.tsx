@@ -4,6 +4,8 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
+import FAQSchema from "@/components/seo/FAQSchema";
+import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 
 export const metadata: Metadata = {
   title: "POS System & ERP Software in Ghana | RaveSoft Digital Solutions",
@@ -63,6 +65,12 @@ const FAQS = [
 export default function PosErpPage() {
   return (
     <>
+      <FAQSchema items={FAQS.map(f => ({ question: f.q, answer: f.a }))} />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "https://ravesoftsolutions.com" },
+        { name: "Services", url: "https://ravesoftsolutions.com/services" },
+        { name: "POS & ERP Solutions", url: "https://ravesoftsolutions.com/services/pos-erp" },
+      ]} />
       {/* HERO */}
       <section className="relative bg-[#050816] pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">

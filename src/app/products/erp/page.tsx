@@ -5,6 +5,8 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
+import FAQSchema from "@/components/seo/FAQSchema";
+import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 
 export const metadata: Metadata = {
   title: "ERP System Ghana | Business Management Software for African Companies | RaveSoft",
@@ -72,6 +74,12 @@ export default function ERPSystemPage() {
         features={FEATURES}
         offers={{ priceDescription: "Contact for pricing" }}
       />
+      <FAQSchema items={FAQS.map(f => ({ question: f.q, answer: f.a }))} />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "https://ravesoftsolutions.com" },
+        { name: "Products", url: "https://ravesoftsolutions.com/products" },
+        { name: "ERP System", url: "https://ravesoftsolutions.com/products/erp" },
+      ]} />
       {/* HERO */}
       <section className="relative bg-[#050816] pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">

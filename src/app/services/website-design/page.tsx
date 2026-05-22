@@ -4,6 +4,8 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
+import FAQSchema from "@/components/seo/FAQSchema";
+import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 
 export const metadata: Metadata = {
   title: "Website Design Company in Ghana | Professional Web Development | RaveSoft",
@@ -61,6 +63,12 @@ const FAQS = [
 export default function WebsiteDesignPage() {
   return (
     <>
+      <FAQSchema items={FAQS.map(f => ({ question: f.q, answer: f.a }))} />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "https://ravesoftsolutions.com" },
+        { name: "Services", url: "https://ravesoftsolutions.com/services" },
+        { name: "Website Design & Development", url: "https://ravesoftsolutions.com/services/website-design" },
+      ]} />
       {/* HERO */}
       <section className="relative bg-[#050816] pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
