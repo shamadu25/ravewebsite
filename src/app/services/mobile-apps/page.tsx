@@ -6,9 +6,17 @@ import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 
 export const metadata: Metadata = {
-  title: "Mobile App Development | RaveSoft Digital Solutions",
+  title: "Mobile App Development in Ghana & Africa | Android & iOS Apps | RaveSoft",
   description:
-    "RaveSoft builds cross-platform mobile applications for iOS and Android — customer apps, operations tools, field service apps, and mobile portals for businesses.",
+    "Top mobile app development company in Ghana. We build Android and iOS apps for customer portals, delivery, bookings, staff operations, and mobile-first business systems across Africa.",
+  keywords: [
+    "mobile app development Ghana",
+    "app development company Ghana",
+    "Android app development Ghana",
+    "iOS app development Ghana",
+    "mobile app development Africa",
+    "React Native developer Ghana",
+  ],
 };
 
 const FEATURES = [

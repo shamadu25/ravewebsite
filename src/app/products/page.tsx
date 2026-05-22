@@ -7,9 +7,18 @@ import CTASection from "@/components/ui/CTASection";
 import { PRODUCTS } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Software Products | RaveSoft Digital Solutions",
+  title: "Business Software Products in Ghana | POS, ERP, Hospital, School & Hotel Systems",
   description:
-    "Explore RaveSoft's suite of business software products: CliqPOS, ERP systems, hospital management, school management, and hotel management platforms.",
+    "Explore RaveSoft's ready-to-deploy business software products for Ghana and Africa: CliqPOS (cloud POS), ERP system, hospital management, school management, and hotel management systems.",
+  keywords: [
+    "software products Ghana",
+    "POS system Ghana",
+    "ERP system Ghana",
+    "hospital management system Ghana",
+    "school management system Ghana",
+    "hotel management software Ghana",
+    "business software products Africa",
+  ],
 };
 
 export default function ProductsPage() {

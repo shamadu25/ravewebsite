@@ -7,9 +7,15 @@ import CTASection from "@/components/ui/CTASection";
 import { CASE_STUDIES } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Case Studies | RaveSoft Digital Solutions",
+  title: "Software Case Studies Ghana | Real Results for African Businesses | RaveSoft",
   description:
-    "Real results from real businesses. See how RaveSoft has helped companies across retail, healthcare, education, and more with custom software, automation, and digital solutions.",
+    "See how RaveSoft has helped businesses across Ghana and Africa with custom software, POS systems, ERP, hospital management, and website development — real projects, real results.",
+  keywords: [
+    "software case studies Ghana",
+    "RaveSoft projects",
+    "software company results Ghana",
+    "custom software success stories Africa",
+  ],
 };
 
 export default function CaseStudiesPage() {

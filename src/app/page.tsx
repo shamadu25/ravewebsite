@@ -54,9 +54,21 @@ import {
 } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "RaveSoft Digital Solutions | #1 Software Company in Ghana & Africa",
+  title: "Software Company in Ghana | Custom Software, POS, ERP & Web Development — RaveSoft",
   description:
-    "RaveSoft Digital Solutions builds custom software, SaaS platforms, POS & ERP systems, mobile apps, AI automation, and premium websites for businesses across Ghana, Nigeria, Kenya, South Africa, and all 54 African countries.",
+    "RaveSoft is Ghana's #1 software company. We build custom software, POS systems, ERP, mobile apps, SaaS products, and premium websites for businesses across Ghana, Nigeria, Kenya, South Africa, and all 54 African countries.",
+  keywords: [
+    "software company in Ghana",
+    "software development company Ghana",
+    "tech company Ghana",
+    "custom software Ghana",
+    "POS system Ghana",
+    "ERP system Ghana",
+    "website design Ghana",
+    "mobile app development Ghana",
+    "SaaS development Africa",
+    "RaveSoft",
+  ],
 };
 
 const SERVICE_ICONS: Record<string, React.ReactNode> = {

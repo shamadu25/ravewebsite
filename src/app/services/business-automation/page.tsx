@@ -7,9 +7,17 @@ import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 
 export const metadata: Metadata = {
-  title: "Business Automation | RaveSoft Digital Solutions",
+  title: "Business Automation & AI Solutions in Ghana | WhatsApp Automation | RaveSoft",
   description:
-    "Automate your business workflows with custom automation systems built by RaveSoft. Connect your tools, eliminate manual tasks, and run operations at scale.",
+    "Business automation and AI solutions for companies in Ghana, Nigeria, and Africa. WhatsApp automation, CRM automation, AI workflows, and reporting automation to save your team hours every week.",
+  keywords: [
+    "business automation Ghana",
+    "WhatsApp automation Ghana",
+    "AI automation Ghana",
+    "business process automation Africa",
+    "CRM automation Ghana",
+    "workflow automation Ghana",
+  ],
 };
 
 const FEATURES = [

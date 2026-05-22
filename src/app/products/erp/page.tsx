@@ -7,9 +7,17 @@ import FAQAccordion from "@/components/ui/FAQAccordion";
 import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
 
 export const metadata: Metadata = {
-  title: "ERP System — Enterprise Resource Planning for African Businesses | RaveSoft",
+  title: "ERP System Ghana | Business Management Software for African Companies | RaveSoft",
   description:
-    "RaveSoft builds custom ERP systems for businesses that need sales, inventory, HR, accounting, procurement, and multi-department management in one unified platform.",
+    "Best ERP system in Ghana. Complete business management software covering sales, inventory, HR, accounting, procurement, and reporting for SMEs and enterprises across Africa.",
+  keywords: [
+    "ERP system Ghana",
+    "ERP software Ghana",
+    "ERP for African businesses",
+    "business management software Ghana",
+    "enterprise resource planning Ghana",
+    "inventory management system Ghana",
+  ],
 };
 
 const FEATURES = [

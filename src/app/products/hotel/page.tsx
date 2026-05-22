@@ -8,9 +8,17 @@ import FAQAccordion from "@/components/ui/FAQAccordion";
 import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
 
 export const metadata: Metadata = {
-  title: "Hotel Management System | RaveSoft Digital Solutions",
+  title: "Hotel Management Software Ghana | Hotel PMS & Hospitality System | RaveSoft",
   description:
-    "RaveSoft's Hotel Management System covers room booking, guest management, billing, housekeeping, staff operations, and revenue reporting for hotels and hospitality businesses.",
+    "Best hotel management software in Ghana. Complete hotel PMS covering reservations, front desk, billing, housekeeping, and reporting for hotels and hospitality businesses across Africa.",
+  keywords: [
+    "hotel management software Ghana",
+    "hotel management system Ghana",
+    "hotel PMS Ghana",
+    "property management system Ghana",
+    "hospitality software Ghana",
+    "hotel software Africa",
+  ],
 };
 
 const FEATURES = [

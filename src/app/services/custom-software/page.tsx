@@ -7,9 +7,17 @@ import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 
 export const metadata: Metadata = {
-  title: "Custom Software Development | RaveSoft Digital Solutions",
+  title: "Custom Software Development in Ghana & Africa | RaveSoft Digital Solutions",
   description:
-    "RaveSoft builds custom software systems tailored to your exact business operations. From workflow tools to enterprise platforms — we build it your way.",
+    "Custom software development for businesses in Ghana, Nigeria, Kenya and Africa. We build ERP, CRM, inventory management systems, dashboards, portals, and workflow tools tailored to your operations.",
+  keywords: [
+    "custom software development Ghana",
+    "software developers Ghana",
+    "custom ERP system Ghana",
+    "bespoke software development Africa",
+    "software development company Ghana",
+    "business software Ghana",
+  ],
 };
 
 const FEATURES = [

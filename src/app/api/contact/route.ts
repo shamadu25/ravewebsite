@@ -58,7 +58,8 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err) {
+    console.error("[contact/route] SMTP error:", err);
     return NextResponse.json({ error: "Failed to send message. Please try again." }, { status: 500 });
   }
 }

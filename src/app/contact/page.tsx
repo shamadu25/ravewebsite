@@ -5,9 +5,16 @@ import ContactForm from "@/components/ui/ContactForm";
 import { COMPANY } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Contact Us | RaveSoft Digital Solutions",
+  title: "Contact RaveSoft | Software Company in Ghana — Get a Free Consultation",
   description:
-    "Get in touch with RaveSoft Digital Solutions. We are based in Accra, Ghana and actively work with clients across all 54 African countries and internationally.",
+    "Contact RaveSoft Digital Solutions — Ghana's leading software company. Book a free consultation for custom software, POS, ERP, website design, mobile apps, or business automation.",
+  keywords: [
+    "contact RaveSoft",
+    "software company Ghana contact",
+    "hire software developer Ghana",
+    "software consultation Ghana",
+    "get a quote software Ghana",
+  ],
 };
 
 const CONTACT_ITEMS = [

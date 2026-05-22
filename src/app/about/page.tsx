@@ -6,9 +6,16 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 
 export const metadata: Metadata = {
-  title: "About RaveSoft | Software & Digital Transformation Company in Ghana",
+  title: "About RaveSoft | Software Company in Ghana Serving All of Africa",
   description:
-    "RaveSoft Digital Solutions Ltd is a Ghana-based software and digital transformation company serving businesses across all African countries — building websites, software, automation systems, and digital platforms that improve operations and drive growth.",
+    "RaveSoft Digital Solutions is Ghana's leading software company. Based in Accra, we've built custom software, POS systems, ERP, and web solutions for 100+ businesses across 54 African countries.",
+  keywords: [
+    "about RaveSoft",
+    "software company Ghana",
+    "software development company Accra",
+    "Ghana tech company",
+    "African software company",
+  ],
 };
 
 const TEAM = [

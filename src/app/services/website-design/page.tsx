@@ -6,9 +6,17 @@ import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 
 export const metadata: Metadata = {
-  title: "Website Design & Development | RaveSoft Digital Solutions",
+  title: "Website Design Company in Ghana | Professional Web Development | RaveSoft",
   description:
-    "RaveSoft designs and builds professional, conversion-focused websites for businesses, startups, NGOs, and enterprises. Fast, SEO-optimized, and mobile-first.",
+    "Best website design company in Ghana. We design and build professional corporate websites, e-commerce stores, NGO websites, and landing pages that rank on Google and convert visitors into leads.",
+  keywords: [
+    "website design Ghana",
+    "web design company Ghana",
+    "website development Ghana",
+    "web development company Ghana",
+    "e-commerce website Ghana",
+    "professional website design Africa",
+  ],
 };
 
 const FEATURES = [

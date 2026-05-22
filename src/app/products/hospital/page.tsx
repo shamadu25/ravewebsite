@@ -8,9 +8,17 @@ import FAQAccordion from "@/components/ui/FAQAccordion";
 import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
 
 export const metadata: Metadata = {
-  title: "Hospital Management System | RaveSoft Digital Solutions",
+  title: "Hospital Management System Ghana | Healthcare Software for Hospitals & Clinics",
   description:
-    "RaveSoft's Hospital Management System covers patient records, appointments, billing, pharmacy, lab management, and staff operations for hospitals and clinics.",
+    "Best hospital management system in Ghana. Patient records, billing, appointments, pharmacy, lab management, and staff profiles for hospitals, clinics, and medical centres across Africa.",
+  keywords: [
+    "hospital management system Ghana",
+    "hospital management software Ghana",
+    "clinic management software Ghana",
+    "healthcare software Ghana",
+    "patient management system Ghana",
+    "hospital software Africa",
+  ],
 };
 
 const FEATURES = [

@@ -8,9 +8,19 @@ import FAQAccordion from "@/components/ui/FAQAccordion";
 import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
 
 export const metadata: Metadata = {
-  title: "CliqPOS — Cloud POS System for Retail & Hospitality | RaveSoft",
+  title: "CliqPOS — Best Cloud POS System in Ghana | Retail & Restaurant POS Software",
   description:
-    "CliqPOS is RaveSoft's cloud-based Point of Sale and business management system for retail, restaurants, supermarkets, pharmacies, and multi-branch businesses in Ghana and Africa.",
+    "CliqPOS is the best cloud POS system in Ghana. Manage sales, inventory, branches, staff, and reports for retail, supermarkets, restaurants, pharmacies, and wholesale businesses.",
+  keywords: [
+    "best POS system Ghana",
+    "cloud POS Ghana",
+    "retail POS system Ghana",
+    "restaurant POS Ghana",
+    "CliqPOS",
+    "POS software Ghana",
+    "supermarket POS Ghana",
+    "pharmacy POS Ghana",
+  ],
 };
 
 const FEATURES = [

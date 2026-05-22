@@ -15,9 +15,18 @@ import CTASection from "@/components/ui/CTASection";
 import { SERVICES } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Services | RaveSoft Digital Solutions",
+  title: "Software Development Services in Ghana & Africa | RaveSoft Digital Solutions",
   description:
-    "Explore all services offered by RaveSoft: custom software development, SaaS platforms, website design, mobile apps, business automation, and POS/ERP systems.",
+    "Full-service software company in Ghana — custom software development, SaaS platforms, website design, mobile app development, business automation, and POS/ERP systems for businesses across Africa.",
+  keywords: [
+    "software services Ghana",
+    "custom software development Ghana",
+    "website design Ghana",
+    "mobile app development Ghana",
+    "business automation Ghana",
+    "POS system Ghana",
+    "software company services Africa",
+  ],
 };
 
 const SERVICE_ICONS: Record<string, React.ReactNode> = {

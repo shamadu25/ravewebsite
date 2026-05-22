@@ -19,9 +19,18 @@ import CTASection from "@/components/ui/CTASection";
 import { INDUSTRIES } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Industries | RaveSoft Digital Solutions",
+  title: "Industry Software Solutions in Ghana | Retail, Healthcare, Education & More | RaveSoft",
   description:
-    "RaveSoft builds technology solutions for retail, healthcare, education, hospitality, NGOs, logistics, real estate, professional services, and more.",
+    "Software solutions for every industry in Ghana and Africa. RaveSoft builds technology for retail, healthcare, education, hospitality, logistics, manufacturing, and 20+ other industries.",
+  keywords: [
+    "industry software solutions Ghana",
+    "retail software Ghana",
+    "healthcare software Ghana",
+    "education software Ghana",
+    "hospitality software Ghana",
+    "logistics software Ghana",
+    "manufacturing software Ghana",
+  ],
 };
 
 const INDUSTRY_ICONS: Record<string, React.ReactNode> = {

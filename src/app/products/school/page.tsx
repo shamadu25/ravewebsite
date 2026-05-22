@@ -8,9 +8,17 @@ import FAQAccordion from "@/components/ui/FAQAccordion";
 import SoftwareAppSchema from "@/components/seo/SoftwareAppSchema";
 
 export const metadata: Metadata = {
-  title: "School Management System | RaveSoft Digital Solutions",
+  title: "School Management System Ghana | School Software for African Schools | RaveSoft",
   description:
-    "RaveSoft's School Management System covers admissions, fees, attendance, results, parent communication, and staff management for schools and colleges.",
+    "Best school management software in Ghana. Manage admissions, fees, results, student records, timetables, and staff for schools and educational institutions across Africa.",
+  keywords: [
+    "school management system Ghana",
+    "school management software Ghana",
+    "school ERP Ghana",
+    "school fees management software Ghana",
+    "student management system Ghana",
+    "school software Africa",
+  ],
 };
 
 const FEATURES = [

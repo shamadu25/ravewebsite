@@ -6,18 +6,20 @@ import CTASection from "@/components/ui/CTASection";
 import { BLOG_POSTS } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Blog | RaveSoft Digital Solutions — Software Insights for African Businesses",
+  title: "Software Blog Ghana | POS, ERP, Custom Software & Tech Guides | RaveSoft",
   description:
-    "Practical guides on POS systems, custom software costs, hospital management software, school management systems, hotel software, HR & payroll, and why RaveSoft is the best software company in Ghana and Africa.",
+    "Practical guides for African businesses on POS systems, custom software costs, hospital management, school management, hotel software, ERP, and why RaveSoft is the #1 software company in Ghana and Africa.",
   keywords: [
     "best POS system Ghana",
     "software companies in Ghana",
     "custom software development cost Ghana",
-    "hospital management system Nigeria Ghana",
+    "hospital management system Ghana Nigeria",
     "school management system Ghana",
-    "hotel management system Africa",
+    "hotel management software Africa",
+    "ERP system Ghana",
     "HR payroll software Ghana Nigeria",
     "RaveSoft software company",
+    "software blog Africa",
   ],
 };
 

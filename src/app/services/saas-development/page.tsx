@@ -6,9 +6,17 @@ import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 
 export const metadata: Metadata = {
-  title: "SaaS Development | RaveSoft Digital Solutions",
+  title: "SaaS Development Company in Africa | MVP & SaaS Product Development | RaveSoft",
   description:
-    "We design and build Software-as-a-Service (SaaS) platforms from the ground up — subscription models, multi-tenancy, dashboards, billing, and scalable infrastructure.",
+    "Build your SaaS product with Africa's leading SaaS development company. RaveSoft builds MVPs, subscription platforms, multi-tenant apps, and admin dashboards for startups and companies across Africa.",
+  keywords: [
+    "SaaS development company Africa",
+    "SaaS development Ghana",
+    "MVP development Africa",
+    "build SaaS Africa",
+    "SaaS product development Ghana",
+    "software as a service Ghana",
+  ],
 };
 
 const FEATURES = [

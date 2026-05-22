@@ -6,9 +6,18 @@ import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 
 export const metadata: Metadata = {
-  title: "POS & ERP Systems | RaveSoft Digital Solutions",
+  title: "POS System & ERP Software in Ghana | RaveSoft Digital Solutions",
   description:
-    "RaveSoft builds custom POS (Point of Sale) and ERP (Enterprise Resource Planning) systems for retail, hospitality, manufacturing, and service businesses in Ghana and Africa.",
+    "Best POS system and ERP software in Ghana. We build retail POS, restaurant POS, hotel systems, school systems, hospital systems, and custom ERP platforms for businesses across Africa.",
+  keywords: [
+    "POS system Ghana",
+    "POS software Ghana",
+    "ERP system Ghana",
+    "retail POS Ghana",
+    "restaurant POS Ghana",
+    "ERP software Ghana",
+    "point of sale system Ghana",
+  ],
 };
 
 const FEATURES = [
