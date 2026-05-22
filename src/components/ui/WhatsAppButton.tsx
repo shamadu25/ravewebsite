@@ -1,6 +1,7 @@
 "use client";
 
 import { COMPANY } from "@/lib/data";
+import { trackEvent } from "@/lib/utils";
 
 export default function WhatsAppButton() {
   const url = `https://wa.me/${COMPANY.whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent("Hi RaveSoft! I'd like to discuss a project.")}`;
@@ -11,6 +12,7 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"
+      onClick={() => trackEvent("whatsapp_click", { location: "floating_button" })}
       className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[0_8px_32px_rgba(37,211,102,0.45)] hover:shadow-[0_12px_40px_rgba(37,211,102,0.6)] hover:scale-110 transition-all duration-200"
       style={{ background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)" }}
     >

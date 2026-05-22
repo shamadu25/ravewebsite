@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Send, CheckCircle2, Loader2 } from "lucide-react";
 import { PROJECT_TYPES, BUDGET_RANGES, COMPANY } from "@/lib/data";
+import { trackEvent } from "@/lib/utils";
 
 interface FormState {
   fullName: string;
@@ -59,6 +60,11 @@ export default function ContactForm() {
     }
     setStatus("success");
     setForm(initialState);
+    trackEvent("generate_lead", {
+      event_category: "contact_form",
+      project_type: form.projectType || "unspecified",
+      budget: form.budget || "unspecified",
+    });
   }
 
   function handleChange(

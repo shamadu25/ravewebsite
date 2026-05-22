@@ -551,6 +551,52 @@ export const CASE_STUDIES = [
     technologies: ["Laravel", "MySQL", "Tailwind CSS", "Livewire"],
     impact: "Streamlined admin",
   },
+  {
+    id: "splendy-mart",
+    title: "Splendy Mart — Multi-Branch POS & Retail Management",
+    slug: "splendy-mart",
+    industry: "Retail & Supermarkets",
+    tag: "Software",
+    problem:
+      "Splendy Mart, a growing supermarket with branches across Accra and Tema, was struggling with inaccurate stock tracking, slow checkout queues, theft, and zero visibility across branches. Sales were recorded manually, stock counts drifted daily, and managers had no real-time data to act on.",
+    solution:
+      "RaveSoft deployed a full retail POS and management system across all Splendy Mart branches, with centralised inventory tracking, barcode-based checkout, real-time branch dashboards, theft alert triggers, and automated daily reconciliation.",
+    result:
+      "Faster checkout at every register, significant reduction in stock discrepancies and theft incidents, and full real-time visibility across all Accra and Tema branches from a single management dashboard.",
+    features: [
+      "Multi-branch POS with real-time sync",
+      "Barcode scanning for fast checkout",
+      "Centralised inventory management",
+      "Stock discrepancy and theft alerts",
+      "Branch-level sales and performance reporting",
+      "Automated end-of-day reconciliation",
+    ],
+    technologies: ["Laravel", "Livewire", "MySQL", "Tailwind CSS", "REST API"],
+    impact: "Faster checkout & zero stock gaps",
+  },
+  {
+    id: "mobile-doctors",
+    title: "Mobile Doctors Ltd — Pharmacy Management System",
+    slug: "mobile-doctors",
+    industry: "Healthcare & Pharmacy",
+    tag: "Software",
+    problem:
+      "Mobile Doctors Ltd in Spintex, Accra was managing pharmacy inventory and sales manually, leading to stock errors, missed expiry tracking, slow counter service, and no reliable reporting for the pharmacy manager.",
+    solution:
+      "RaveSoft built a complete pharmacy management system covering stock and inventory management, counter sales and billing, expiry date tracking with automatic alerts, supplier and purchase management, and daily and monthly sales reporting.",
+    result:
+      "Smooth, efficient daily pharmacy operations with accurate stock tracking, faster patient service at the counter, and elimination of manual reconciliation errors.",
+    features: [
+      "Pharmacy stock and inventory management",
+      "Counter sales and billing",
+      "Expiry date tracking and automated alerts",
+      "Supplier and purchase management",
+      "Daily and monthly sales reports",
+      "Role-based staff access control",
+    ],
+    technologies: ["Laravel", "Livewire", "MySQL", "Tailwind CSS"],
+    impact: "Smooth & accurate pharmacy operations",
+  },
 ];
 
 export const PROCESS_STEPS = [

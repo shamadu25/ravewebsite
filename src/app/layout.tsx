@@ -1,10 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
 import GoogleAnalytics from "@/components/seo/GoogleAnalytics";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -149,7 +156,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={`h-full ${inter.variable}`}>
       <body className="min-h-full flex flex-col antialiased bg-white text-gray-900">
         <OrganizationSchema />
         <GoogleAnalytics />
