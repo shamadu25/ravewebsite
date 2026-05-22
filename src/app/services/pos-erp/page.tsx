@@ -155,6 +155,20 @@ export default function PosErpPage() {
         </div>
       </section>
 
+      {/* RELATED */}
+      <section className="bg-white border-t border-gray-100 py-10">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <p className="text-sm text-gray-500 font-medium mb-4">Also explore</p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/products/cliqpos" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">CliqPOS →</Link>
+            <Link href="/products/erp" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">ERP System →</Link>
+            <Link href="/products/hospital" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Hospital Management System →</Link>
+            <Link href="/products/school" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">School Management System →</Link>
+            <Link href="/blog/erp-vs-spreadsheets-when-to-upgrade" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">ERP vs Spreadsheets →</Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <CTASection
         headline="Ready to get full control over your business operations?"

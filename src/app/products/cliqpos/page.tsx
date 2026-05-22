@@ -197,6 +197,19 @@ export default function CliqPOSPage() {
         </div>
       </section>
 
+      {/* RELATED */}
+      <section className="bg-white border-t border-gray-100 py-10">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <p className="text-sm text-gray-500 font-medium mb-4">Also explore</p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/services/pos-erp" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">POS &amp; ERP Services →</Link>
+            <Link href="/case-studies/cliqpos" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Case Study: CliqPOS →</Link>
+            <Link href="/blog/best-pos-system-ghana-2026" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Best POS System Ghana 2026 →</Link>
+            <Link href="/blog/why-every-growing-retail-business-needs-a-cloud-pos" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Why Retail Needs Cloud POS →</Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <CTASection
         headline="Ready to get CliqPOS running in your business?"

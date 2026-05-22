@@ -47,8 +47,9 @@ self.__SERVER_FILES_MANIFEST={
       "loaderFile": "",
       "domains": [],
       "disableStaticImages": false,
-      "minimumCacheTTL": 14400,
+      "minimumCacheTTL": 31536000,
       "formats": [
+        "image/avif",
         "image/webp"
       ],
       "maximumRedirects": 3,
@@ -221,6 +222,7 @@ self.__SERVER_FILES_MANIFEST={
       "turbopackInferModuleSideEffects": true,
       "turbopackPluginRuntimeStrategy": "childProcesses",
       "optimizePackageImports": [
+        "framer-motion",
         "lucide-react",
         "date-fns",
         "lodash-es",

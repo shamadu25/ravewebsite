@@ -164,6 +164,19 @@ export default function HospitalSystemPage() {
         </div>
       </section>
 
+      {/* RELATED */}
+      <section className="bg-white border-t border-gray-100 py-10">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <p className="text-sm text-gray-500 font-medium mb-4">Also explore</p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/services/custom-software" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Custom Software Development →</Link>
+            <Link href="/case-studies/hospital-system" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Case Study: Hospital System →</Link>
+            <Link href="/blog/best-hospital-management-system-nigeria-ghana" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Best HMS in Nigeria &amp; Ghana →</Link>
+            <Link href="/industries/healthcare" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Healthcare Solutions →</Link>
+          </div>
+        </div>
+      </section>
+
       <CTASection
         headline="Ready to digitize your hospital or clinic?"
         subheadline="Book a demo and see how our system transforms healthcare operations."

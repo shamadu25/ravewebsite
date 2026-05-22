@@ -146,6 +146,18 @@ export default function SaasDevelopmentPage() {
         </div>
       </section>
 
+      {/* RELATED */}
+      <section className="bg-white border-t border-gray-100 py-10">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <p className="text-sm text-gray-500 font-medium mb-4">Also explore</p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/services/custom-software" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Custom Software Development →</Link>
+            <Link href="/case-studies/ngo-website" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Case Study: NGO Platform →</Link>
+            <Link href="/blog/what-to-consider-before-building-a-saas-product" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Before Building a SaaS →</Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <CTASection
         headline="Have a SaaS idea you're ready to build?"

@@ -164,6 +164,19 @@ export default function HotelSystemPage() {
         </div>
       </section>
 
+      {/* RELATED */}
+      <section className="bg-white border-t border-gray-100 py-10">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <p className="text-sm text-gray-500 font-medium mb-4">Also explore</p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/services/custom-software" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Custom Software Development →</Link>
+            <Link href="/case-studies/hotel-system" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Case Study: Hotel System →</Link>
+            <Link href="/blog/hotel-management-system-africa-2026" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Hotel Management Guide 2026 →</Link>
+            <Link href="/industries/hotels" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all">Hotels &amp; Hospitality →</Link>
+          </div>
+        </div>
+      </section>
+
       <CTASection
         headline="Ready to run a smarter, more efficient hospitality operation?"
         subheadline="Book a demo and we will show you how our system works for your property."
