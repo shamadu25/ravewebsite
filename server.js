@@ -1,5 +1,4 @@
 const { createServer } = require("http");
-const { parse } = require("url");
 const next = require("next");
 const fs = require("fs");
 const path = require("path");
@@ -18,8 +17,7 @@ app.prepare().then(() => {
   createServer((req, res) => {
     // Ensure Next.js always sees the real hostname, not "localhost"
     req.headers["host"] = "ravesoftsolutions.com";
-    const parsedUrl = parse(req.url, true);
-    handle(req, res, parsedUrl);
+    handle(req, res);
   }).listen(SOCKET, (err) => {
     if (err) throw err;
     // Allow Apache/nginx to read the socket
