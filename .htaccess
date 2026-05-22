@@ -1,4 +1,5 @@
 Options -Indexes
+DirectoryIndex disabled
 
 RewriteEngine On
 RewriteRule .* unix:/tmp/rave_ravesoft.sock|http://ravesoftsolutions.com%{REQUEST_URI} [P,L,NE]
