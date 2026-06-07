@@ -196,7 +196,7 @@ export default function HomePage() {
             {/* Trust indicators */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 animate-fade-in-up animation-delay-600">
               {[
-                "100+ businesses served",
+                "500+ businesses served across Africa",
                 "20+ industries covered",
                 "Ghana HQ · serving all Africa"
               ].map((item) => (
@@ -226,7 +226,7 @@ export default function HomePage() {
                 width={800}
                 height={533}
                 className="w-full h-auto object-cover"
-                priority
+                loading="lazy"
               />
               {/* overlay badge */}
               <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/70 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-2.5">
@@ -324,13 +324,14 @@ export default function HomePage() {
               "Eritrea","Somalia","Kenya","Tanzania","Uganda","Rwanda","Burundi",
               "Mozambique","Zimbabwe","Zambia","Malawi","Madagascar","Mauritius",
               "South Africa","Botswana","Namibia","Angola","DR Congo","Congo",
-              "Gabon","Cameroon","Nigeria","Ghana","Ivory Coast","Senegal",
+              "Gabon","Cameroon","Ivory Coast","Senegal",
               "Mali","Guinea","Sierra Leone","Liberia","Togo","Benin","Gambia",
+              // second copy for seamless CSS loop — same unique source
               "Morocco","Tunisia","Algeria","Libya","Egypt","Sudan","Ethiopia",
               "Eritrea","Somalia","Kenya","Tanzania","Uganda","Rwanda","Burundi",
               "Mozambique","Zimbabwe","Zambia","Malawi","Madagascar","Mauritius",
               "South Africa","Botswana","Namibia","Angola","DR Congo","Congo",
-              "Gabon","Cameroon","Nigeria","Ghana","Ivory Coast","Senegal",
+              "Gabon","Cameroon","Ivory Coast","Senegal",
               "Mali","Guinea","Sierra Leone","Liberia","Togo","Benin","Gambia",
             ].map((country, i) => (
               <span
@@ -431,6 +432,7 @@ export default function HomePage() {
               width={1280}
               height={500}
               className="w-full h-auto object-cover"
+              loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-transparent to-transparent pointer-events-none" />
             <div className="absolute inset-y-0 left-0 flex flex-col justify-center px-8 sm:px-12 max-w-md">
@@ -584,6 +586,7 @@ export default function HomePage() {
                 width={700}
                 height={467}
                 className="w-full h-auto object-cover"
+                loading="lazy"
               />
             </div>
           </div>
@@ -612,8 +615,34 @@ export default function HomePage() {
             eyebrow="Client Reviews"
             title="What our clients say about working with RaveSoft"
             description="These are real businesses running on systems we built. From retail POS to hospital software — here's what they experienced."
-            className="mb-14"
+            className="mb-4"
           />
+          {/* Verified stamp */}
+          <p className="text-center text-sm text-gray-500 mb-8">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 font-medium text-xs">
+              <svg className="w-3 h-3 fill-green-500" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              Verified clients across Ghana, Nigeria &amp; Kenya
+            </span>
+          </p>
+          {/* Client-type strip */}
+          <div className="flex flex-wrap justify-center gap-2 mb-12">
+            {[
+              { label: "Retail &amp; Supermarkets", icon: "🛒" },
+              { label: "Hospitals &amp; Clinics", icon: "🏥" },
+              { label: "Schools &amp; Colleges", icon: "🎓" },
+              { label: "Hotels &amp; Hospitality", icon: "🏨" },
+              { label: "Manufacturing &amp; ERP", icon: "🏭" },
+              { label: "Construction &amp; HR", icon: "🏗️" },
+            ].map((type) => (
+              <span
+                key={type.label}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-600"
+              >
+                <span role="img" aria-hidden="true">{type.icon}</span>
+                <span dangerouslySetInnerHTML={{ __html: type.label }} />
+              </span>
+            ))}
+          </div>
           <TestimonialsSection testimonials={TESTIMONIALS} />
 
           {/* Star aggregate */}
@@ -625,7 +654,7 @@ export default function HomePage() {
                 </svg>
               ))}
             </div>
-            <p className="text-sm text-gray-500 font-medium">5.0 average · 100+ businesses served across Africa</p>
+            <p className="text-sm text-gray-500 font-medium">5.0 average · 500+ businesses served across Africa</p>
           </div>
         </div>
       </section>

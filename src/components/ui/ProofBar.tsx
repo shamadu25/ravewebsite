@@ -15,20 +15,25 @@ interface ProofBarProps {
 
 function CountUp({ value, active }: { value: string; active: boolean }) {
   const match = value.match(/^(\d+)(\D*)$/);
-  const [displayed, setDisplayed] = useState(match ? `0${match[2] ?? ""}` : value);
+  const targetNum = match ? parseInt(match[1], 10) : null;
+  const suffix = match ? (match[2] ?? "") : "";
+
+  // SSR-safe: initialise with the real final value — never shows 0 on first paint or with JS disabled
+  const [displayed, setDisplayed] = useState(value);
 
   useEffect(() => {
-    if (!active || !match) return;
-    const target = parseInt(match[1], 10);
-    const suffix = match[2] ?? "";
-    const duration = 1800;
+    if (!active || targetNum === null) return;
+    // Animate upward from 60% of target — never goes below the floor
+    const startVal = Math.round(targetNum * 0.6);
+    const duration = 1200;
     const startTime = performance.now();
 
     const animate = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplayed(`${Math.round(eased * target)}${suffix}`);
+      const current = Math.round(startVal + (targetNum - startVal) * eased);
+      setDisplayed(`${current}${suffix}`);
       if (progress < 1) requestAnimationFrame(animate);
     };
 

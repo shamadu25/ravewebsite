@@ -56,10 +56,10 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
           {/* Review text */}
           <p className="text-sm text-gray-600 leading-relaxed mb-4">"{t.text}"</p>
 
-          {/* Product badge */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            <span className="text-xs font-medium text-blue-700">{t.product}</span>
+          {/* Product badge — Amber bg, Deep Blue text per brand guidelines */}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border" style={{ backgroundColor: "#FFF8E1", borderColor: "#FFB200" }}>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FFB200" }} />
+            <span className="text-xs font-semibold" style={{ color: "#060297" }}>{t.product}</span>
           </div>
         </div>
       ))}

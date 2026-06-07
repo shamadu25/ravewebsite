@@ -654,7 +654,7 @@ export const TECH_STACK = [
   { name: "MySQL", category: "Database" },
   { name: "PostgreSQL", category: "Database" },
   { name: "REST APIs", category: "Integration" },
-  { name: "Paystack / Stripe", category: "Payments" },
+  { name: "Secure Payments", category: "Mobile Money + Card" },
   { name: "Cloud Hosting", category: "Infrastructure" },
   { name: "AI Workflows", category: "Automation" },
   { name: "WhatsApp API", category: "Integration" },
@@ -701,9 +701,9 @@ export const WHY_RAVESOFT = [
 ];
 
 export const PROOF_ITEMS = [
-  { value: "100+", label: "Businesses running on systems we built" },
+  { value: "500+", label: "Businesses running on systems we built" },
   { value: "20+", label: "Industries served across Africa" },
-  { value: "54", label: "African countries we actively serve" },
+  { value: "40+", label: "African countries we actively serve" },
   { value: "5+", label: "Ready-to-deploy software products" },
   { value: "End-to-end", label: "Strategy, design, build, and support" },
 ];
@@ -963,7 +963,7 @@ export const FAQ_ITEMS = [
   {
     question: "How much does a project cost?",
     answer:
-      "Projects are priced based on scope, features, and complexity. A simple business website starts from $500. Custom software and SaaS platforms typically start from $2,000–$5,000. Our software products (CliqPOS, Hotel, Hospital, School, ERP, HR) have fixed subscription pricing. Contact us for a free quote — we'll give you a clear estimate within 24 hours.",
+      "Every project is scoped to your goals, features, and complexity. Book a free consultation and we'll send a clear, fixed quote within 24 hours — no pressure, no obligation.",
   },
   {
     question: "How long does it take to deliver a project?",
