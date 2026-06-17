@@ -1,1 +1,0 @@
-globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/api/og/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"/Users/saheedabdulhakeem/Documents/ravesoft-website/ravewebsite/src/app/api/og/route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};
