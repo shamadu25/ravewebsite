@@ -11,5 +11,6 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
-  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
+  // Playwright e2e specs run via Playwright, not jest.
+  testPathIgnorePatterns: ['/node_modules/', '/.next/', '/tests/e2e/'],
 };

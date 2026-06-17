@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Clock, Tag, User, Calendar } from "lucide-react";
+import { ArrowRight, Clock, User, Calendar } from "lucide-react";
 import { BLOG_POSTS } from "@/lib/data";
 import CTASection from "@/components/ui/CTASection";
 import ArticleSchema from "@/components/seo/ArticleSchema";

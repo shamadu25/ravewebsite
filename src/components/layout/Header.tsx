@@ -22,15 +22,16 @@ export default function Header() {
   const [servicesOpen, setServicesOpen] = useState(false);
   const pathname = usePathname();
 
-  const isDark = true;
-
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 30);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close any open menus when the route changes. Resetting UI state in
+  // response to navigation is the intended pattern here.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
     setServicesOpen(false);
   }, [pathname]);

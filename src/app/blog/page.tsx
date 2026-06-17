@@ -60,7 +60,7 @@ export default function BlogPage() {
             className="mb-14"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {BLOG_POSTS.map((post, i) => (
+            {BLOG_POSTS.map((post) => (
               <article
                 key={post.id}
                 className="bg-white rounded-2xl border border-gray-100/80 overflow-hidden hover:border-blue-200/80 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 group hover:-translate-y-1 flex flex-col"

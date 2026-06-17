@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, CheckCircle2, Target, Lightbulb, Users, Globe } from "lucide-react";
+import { CheckCircle2, Target, Lightbulb, Users, Globe } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 

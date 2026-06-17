@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckCircle2, ArrowRight, Tag, Building2, Zap } from "lucide-react";
+import { CheckCircle2, ArrowRight, Building2, Zap } from "lucide-react";
 import { CASE_STUDIES } from "@/lib/data";
 import CTASection from "@/components/ui/CTASection";
 import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
