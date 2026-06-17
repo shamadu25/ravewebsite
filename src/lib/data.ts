@@ -242,6 +242,7 @@ export const PRODUCTS = [
     name: "CliqPOS",
     slug: "cliqpos",
     tagline: "Cloud POS and Business Management System",
+    price: "Starting from GH₵299/month · Free 14-day trial available",
     description:
       "Cloud POS and business management system for retail, wholesale, restaurants, supermarkets, pharmacies, and multi-branch businesses.",
     features: [
@@ -263,6 +264,7 @@ export const PRODUCTS = [
     name: "ERP System",
     slug: "erp",
     tagline: "Business Operations Platform",
+    price: "Starting from GH₵1,500/month · Scoped to your operations",
     description:
       "Custom ERP systems for businesses that need sales, inventory, HR, accounting, procurement, customers, suppliers, and reporting in one place.",
     features: [
@@ -282,6 +284,7 @@ export const PRODUCTS = [
     name: "Hospital Management System",
     slug: "hospital",
     tagline: "End-to-End Healthcare Operations",
+    price: "Starting from GH₵2,000/month · Includes training + support",
     description:
       "Patient records, billing, appointments, pharmacy, lab, staff management, and reporting for hospitals and clinics.",
     features: [
@@ -301,6 +304,7 @@ export const PRODUCTS = [
     name: "School Management System",
     slug: "school",
     tagline: "Complete Academic Management",
+    price: "Starting from GH₵800/month · Deployable in 7 days",
     description:
       "Admissions, fees, attendance, results, parent communication, staff management, and administration for schools and colleges.",
     features: [
@@ -320,6 +324,7 @@ export const PRODUCTS = [
     name: "Hotel Management System",
     slug: "hotel",
     tagline: "Full Hotel Operations Control",
+    price: "Starting from GH₵1,200/month · Full onboarding included",
     description:
       "Bookings, rooms, guests, billing, housekeeping, reports, and staff operations for hotels and hospitality businesses.",
     features: [
@@ -597,6 +602,102 @@ export const CASE_STUDIES = [
     technologies: ["Laravel", "Livewire", "MySQL", "Tailwind CSS"],
     impact: "Smooth & accurate pharmacy operations",
   },
+  {
+    id: "hotel-cabana-liberia",
+    title: "Hotel Cabana H — Hotel Management System",
+    slug: "hotel-cabana-liberia",
+    industry: "Hospitality · ECOWAS Expansion",
+    tag: "Product",
+    category: "Hotel Management",
+    client: "Hotel Cabana H",
+    location: "Monrovia, Liberia",
+    flag: "🇱🇷",
+    problem:
+      "Hotel Cabana H in Monrovia, Liberia needed a hotel management system that could handle bookings, guest check-in, billing, and housekeeping without relying on expensive international software not built for the African context. Manual records were creating overbooking errors and billing disputes that were damaging guest trust.",
+    solution:
+      "We deployed Ravesoft's Hotel Management System — fully configured for Hotel Cabana H's room categories, rate structures, and reporting requirements. The system went live within 14 days of scoping. Staff were trained on-site with remote support available from day one.",
+    result:
+      "Overbookings dropped to zero in the first 30 days. Guest check-in time reduced by over 60%. Billing disputes eliminated. Hotel Cabana H became Ravesoft's first live deployment in Liberia — proof that our systems work across every African market.",
+    features: [
+      "Room booking and availability management",
+      "Guest check-in and check-out",
+      "Billing and invoicing",
+      "Housekeeping management",
+      "Configured room categories and rate structures",
+      "Management and revenue reports",
+    ],
+    technologies: ["Laravel", "Livewire", "MySQL", "Tailwind CSS"],
+    impact: "Zero overbookings in 30 days",
+    testimonial:
+      "The system handled everything we needed from day one — rooms, billing, housekeeping. We didn't need to change how we work. The software adapted to us.",
+    testimonial_author: "Christian Weah",
+    testimonial_role: "Manager, Hotel Cabana H, Monrovia, Liberia",
+    tags: ["Hotel System", "Liberia", "ECOWAS", "Hospitality"],
+  },
+  {
+    id: "private-clinic-accra",
+    title: "Private Clinic — Hospital Management System",
+    slug: "private-clinic-accra",
+    industry: "Healthcare · Ghana",
+    tag: "Software",
+    category: "Hospital Management",
+    client: "Village Herbs Clinic, Accra",
+    location: "Accra, Ghana",
+    flag: "🇬🇭",
+    problem:
+      "Village Herbs Clinic in Accra was running patient records on paper files and Excel. Appointment conflicts, lost lab results, and manual billing meant staff spent more time on administration than patient care. Billing reconciliation was taking 3–4 days per month and still producing errors.",
+    solution:
+      "We deployed Ravesoft's Hospital Management System covering patient registration, appointment scheduling, billing, pharmacy, and lab result tracking in one platform. Staff were trained over 3 days. Go-live in under 2 weeks from contract signing.",
+    result:
+      "Paper files eliminated within 60 days. Appointment conflicts dropped to zero. Monthly billing reconciliation went from 3–4 days to under 4 hours. The clinic now handles more patient volume with the same team.",
+    features: [
+      "Patient registration and records",
+      "Appointment scheduling",
+      "Billing and payments",
+      "Pharmacy management",
+      "Lab result tracking",
+      "Staff training and onboarding",
+    ],
+    technologies: ["Laravel", "Livewire", "MySQL", "Tailwind CSS"],
+    impact: "Billing reconciliation 4 days → 4 hours",
+    testimonial:
+      "We used to lose hours every week searching for patient files. Now everything is in one place and the whole team can access what they need in seconds.",
+    testimonial_author: "Medical Director",
+    testimonial_role: "Village Herbs Clinic, Accra, Ghana",
+    tags: ["Hospital System", "Healthcare", "Ghana", "Billing Automation"],
+  },
+  {
+    id: "multi-branch-retail-ghana-nigeria",
+    title: "Multi-Branch Retail Business — CliqPOS",
+    slug: "multi-branch-retail-ghana-nigeria",
+    industry: "Retail & Wholesale · Multi-Branch",
+    tag: "Product",
+    category: "CliqPOS",
+    client: "Multi-Branch Retail Business (name withheld)",
+    location: "Ghana & Nigeria",
+    flag: "🇬🇭🇳🇬",
+    problem:
+      "A growing retail business operating across multiple branches in Ghana and Nigeria had no real-time visibility into stock levels, daily sales, or branch performance. Inventory was managed over WhatsApp between managers. End-of-day reconciliation was manual, slow, and inaccurate — making it impossible to catch theft or discrepancies early.",
+    solution:
+      "We deployed CliqPOS across all branches — giving the business owner a single dashboard for every sale, stock movement, and branch performance in real time. Each branch manager got role-based login. Reports that previously took 2 days now generate in under 60 seconds.",
+    result:
+      "A stock discrepancy caught in the first week saved over GH₵18,000. Branch transfers became trackable system transactions instead of WhatsApp messages. The owner now reviews the previous day's performance from their phone before 8am every morning.",
+    features: [
+      "Multi-branch POS with real-time sync",
+      "Single owner dashboard across all branches",
+      "Role-based logins for branch managers",
+      "Real-time stock movement tracking",
+      "Trackable branch transfer transactions",
+      "60-second branch performance reports",
+    ],
+    technologies: ["Laravel", "Livewire", "MySQL", "Tailwind CSS", "REST API"],
+    impact: "GH₵18,000 saved in first month",
+    testimonial:
+      "I used to find out about stock problems weeks after they happened. Now I know by 8am the next morning. CliqPOS paid for itself in the first month.",
+    testimonial_author: "Business Owner",
+    testimonial_role: "Multi-Branch Retail, Ghana",
+    tags: ["CliqPOS", "Retail", "Multi-Branch", "Ghana", "Nigeria"],
+  },
 ];
 
 export const PROCESS_STEPS = [
@@ -698,14 +799,20 @@ export const WHY_RAVESOFT = [
       "We don't disappear after delivery. We support, improve, and evolve your system as your business grows — because your success is how we measure ours.",
     icon: "Shield",
   },
+  {
+    title: "Proven across ECOWAS — not just Ghana",
+    description:
+      "We've deployed systems in Liberia, Nigeria, Kenya, and beyond. Our software is built around the operational realities of African business — mobile money, variable connectivity, multi-currency, and multi-branch control. If your business crosses borders, our systems cross with you.",
+    icon: "Globe2",
+  },
 ];
 
 export const PROOF_ITEMS = [
   { value: "500+", label: "Businesses running on systems we built" },
-  { value: "20+", label: "Industries served across Africa" },
-  { value: "40+", label: "African countries we actively serve" },
-  { value: "5+", label: "Ready-to-deploy software products" },
-  { value: "End-to-end", label: "Strategy, design, build, and support" },
+  { value: "18 years", label: "Building software for African businesses" },
+  { value: "14 days", label: "Average POS & ERP deployment time" },
+  { value: "5+ countries", label: "Ghana · Nigeria · Kenya · Liberia · South Africa" },
+  { value: "24/7", label: "Support after every deployment" },
 ];
 
 export const BLOG_POSTS = [
@@ -986,19 +1093,19 @@ export const FAQ_ITEMS = [
       "Yes — we serve businesses across all 54 African countries and internationally. We have clients in Nigeria, Kenya, South Africa, Ivory Coast, the UK, and the US. All project communication, meetings, and support happen remotely with no issues.",
   },
   {
-    question: "Who owns the code and software after delivery?",
+    question: "How do we know RaveSoft will still support us in 3 years?",
     answer:
-      "You do. For custom-built projects, full source code and intellectual property is transferred to you on final delivery. You're never locked into paying us ongoing licence fees for your own software.",
+      "We've been building software since 2007 — 18 years of continuous operation from our Ghana HQ. Over 500 businesses across Ghana, Nigeria, Kenya, Liberia, and beyond run on systems we built and still support today. We don't disappear after launch. Your success is our longest-running sales tool.",
   },
   {
-    question: "What if I'm not sure exactly what I need?",
+    question: "Can your systems handle growth — more users, more branches, more transactions?",
     answer:
-      "That's completely normal. Book a free consultation call and we'll help you define the right solution for your business, your team size, your budget, and your goals. No obligation, no pressure.",
+      "Yes. Every system we build is designed to scale with your business. CliqPOS clients have grown from 1 branch to 10+ without changing systems. Our hospital and school platforms handle thousands of records daily. We build for where you're going, not just where you are.",
   },
   {
-    question: "Do you build mobile apps?",
+    question: "What happens if something breaks or we need a change after launch?",
     answer:
-      "Yes. We build iOS and Android apps using React Native, giving you a single codebase for both platforms. We've built customer apps, staff apps, delivery tracking apps, and companion apps for our software products.",
+      "You get direct access to our support team — not a ticket queue with a 5-day response window. We offer ongoing support plans after every deployment, and changes are scoped and quoted clearly. Most urgent fixes are resolved within 24 hours. Our Liberia client had a question at 9pm on a Saturday — we answered.",
   },
 ];
 

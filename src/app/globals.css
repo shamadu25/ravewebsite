@@ -352,6 +352,28 @@
 .animation-delay-800 { animation-delay: 800ms; }
 
 /* ============================================
+   WHATSAPP PULSE RING
+   ============================================ */
+@keyframes whatsapp-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.animate-whatsapp-pulse {
+  animation: whatsapp-pulse 2s ease-out infinite;
+}
+
+/* ============================================
    PREMIUM CARD GLOW BORDER
    ============================================ */
 .card-glow-hover {

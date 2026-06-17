@@ -96,6 +96,7 @@ const WHY_ICONS: Record<string, React.ReactNode> = {
   Globe: <Globe className="w-5 h-5" />,
   TrendingUp: <TrendingUp className="w-5 h-5" />,
   Shield: <Shield className="w-5 h-5" />,
+  Globe2: <Globe2 className="w-5 h-5" />,
 };
 
 const INDUSTRY_ICONS: Record<string, React.ReactNode> = {
@@ -150,28 +151,26 @@ export default function HomePage() {
 
             {/* Headline */}
             <h1 className="text-[2.75rem] sm:text-[3.5rem] lg:text-[4.25rem] xl:text-[5rem] font-black text-white leading-[1.05] tracking-tighter mb-6 animate-fade-in-up animation-delay-300">
-              Software Solutions{" "}
-              <span className="block">Built to</span>
+              500+ African businesses run on systems we built.{" "}
               <span style={{
                 background: "linear-gradient(135deg, #60A5FA 0%, #818CF8 45%, #F59E0B 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text"
               }}>
-                Power Modern African
-              </span>{" "}
-              <span className="block">Businesses</span>
+                Yours could be next.
+              </span>
             </h1>
 
             {/* Subheadline */}
             <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-[580px] animate-fade-in-up animation-delay-400">
-              We design, build, and support custom software, SaaS platforms, POS &amp; ERP systems,
-              mobile apps, and AI automation that help businesses across Africa run smarter,
-              grow faster, and compete at a world-class level.
+              We design, build, and support custom software, POS &amp; ERP systems, hospital and
+              school platforms, and AI automation — deployed from our Ghana HQ, proven across Africa.
+              Systems that run daily. Support that answers when you call.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-10 animate-fade-in-up animation-delay-500">
+            <div className="flex flex-col sm:flex-row gap-4 mb-5 animate-fade-in-up animation-delay-500">
               <Link
                 href="/book-consultation"
                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(245,158,11,0.55)]"
@@ -180,18 +179,21 @@ export default function HomePage() {
                   boxShadow: "0 8px 32px rgba(245,158,11,0.40), inset 0 1px 0 rgba(255,255,255,0.15)"
                 }}
               >
-                Book a Free Consultation
+                Book Your Free Scoping Call
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <a
-                href={`https://wa.me/233503319610?text=Hi%20RaveSoft%2C%20I%27d%20like%20to%20discuss%20a%20project`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/products"
                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all hover:-translate-y-0.5"
               >
-                Chat on WhatsApp
-              </a>
+                See How It Works →
+              </Link>
             </div>
+
+            {/* Trust micro-copy */}
+            <p className="text-sm text-gray-400 text-center sm:text-left mb-10 max-w-[580px] animate-fade-in-up animation-delay-500">
+              Custom software from GH₵8,000 · POS &amp; ERP systems deployable in 14 days · 18 years building for African businesses
+            </p>
 
             {/* Trust indicators */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 animate-fade-in-up animation-delay-600">
@@ -345,6 +347,51 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* NOT READY TO CALL */}
+      <section className="bg-white section-padding">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <SectionHeader
+            eyebrow="Start Here"
+            title="Not ready to call? Start here."
+            description="Two ways to get started without picking up the phone."
+            className="mb-14"
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Card 1 */}
+            <div className="flex flex-col h-full p-8 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1">
+              <div className="text-4xl mb-5" role="img" aria-hidden="true">📋</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Get a Free Price Estimate</h3>
+              <p className="text-sm text-gray-500 leading-relaxed mb-7 flex-1">
+                Tell us what you need. We&apos;ll send a clear quote within 24 hours — no pressure,
+                no obligation, no hidden fees.
+              </p>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-black font-bold text-sm transition-all hover:-translate-y-0.5 w-full sm:w-auto"
+                style={{ background: "#FFB200", boxShadow: "0 4px 20px rgba(255,178,0,0.35)" }}
+              >
+                Get My Quote →
+              </Link>
+            </div>
+            {/* Card 2 */}
+            <div className="flex flex-col h-full p-8 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1">
+              <div className="text-4xl mb-5" role="img" aria-hidden="true">▶️</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Watch CliqPOS in 3 Minutes</h3>
+              <p className="text-sm text-gray-500 leading-relaxed mb-7 flex-1">
+                See how 500+ businesses manage sales, inventory, and branches — before you book a
+                single call.
+              </p>
+              <Link
+                href="/products/cliqpos"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border-2 border-[#FFB200] text-[#FFB200] hover:bg-[#FFB200] hover:text-black font-bold text-sm transition-all hover:-translate-y-0.5 w-full sm:w-auto"
+              >
+                Watch the Demo →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* WHAT WE BUILD */}
       <section className="bg-[#F8FAFB] section-padding">
         <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
@@ -396,6 +443,7 @@ export default function HomePage() {
                 key={product.id}
                 name={product.name}
                 tagline={product.tagline}
+                price={product.price}
                 description={product.description}
                 features={product.features}
                 industries={product.industries}
@@ -474,7 +522,7 @@ export default function HomePage() {
             className="mb-14"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {CASE_STUDIES.slice(0, 3).map((cs, i) => (
+            {CASE_STUDIES.slice(-3).map((cs, i) => (
               <CaseStudyCard
                 key={cs.id}
                 title={cs.title}

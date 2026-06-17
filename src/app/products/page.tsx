@@ -60,6 +60,7 @@ export default function ProductsPage() {
                 key={product.id}
                 name={product.name}
                 tagline={product.tagline}
+                price={product.price}
                 description={product.description}
                 features={product.features}
                 industries={product.industries}

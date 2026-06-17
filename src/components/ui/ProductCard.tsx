@@ -7,6 +7,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 interface ProductCardProps {
   name: string;
   tagline: string;
+  price?: string;
   description: string;
   features: string[];
   industries: string[];
@@ -19,6 +20,7 @@ interface ProductCardProps {
 export default function ProductCard({
   name,
   tagline,
+  price,
   description,
   features,
   industries,
@@ -71,6 +73,9 @@ export default function ProductCard({
               {name}
             </h3>
             <p className="text-sm text-blue-400 font-medium">{tagline}</p>
+            {price && (
+              <p className="mt-1.5 text-sm font-semibold text-[#FFB200]">{price}</p>
+            )}
           </div>
           {badge && (
             <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold border ${
