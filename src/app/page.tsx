@@ -69,6 +69,9 @@ export const metadata: Metadata = {
     "SaaS development Africa",
     "RaveSoft",
   ],
+  verification: {
+    google: "ravesoft-google-site-verification",
+  },
 };
 
 const SERVICE_ICONS: Record<string, React.ReactNode> = {
