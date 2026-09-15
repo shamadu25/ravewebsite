@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
+import ChatWidgetLoader from "@/components/ai/ChatWidgetLoader";
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
 import GoogleAnalytics from "@/components/seo/GoogleAnalytics";
 
@@ -164,6 +165,7 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <Footer />
         <WhatsAppButton />
+        <ChatWidgetLoader />
       </body>
     </html>
   );
