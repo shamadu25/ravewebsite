@@ -9,7 +9,8 @@ module.exports = {
     '^@/app/(.*)$': '<rootDir>/src/app/$1',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx|js)$': 'ts-jest',
   },
+  transformIgnorePatterns: ['/node_modules/(?!(jose)/)'],
   testPathIgnorePatterns: ['/node_modules/', '/.next/'],
 };
