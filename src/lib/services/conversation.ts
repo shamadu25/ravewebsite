@@ -80,6 +80,7 @@ export interface SendMessageResult {
   needsHuman: boolean;
   aiUnavailable: boolean;
   cta: string;
+  contactCaptured: boolean;
 }
 
 export async function sendMessage(
@@ -122,7 +123,13 @@ export async function sendMessage(
       data: { status: "human_handoff", lastMessageAt: new Date() },
     });
 
-    return { message: AI_FALLBACK_MESSAGE, needsHuman: true, aiUnavailable: true, cta: "human_handoff" };
+    return {
+      message: AI_FALLBACK_MESSAGE,
+      needsHuman: true,
+      aiUnavailable: true,
+      cta: "human_handoff",
+      contactCaptured: Boolean(conversation.contactId),
+    };
   }
 
   await prisma.message.create({
@@ -157,11 +164,17 @@ export async function sendMessage(
     });
   }
 
+  const refreshed = await prisma.conversation.findUnique({
+    where: { id: conversation.id },
+    select: { contactId: true },
+  });
+
   return {
     message: structured.message,
     needsHuman: structured.needsHuman,
     aiUnavailable: false,
     cta: normalizeCta(structured.recommendedNextAction),
+    contactCaptured: Boolean(refreshed?.contactId),
   };
 }
 

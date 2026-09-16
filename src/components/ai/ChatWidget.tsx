@@ -46,6 +46,10 @@ interface DisplayMessage {
   cta?: string;
 }
 
+const EXIT_CAPTURE_SHOWN_KEY = "rave_exit_capture_shown";
+const CONTACT_CAPTURED_KEY = "rave_contact_captured";
+const EXIT_INTENT_FALLBACK_MS = 45000;
+
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,8 +60,37 @@ export default function ChatWidget() {
   const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [contactCaptured, setContactCapturedState] = useState(false);
+  const [showExitCapture, setShowExitCapture] = useState(false);
+  const [captureEmail, setCaptureEmail] = useState("");
+  const [captureWhatsapp, setCaptureWhatsapp] = useState("");
+  const [captureSubmitting, setCaptureSubmitting] = useState(false);
   const initialized = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isOpenRef = useRef(isOpen);
+
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  const setContactCaptured = (value: boolean) => {
+    setContactCapturedState(value);
+    if (value) {
+      try {
+        sessionStorage.setItem(CONTACT_CAPTURED_KEY, "1");
+      } catch {
+        // sessionStorage unavailable (private mode etc.) — non-critical
+      }
+    }
+  };
+
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem(CONTACT_CAPTURED_KEY) === "1") setContactCapturedState(true);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -73,6 +106,7 @@ export default function ChatWidget() {
     setMessages(
       data.messages.map((m: ChatMessage) => ({ id: String(m.id), role: m.role, content: m.content }))
     );
+    if (data.contact_captured) setContactCaptured(true);
   };
 
   const initConversation = async (): Promise<string | null> => {
@@ -118,6 +152,10 @@ export default function ChatWidget() {
       if (result.cta === "whatsapp_continue") {
         trackEvent("whatsapp_continue_suggested", {});
       }
+      if (result.contact_captured) {
+        setContactCaptured(true);
+        setShowExitCapture(false);
+      }
     } catch {
       setUnavailable(true);
     } finally {
@@ -151,6 +189,86 @@ export default function ChatWidget() {
     return () => window.removeEventListener(OPEN_CHAT_EVENT, onOpenRequest);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /** Nudges visitors who haven't left contact details toward doing so before
+   * they leave the site — desktop exit-intent (mouse toward the tab/URL bar)
+   * plus a time-on-site fallback that also covers mobile, where exit-intent
+   * can't be detected. Fires at most once per session. */
+  useEffect(() => {
+    if (contactCaptured) return;
+
+    let alreadyShown = false;
+    try {
+      alreadyShown = sessionStorage.getItem(EXIT_CAPTURE_SHOWN_KEY) === "1";
+    } catch {
+      // ignore
+    }
+    if (alreadyShown) return;
+
+    const trigger = () => {
+      if (isOpenRef.current) return;
+      let shown = false;
+      try {
+        shown = sessionStorage.getItem(EXIT_CAPTURE_SHOWN_KEY) === "1";
+        if (!shown) sessionStorage.setItem(EXIT_CAPTURE_SHOWN_KEY, "1");
+      } catch {
+        // ignore
+      }
+      if (shown) return;
+
+      trackEvent("exit_intent_capture_shown", {});
+      setShowExitCapture(true);
+      setIsOpen(true);
+      trackEvent("chat_opened", { location: "exit_intent" });
+
+      if (!initialized.current) {
+        initialized.current = true;
+        void initConversation();
+      }
+    };
+
+    const onMouseLeave = (e: MouseEvent) => {
+      if (e.clientY <= 0) trigger();
+    };
+
+    document.addEventListener("mouseleave", onMouseLeave);
+    const timer = window.setTimeout(trigger, EXIT_INTENT_FALLBACK_MS);
+
+    return () => {
+      document.removeEventListener("mouseleave", onMouseLeave);
+      window.clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactCaptured]);
+
+  const handleCaptureSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = captureEmail.trim();
+    const whatsapp = captureWhatsapp.trim();
+    if (!email && !whatsapp) return;
+
+    setCaptureSubmitting(true);
+    trackEvent("exit_intent_capture_submitted", {});
+
+    const text =
+      email && whatsapp
+        ? `My email is ${email} and my WhatsApp number is ${whatsapp}.`
+        : email
+          ? `My email is ${email}.`
+          : `My WhatsApp number is ${whatsapp}.`;
+
+    await submitMessage(text);
+
+    setCaptureSubmitting(false);
+    setShowExitCapture(false);
+    setCaptureEmail("");
+    setCaptureWhatsapp("");
+  };
+
+  const handleCaptureDismiss = () => {
+    trackEvent("exit_intent_capture_dismissed", {});
+    setShowExitCapture(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -278,6 +396,49 @@ export default function ChatWidget() {
                     {action.label}
                   </button>
                 ))}
+              </div>
+            )}
+
+            {showExitCapture && !contactCaptured && !unavailable && (
+              <div className="max-w-[92%] rounded-2xl px-4 py-3 text-sm bg-blue-50 border border-blue-200 text-blue-900 space-y-2">
+                <p className="font-semibold">Before you go — want us to follow up?</p>
+                <p className="text-blue-800/80 text-xs leading-relaxed">
+                  Leave your email or WhatsApp number and we&apos;ll reach out with more detail. No obligation.
+                </p>
+                <form onSubmit={handleCaptureSubmit} className="space-y-2 pt-1">
+                  <input
+                    type="email"
+                    value={captureEmail}
+                    onChange={(e) => setCaptureEmail(e.target.value)}
+                    placeholder="Email address"
+                    aria-label="Email address"
+                    className="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                  <input
+                    type="tel"
+                    value={captureWhatsapp}
+                    onChange={(e) => setCaptureWhatsapp(e.target.value)}
+                    placeholder="or WhatsApp number"
+                    aria-label="WhatsApp number"
+                    className="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="submit"
+                      disabled={captureSubmitting || isLoading || (!captureEmail.trim() && !captureWhatsapp.trim())}
+                      className="flex-1 text-xs font-semibold px-3 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-40 hover:bg-blue-500 transition-colors"
+                    >
+                      {captureSubmitting ? "Sending…" : "Send"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCaptureDismiss}
+                      className="text-xs font-medium text-blue-700 hover:underline px-2"
+                    >
+                      No thanks
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
           </div>

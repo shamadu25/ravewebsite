@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
       })),
       quick_actions: QUICK_ACTIONS,
       assistant_name: AI_CONFIG.assistantName,
+      contact_captured: Boolean(conversation.contactId),
     },
     { status: 201 }
   );

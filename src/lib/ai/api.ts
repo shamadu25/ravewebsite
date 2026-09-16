@@ -23,6 +23,7 @@ export interface ConversationResponse {
   messages: ChatMessage[];
   quick_actions: QuickAction[];
   assistant_name: string;
+  contact_captured: boolean;
 }
 
 export interface SendMessageResponse {
@@ -30,6 +31,7 @@ export interface SendMessageResponse {
   needs_human: boolean;
   ai_unavailable: boolean;
   cta: string;
+  contact_captured: boolean;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

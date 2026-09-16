@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 /**
  * Independent root layout for /admin — deliberately does NOT include the
- * marketing site's Header/Footer/WhatsAppButton/ChatWidget. Next.js treats
+ * marketing site's Header/Footer/ChatWidget. Next.js treats
  * this as a separate root because the marketing routes live under the
  * (marketing) route group with their own root layout.
  */

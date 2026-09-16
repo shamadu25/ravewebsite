@@ -38,5 +38,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     needs_human: result.needsHuman,
     ai_unavailable: result.aiUnavailable,
     cta: result.cta,
+    contact_captured: result.contactCaptured,
   });
 }

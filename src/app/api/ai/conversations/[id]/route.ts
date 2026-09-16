@@ -28,5 +28,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     })),
     quick_actions: QUICK_ACTIONS,
     assistant_name: AI_CONFIG.assistantName,
+    contact_captured: Boolean(conversation.contactId),
   });
 }

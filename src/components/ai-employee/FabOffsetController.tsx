@@ -5,8 +5,8 @@ import { useEffect } from "react";
 /**
  * Pages that render a sticky mobile CTA bar (spec: "must not cover forms,
  * chat widgets, or navigation") mount this to push the shared floating
- * WhatsApp/chat launcher buttons up above that bar, on mobile only. Resets
- * on unmount so every other page keeps its normal button position.
+ * chat launcher button up above that bar, on mobile only. Resets on
+ * unmount so every other page keeps its normal button position.
  */
 export default function FabOffsetController() {
   useEffect(() => {
