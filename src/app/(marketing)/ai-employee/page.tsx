@@ -1,170 +1,178 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import {
   Headset,
   ClipboardList,
   CalendarClock,
   Wallet,
   Layers,
-  Clock,
+  MessageCircle as WhatsAppIcon,
   MessageSquareOff,
   UserX,
   HelpCircle,
   CalendarX,
+  Target,
   EyeOff,
-  Database,
-  Megaphone,
-  Moon,
 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
-import CTASection from "@/components/ui/CTASection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 import FAQSchema from "@/components/seo/FAQSchema";
 import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 import StartDiagnosisButton from "@/components/ai/StartDiagnosisButton";
+import AssessmentWidget from "@/components/ai-employee/AssessmentWidget";
+import LiveDemoSelector from "@/components/ai-employee/LiveDemoSelector";
+import StickyMobileCta from "@/components/ai-employee/StickyMobileCta";
+import FabOffsetController from "@/components/ai-employee/FabOffsetController";
+import ScrollDepthTracker from "@/components/ai-employee/ScrollDepthTracker";
+import { resolveHeroContent, resolveIndustryExample } from "@/lib/assessment/campaignContent";
 import { COMPANY } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "AI Employee for Your Business | Sales, Support & Follow-Up Automation — RaveSoft",
+  title: "AI Employee for Sales, Support & Operations | RaveSoft Digital Solutions",
   description:
-    "Get an AI Employee built around your business — handling sales inquiries, customer service, follow-up, appointments, and repetitive admin work 24/7. Start a free AI business diagnosis.",
+    "Get an AI Employee that replies instantly, follows up automatically, qualifies leads and helps turn more inquiries into paying customers — 24/7. Free 2-minute assessment.",
   keywords: [
     "AI employee for business",
     "AI agent for business Ghana",
     "WhatsApp AI sales agent",
     "AI customer service agent Ghana",
     "AI automation Ghana Nigeria",
-    "AI receptionist for business",
-    "AI lead follow-up system",
   ],
+  openGraph: {
+    title: "Stop Losing Customers Because Your Team Replies Late | RaveSoft AI Employee",
+    description:
+      "Get an AI Employee that replies instantly, follows up automatically, and qualifies leads — 24/7. Free 2-minute assessment.",
+    images: [{ url: "/api/og", width: 1200, height: 630, alt: "RaveSoft AI Employee" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Stop Losing Customers Because Your Team Replies Late | RaveSoft AI Employee",
+    images: ["/api/og"],
+  },
 };
 
-const PROBLEMS = [
-  { icon: MessageSquareOff, text: "Leads are not answered quickly enough to convert them." },
-  { icon: UserX, text: "WhatsApp inquiries pile up and get forgotten." },
-  { icon: Clock, text: "Staff don't follow up consistently after the first contact." },
-  { icon: HelpCircle, text: "The same questions get answered manually, over and over." },
-  { icon: CalendarX, text: "Appointments and demos aren't booked efficiently." },
-  { icon: EyeOff, text: "Owners can't see what's actually happening across the business." },
-  { icon: Database, text: "Customer information is scattered across chats, notebooks, and memory." },
-  { icon: Moon, text: "Opportunities are lost outside business hours." },
-];
-
-const STEPS = [
-  {
-    step: "01",
-    title: "Tell Us About Your Business",
-    description: "Have a guided conversation with Rave AI, our AI Business Consultant.",
-  },
-  {
-    step: "02",
-    title: "Get Your AI Opportunity Diagnosis",
-    description: "We identify bottlenecks, repetitive work, and where automation would help most.",
-  },
-  {
-    step: "03",
-    title: "See Your Recommended AI Employee",
-    description: "Get a recommendation on the right agent type, integrations, and priorities.",
-  },
-  {
-    step: "04",
-    title: "Launch Your AI Employee",
-    description: "Approve the plan, connect the tools you use, and we build and deploy it for you.",
-  },
+const PAIN_POINTS = [
+  { icon: MessageSquareOff, text: "Leads wait too long for a reply." },
+  { icon: UserX, text: "Staff forget to follow up." },
+  { icon: HelpCircle, text: "The same questions get answered repeatedly." },
+  { icon: CalendarX, text: "Inquiries arrive outside working hours." },
+  { icon: Target, text: "Sales opportunities aren't properly qualified." },
+  { icon: EyeOff, text: "Owners can't see where leads are being lost." },
 ];
 
 const AGENT_TYPES = [
   {
     icon: Headset,
     name: "AI Sales Employee",
-    description: "Responds to inquiries, qualifies leads, recommends products, handles objections, and follows up automatically.",
+    whoFor: "Businesses with inbound sales inquiries",
+    tasks: ["Replies to prospects instantly", "Asks qualifying questions", "Follows up automatically"],
+    outcome: "More qualified leads reach a booking or purchase.",
   },
   {
     icon: ClipboardList,
-    name: "AI Customer Service Employee",
-    description: "Answers FAQs, checks order/service status, provides support, and escalates complex cases to a human.",
+    name: "AI Customer Support Employee",
+    whoFor: "Teams overloaded with routine questions",
+    tasks: ["Answers approved FAQs", "Guides customers through requests", "Escalates complex issues"],
+    outcome: "Faster support without more headcount.",
   },
   {
-    icon: Megaphone,
-    name: "AI Marketing Employee",
-    description: "Helps plan campaigns, segment audiences, manage follow-up sequences, and re-engage inactive prospects.",
+    icon: WhatsAppIcon,
+    name: "AI WhatsApp Employee",
+    whoFor: "Businesses that sell through WhatsApp",
+    tasks: ["Manages incoming WhatsApp inquiries", "Follows up with prospects", "Keeps conversations consistent"],
+    outcome: "No WhatsApp inquiry goes unanswered.",
+  },
+  {
+    icon: CalendarClock,
+    name: "AI Appointment & Booking Employee",
+    whoFor: "Service and hospitality businesses",
+    tasks: ["Checks requirements", "Books appointments", "Sends reminders"],
+    outcome: "Fewer missed meetings and no-shows.",
+  },
+  {
+    icon: Wallet,
+    name: "AI Receivables Employee",
+    whoFor: "Businesses managing outstanding payments",
+    tasks: ["Tracks outstanding payments", "Sends professional reminders", "Escalates overdue accounts"],
+    outcome: "More consistent, less awkward collections.",
   },
   {
     icon: Layers,
     name: "AI Operations Employee",
-    description: "Collects information, produces reports, routes tasks, and sends reminders for recurring workflows.",
+    whoFor: "Teams drowning in repetitive admin",
+    tasks: ["Connects forms, email, CRM and spreadsheets", "Routes repetitive workflows", "Flags exceptions"],
+    outcome: "Staff time freed from repetitive internal work.",
   },
-  {
-    icon: CalendarClock,
-    name: "AI Appointment & Reception Employee",
-    description: "Captures contact details, checks availability, books appointments, and handles rescheduling.",
-  },
-  {
-    icon: Wallet,
-    name: "AI Collections Employee",
-    description: "Sends respectful payment reminders, captures payment promises, and escalates overdue accounts.",
-  },
-];
-
-const OUTCOMES = [
-  "Faster response to every inquiry",
-  "Consistent follow-up, every time",
-  "More qualified sales conversations",
-  "Less repetitive work for your team",
-  "Availability outside business hours",
-  "Centralized record of every interaction",
-  "Faster appointment booking",
-  "Staff free to focus on higher-value work",
-];
-
-const INTEGRATIONS = [
-  { name: "WhatsApp", status: "Native", available: true },
-  { name: "Website Live Chat", status: "Native", available: true },
-  { name: "Email", status: "Native", available: true },
-  { name: "CRM & Admin Dashboard", status: "Native", available: true },
-  { name: "Calendar / Booking", status: "Available on request", available: false },
-  { name: "Payment Providers", status: "Available on request", available: false },
-  { name: "POS & ERP Systems", status: "Custom integration", available: false },
-  { name: "Facebook & Instagram", status: "Custom integration", available: false },
 ];
 
 const FAQS = [
   {
-    q: "Is this just a chatbot?",
-    a: "No. A chatbot answers scripted questions. Your AI Employee is trained on your actual business, qualifies leads, remembers context, captures contact details, scores opportunities, and hands off to a human when a conversation needs one — with the full history preserved.",
+    q: "What exactly is an AI Employee?",
+    a: "A system built around your business that handles repetitive sales, support, follow-up and admin conversations — trained on your actual business, not a generic script.",
   },
   {
-    q: "Will it understand my business?",
-    a: "The AI Business Consultant conversation is how we learn your business — your services, common questions, and workflow — so the agent we build is trained on your real operation, not a generic script.",
+    q: "Is this different from a normal chatbot?",
+    a: "Yes. A chatbot answers scripted questions. An AI Employee qualifies leads, remembers context across a conversation, captures contact details, and performs approved actions like booking or sending reminders — with a human able to take over at any point.",
   },
   {
-    q: "Can it use WhatsApp?",
-    a: "Yes. Once a visitor has been chatting on your website, the agent offers a \"Continue on WhatsApp\" option that carries the conversation's context over, so nothing restarts from zero.",
+    q: "Can it work with WhatsApp?",
+    a: "Yes — WhatsApp is one of the channels we connect natively.",
   },
   {
-    q: "Can it connect to my current software?",
-    a: "We connect to WhatsApp, your website, and email natively today. CRM, calendar, payment, and POS/ERP integrations are built per project based on what you already use — we'll tell you plainly if something isn't available yet rather than promise it.",
+    q: "Can it connect to our website, CRM, email or other tools?",
+    a: "Website and email are native today. CRM and other integrations are scoped per project based on what you already use — we'll tell you plainly if something isn't available yet.",
   },
   {
-    q: "What happens when the AI can't answer?",
-    a: "It says so honestly and offers to connect you with a human, instead of guessing. Every handoff is logged and the RaveSoft team is notified by email.",
+    q: "Can a staff member take over a conversation?",
+    a: "Yes, at any point. Every conversation and lead is visible in RaveSoft's admin dashboard.",
   },
   {
-    q: "Can a human take over?",
-    a: "Yes, at any point. Conversations, lead scores, and full transcripts are visible in RaveSoft's admin dashboard.",
+    q: "What happens when the AI doesn't know the answer?",
+    a: "It says so honestly and offers to connect the customer with a human, instead of guessing.",
   },
   {
-    q: "Who owns my business data?",
-    a: "You do. Your conversation and lead data lives in your own project database — the same answer as our standard software projects: no ongoing lock-in for data you generate.",
+    q: "How is the AI trained on our business?",
+    a: "During implementation, we load your approved business information — services, pricing rules, FAQs and workflow — so the agent answers from your actual business, not assumptions.",
   },
   {
-    q: "Will it replace my current staff?",
-    a: "No. It's built to handle repetitive first-response and follow-up work so your team can focus on the conversations that need a human — not to replace your workforce.",
+    q: "How long does implementation take?",
+    a: "Depends on scope. A single workflow (e.g. WhatsApp sales replies) can launch quickly; multi-channel or multi-integration projects take longer. We give a clear timeline after the discovery conversation.",
+  },
+  {
+    q: "How much does an AI Employee cost?",
+    a: "Implementation is scoped as a project based on your workflows, channels and integrations — you receive a quotation after the discovery process, not a generic price.",
+  },
+  {
+    q: "Are there monthly AI or API charges?",
+    a: "Ongoing AI usage may carry a monthly operating cost depending on conversation volume, models, channels and integrations. This is explained clearly as part of your quotation — no hidden charges.",
+  },
+  {
+    q: "Can we begin with one workflow?",
+    a: "Yes — most projects start with the single highest-priority workflow, then expand once it's proven.",
+  },
+  {
+    q: "Who monitors and supports the AI?",
+    a: "RaveSoft's team monitors conversations and outcomes as part of implementation, with support and optimization plans available separately.",
+  },
+  {
+    q: "How is customer and business data protected?",
+    a: "Conversation and lead data lives in your own project database. We don't sell or share your data, and you retain ownership of it.",
+  },
+  {
+    q: "Will it work outside normal office hours?",
+    a: "Yes — that's one of the main reasons businesses deploy an AI Employee. It responds to inquiries around the clock and hands sensitive or complex conversations to your team when they're back online.",
   },
 ];
 
-export default function AiEmployeePage() {
+interface PageProps {
+  searchParams: Promise<{ agent?: string | string[]; industry?: string | string[] }>;
+}
+
+export default async function AiEmployeePage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const hero = resolveHeroContent(params.agent);
+  const industryExample = resolveIndustryExample(params.industry);
+
   return (
     <>
       <FAQSchema items={FAQS.map((f) => ({ question: f.q, answer: f.a }))} />
@@ -174,322 +182,348 @@ export default function AiEmployeePage() {
           { name: "AI Employee", url: "https://ravesoftsolutions.com/ai-employee" },
         ]}
       />
+      <FabOffsetController />
+      <ScrollDepthTracker />
+      <StickyMobileCta targetId="assessment" />
 
       {/* HERO */}
-      <section className="relative bg-[#050816] pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
+      <section className="relative bg-[#050816] pt-28 pb-14 lg:pt-36 lg:pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute bg-grid-dark inset-0 opacity-60" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-blue-700/14 rounded-full blur-[130px]" />
-          <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-amber-500/8 rounded-full blur-[110px]" />
+          <div className="absolute bg-grid-dark inset-0 opacity-50" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-blue-700/14 rounded-full blur-[120px]" />
         </div>
-        <div className="relative max-w-[1000px] mx-auto px-5 sm:px-8 lg:px-10 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/12 border border-amber-500/25 mb-7">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-sm text-amber-300 font-semibold">AI Employee — by RaveSoft Digital Solutions</span>
-          </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-black text-white leading-[1.08] tracking-tighter mb-6">
-            Build the Right{" "}
-            <span className="bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">
-              AI Employee
-            </span>{" "}
-            for Your Business
-          </h1>
-          <p className="text-gray-400 text-lg leading-relaxed max-w-2xl mx-auto mb-10">
-            Complete a short AI-powered business diagnosis. We&apos;ll identify what can be
-            automated, recommend the right AI Employee, and prepare a deployment plan for your
-            business.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-            <StartDiagnosisButton />
-            <Link
-              href="/book-consultation"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all"
-            >
-              Book an AI Strategy Call
-            </Link>
-          </div>
-          <p className="text-sm text-gray-500">
-            Takes about 5 minutes · Personalized recommendations · No technical knowledge required
-          </p>
-        </div>
-      </section>
+        <div className="relative max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/12 border border-amber-500/25 mb-5">
+              <span className="text-xs font-bold tracking-wide text-amber-300 uppercase">
+                AI Employees for Sales, Support and Operations
+              </span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-[1.1] tracking-tight mb-4">
+              {hero.headline}
+            </h1>
+            <p className="text-gray-400 text-base sm:text-lg leading-relaxed mb-2">
+              {hero.supporting}
+              {industryExample && ` Built for businesses handling ${industryExample}.`}
+            </p>
+            <p className="text-gray-500 text-sm mb-7">Built and managed by RaveSoft Digital Solutions</p>
 
-      {/* THE PROBLEM */}
-      <section className="bg-white section-padding">
-        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <SectionHeader
-            eyebrow="The Real Problem"
-            title="Your business may not need more software. It may need an AI Employee that actually does the work."
-            description="Each of these has a real, observable cost — in lost sales, wasted staff hours, or frustrated customers."
-            className="mb-14"
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {PROBLEMS.map((problem, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 p-5 rounded-xl bg-[#F5F7FA] border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all"
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
+              <StartDiagnosisButton
+                label="Find My AI Employee"
+                initialMessage="I'd like to find out which AI Employee is right for my business."
+              />
+              <Link
+                href="#how-it-works"
+                className="min-h-[48px] inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all"
               >
-                <problem.icon className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
-                <span className="text-gray-700 text-sm leading-relaxed">{problem.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="bg-[#050816] section-padding relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-dark opacity-40 pointer-events-none" />
-        <div className="relative max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <SectionHeader
-            eyebrow="How It Works"
-            title="From conversation to a working AI Employee"
-            dark
-            className="mb-14"
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {STEPS.map((s) => (
-              <div key={s.step} className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                <span className="text-amber-400 font-black text-2xl">{s.step}</span>
-                <h3 className="text-white font-bold mt-3 mb-2">{s.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{s.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* AI EMPLOYEE TYPES */}
-      <section className="bg-[#F5F7FA] section-padding">
-        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <SectionHeader
-            eyebrow="AI Employees We Build"
-            title="We only recommend the agent your business actually needs"
-            description="Every AI Employee is custom-built around your workflow — these are the roles we most commonly deploy for businesses like yours."
-            className="mb-14"
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {AGENT_TYPES.map((agent) => (
-              <div
-                key={agent.name}
-                className="p-7 rounded-2xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all"
-              >
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-blue-600 mb-5"
-                  style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.07))", border: "1px solid rgba(59,130,246,0.15)" }}
-                >
-                  <agent.icon className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-gray-900 mb-2">{agent.name}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{agent.description}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-10 p-6 rounded-2xl bg-white border border-dashed border-gray-300 text-center">
-            <p className="text-gray-700 font-medium">
-              Need several connected agents across sales, support, and operations?{" "}
-              <Link href="/contact" className="text-blue-600 font-semibold hover:underline">
-                Ask about a Custom AI Workforce →
+                See How It Works
               </Link>
+            </div>
+            <p className="text-xs text-gray-500">Free 2-minute assessment · No technical knowledge required</p>
+          </div>
+
+          {/* Result strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
+            {["Reply instantly", "Follow up automatically", "Qualify every lead", "Book more customers"].map((r) => (
+              <div key={r} className="text-center px-3 py-3 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-white text-sm font-semibold">{r}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PAIN */}
+      <section className="bg-white section-padding">
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
+          <SectionHeader
+            title="Your business may not need more software. It may need an AI Employee that does the work."
+            description="Every delayed reply, forgotten follow-up and unanswered inquiry can become a lost customer. Your AI Employee handles repetitive conversations and actions consistently, while your team focuses on the work that needs human judgment."
+            className="mb-10"
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            {PAIN_POINTS.map((p, i) => (
+              <div key={i} className="flex items-start gap-3 p-5 rounded-xl bg-[#F5F7FA] border border-gray-100">
+                <p.icon className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                <span className="text-gray-700 text-[15px]">{p.text}</span>
+              </div>
+            ))}
+          </div>
+          <div className="text-center p-6 rounded-2xl bg-amber-50 border border-amber-200 mb-8">
+            <p className="text-amber-900 font-semibold">
+              If any two of these are happening in your business, an AI Employee could recover time and revenue you
+              are currently losing.
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* EXAMPLE CONVERSATION */}
-      <section className="bg-white section-padding">
-        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <SectionHeader
-                eyebrow="See It In Action"
-                title="A short conversation is all it takes"
-                align="left"
-              />
-              <p className="text-gray-500 mt-4 mb-8 leading-relaxed">
-                This is an illustrative example of how the diagnosis conversation flows — the real
-                one, powered by Rave AI, adapts to your actual business as you answer.
-              </p>
-              <StartDiagnosisButton label="Start My Business Diagnosis" />
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-[#F5F7FA] p-6 space-y-3">
-              {[
-                { role: "assistant", text: "What kind of business do you operate?" },
-                { role: "visitor", text: "I run a hotel with 42 rooms." },
-                { role: "assistant", text: "Where do most booking inquiries come from?" },
-                { role: "visitor", text: "WhatsApp, Instagram, calls, and walk-ins." },
-                {
-                  role: "assistant",
-                  text: "About how many inquiries do you get each week, and how quickly does your team usually respond?",
-                },
-                { role: "visitor", text: "About 80. Response can take several hours." },
-                {
-                  role: "assistant",
-                  text: "Delayed responses may be affecting your booking conversion. Let's see whether a 24/7 Booking & Guest-Service AI Employee makes sense for your hotel.",
-                },
-              ].map((m, i) => (
-                <div
-                  key={i}
-                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                    m.role === "assistant"
-                      ? "bg-white border border-gray-200 text-gray-800 mr-auto"
-                      : "bg-blue-600 text-white ml-auto"
-                  }`}
-                >
-                  {m.text}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* OUTCOMES */}
-      <section className="bg-[#F5F7FA] section-padding">
-        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <SectionHeader eyebrow="What Changes" title="Practical outcomes, not vague promises" className="mb-12" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {OUTCOMES.map((outcome) => (
-              <div key={outcome} className="flex items-center gap-3 p-4 rounded-xl bg-white border border-gray-100">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                <span className="text-gray-700 text-sm font-medium">{outcome}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* INTEGRATIONS */}
-      <section className="bg-white section-padding">
-        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <SectionHeader eyebrow="Integrations" title="Where your AI Employee can work" className="mb-12" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {INTEGRATIONS.map((integration) => (
-              <div
-                key={integration.name}
-                className="p-5 rounded-xl bg-[#F5F7FA] border border-gray-100 flex items-center justify-between gap-3"
-              >
-                <span className="text-gray-800 text-sm font-semibold">{integration.name}</span>
-                <span
-                  className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
-                    integration.available ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  {integration.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* VISUAL BREAK */}
-      <section className="bg-[#050816] py-16 relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-dark opacity-40 pointer-events-none" />
-        <div className="relative max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <div className="relative rounded-2xl overflow-hidden border border-white/10">
-            <Image
-              src="/img/business-automation.png"
-              alt="AI-powered business automation connecting sales, support, and operations for African businesses"
-              width={1280}
-              height={480}
-              className="w-full h-auto object-cover"
-              loading="lazy"
+          <div className="text-center">
+            <StartDiagnosisButton
+              label="Find the Right AI Employee"
+              initialMessage="Help me find the right AI Employee for my business."
+              variant="outline"
+              className="!border-blue-200 !bg-blue-50 !text-blue-700 hover:!bg-blue-100"
             />
           </div>
         </div>
       </section>
 
-      {/* PRICING */}
+      {/* TRANSFORMATION */}
+      <section className="bg-[#F5F7FA] section-padding">
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
+          <SectionHeader title="See what happens after your AI Employee goes live" className="mb-10" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+            <div className="p-6 rounded-2xl bg-white border border-gray-200">
+              <p className="text-xs font-bold text-red-600 uppercase tracking-wide mb-4">Before</p>
+              <ul className="space-y-3 text-sm text-gray-600">
+                {[
+                  "Customer inquiries wait for staff",
+                  "Follow-ups depend on memory",
+                  "Leads are mixed with unqualified inquiries",
+                  "Business information is scattered",
+                  "Owners can't monitor every conversation",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="text-red-400 mt-0.5">✕</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="p-6 rounded-2xl bg-white border border-blue-200">
+              <p className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-4">After</p>
+              <ul className="space-y-3 text-sm text-gray-700">
+                {[
+                  "Every inquiry gets an immediate response",
+                  "Follow-ups run automatically",
+                  "Leads are qualified and prioritized",
+                  "The AI uses your approved business knowledge",
+                  "Conversations and outcomes are recorded",
+                  "Staff can take over whenever necessary",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="text-blue-500 mt-0.5">✓</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2 text-sm font-semibold text-gray-700">
+            {["Inquiry", "Instant response", "Qualification", "Follow-up", "Booking, order or handoff"].map(
+              (step, i, arr) => (
+                <span key={step} className="flex items-center gap-2">
+                  <span className="px-3 py-1.5 rounded-full bg-white border border-gray-200">{step}</span>
+                  {i < arr.length - 1 && <span className="text-gray-400">→</span>}
+                </span>
+              )
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* AI EMPLOYEE TYPES */}
       <section className="bg-white section-padding">
-        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <SectionHeader
-            eyebrow="Packages"
-            title="Every AI Employee is scoped to your business"
-            description="Pricing depends on the workflows, channels, and integrations involved — we'll give you a clear, fixed quote after your diagnosis."
-            className="mb-14"
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[
-              {
-                name: "Starter AI Employee",
-                description: "One high-priority workflow (e.g. WhatsApp sales replies) with limited integrations.",
-              },
-              {
-                name: "Growth AI Employee",
-                description: "Multiple workflows, automated follow-up, CRM integration, and reporting.",
-              },
-              {
-                name: "AI Workforce",
-                description: "Several connected agents across sales, support, and operations.",
-              },
-              {
-                name: "Custom Enterprise",
-                description: "Advanced integrations, dedicated infrastructure, and high-volume usage.",
-              },
-            ].map((tier) => (
-              <div key={tier.name} className="p-7 rounded-2xl bg-[#F5F7FA] border border-gray-100 flex flex-col">
-                <h3 className="font-bold text-gray-900 mb-2">{tier.name}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed mb-6 flex-1">{tier.description}</p>
-                <Link
-                  href="/contact"
-                  className="text-center text-sm font-semibold px-4 py-2.5 rounded-xl border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors"
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
+          <SectionHeader eyebrow="Choose The Outcome You Need" title="We build the AI Employee" className="mb-10" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {AGENT_TYPES.map((agent) => (
+              <div key={agent.name} className="p-6 rounded-2xl bg-[#F5F7FA] border border-gray-100">
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center text-blue-600 mb-4"
+                  style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.15)" }}
                 >
-                  Request Pricing
+                  <agent.icon className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-gray-900 mb-1">{agent.name}</h3>
+                <p className="text-xs text-gray-500 mb-3">For: {agent.whoFor}</p>
+                <ul className="space-y-1.5 mb-4">
+                  {agent.tasks.map((t) => (
+                    <li key={t} className="text-sm text-gray-700 flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">•</span> {t}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-sm font-medium text-gray-900 mb-4">{agent.outcome}</p>
+                <Link
+                  href="#assessment"
+                  className="text-sm font-semibold text-blue-600 hover:underline"
+                >
+                  Explore This AI Employee →
                 </Link>
               </div>
             ))}
           </div>
-          <p className="text-center text-sm text-gray-500 mt-8">
-            Every quote separates one-time setup, monthly platform cost, and any usage-based fees clearly — no hidden charges.
+          <p className="text-center text-sm text-gray-500 mt-8 max-w-xl mx-auto">
+            An AI Employee handles repetitive, high-volume work. Humans retain control and handle exceptions — it
+            does not replace your team.
           </p>
+        </div>
+      </section>
+
+      {/* ASSESSMENT */}
+      <section className="bg-[#050816] section-padding relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-dark opacity-40 pointer-events-none" />
+        <div className="relative max-w-[720px] mx-auto px-5 sm:px-8 lg:px-10">
+          <SectionHeader
+            eyebrow="Personalized Assessment"
+            title="A short conversation is all it takes"
+            description="Tell us how your business currently handles inquiries, sales, support and repetitive work. Your assessment identifies the most valuable AI Employee to deploy first."
+            dark
+            className="mb-8"
+          />
+          <AssessmentWidget id="assessment" />
+        </div>
+      </section>
+
+      {/* IMPLEMENTATION */}
+      <section id="how-it-works" className="bg-white section-padding scroll-mt-20">
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
+          <SectionHeader title="From business problem to a working AI Employee" className="mb-10" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { title: "Discover", text: "We map the problem, customer journey and business rules." },
+              { title: "Design", text: "We define the AI's tasks, knowledge, boundaries and human handoff points." },
+              {
+                title: "Build & Integrate",
+                text: "We connect approved channels and systems and train the AI using your business information.",
+              },
+              { title: "Launch & Improve", text: "We test, deploy, monitor and improve based on real conversations and outcomes." },
+            ].map((step, i) => (
+              <div key={step.title} className="p-6 rounded-2xl bg-[#F5F7FA] border border-gray-100">
+                <span className="text-blue-600 font-black text-xl">0{i + 1}</span>
+                <h3 className="font-bold text-gray-900 mt-2 mb-2">{step.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{step.text}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-sm text-gray-500 mt-8">
+            Every project is scoped according to workflow complexity, required integrations, conversation volume and
+            support needs.
+          </p>
+        </div>
+      </section>
+
+      {/* LIVE DEMO */}
+      <section className="bg-[#F5F7FA] section-padding">
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
+          <SectionHeader eyebrow="See It Work" title="Choose a scenario" className="mb-8" />
+          <LiveDemoSelector />
+        </div>
+      </section>
+
+      {/* OUTCOMES */}
+      <section className="bg-white section-padding">
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
+          <SectionHeader title="Practical business outcomes — not vague AI promises" className="mb-10" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              "Faster first response",
+              "More consistent follow-up",
+              "Better-qualified sales conversations",
+              "Fewer repetitive tasks for staff",
+              "More organized customer information",
+              "More inquiries handled outside office hours",
+              "Clearer handoff between AI and employees",
+              "Better visibility into lost and converted leads",
+            ].map((o) => (
+              <div key={o} className="flex items-center gap-3 p-4 rounded-xl bg-[#F5F7FA] border border-gray-100">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                <span className="text-gray-700 text-sm font-medium">{o}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TRUST — no fabricated testimonials; real company info only */}
+      <section className="bg-[#F5F7FA] section-padding">
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
+          <SectionHeader eyebrow="Who's Behind This" title="Built by a team that understands business automation" className="mb-8" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div className="p-6 rounded-2xl bg-white border border-gray-100">
+              <h3 className="font-bold text-gray-900 mb-2">RaveSoft Digital Solutions Ltd</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Based in {COMPANY.location}. Building custom software, POS/ERP systems, and automation for
+                businesses across Africa.
+              </p>
+            </div>
+            <div className="p-6 rounded-2xl bg-white border border-gray-100">
+              <h3 className="font-bold text-gray-900 mb-2">Data & privacy</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Your conversation and lead data lives in your own project database. We don&apos;t sell or share it.
+              </p>
+            </div>
+            <div className="p-6 rounded-2xl bg-white border border-gray-100">
+              <h3 className="font-bold text-gray-900 mb-2">Real project work</h3>
+              <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                See verified case studies from software and automation projects we&apos;ve delivered.
+              </p>
+              <Link href="/case-studies" className="text-sm font-semibold text-blue-600 hover:underline">
+                View case studies →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* INVESTMENT CLARITY */}
+      <section className="bg-white section-padding">
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10 text-center">
+          <SectionHeader title="Built for your business — not sold as a generic bot" className="mb-8" align="center" />
+          <div className="max-w-2xl mx-auto text-left space-y-3 text-gray-600 text-[15px] leading-relaxed mb-8">
+            <p>• Implementation and integration is scoped as a project, based on your workflows and channels.</p>
+            <p>• Ongoing AI model/API usage may carry a monthly operating cost, depending on volume.</p>
+            <p>• Final operating cost depends on conversation volume, models, channels and integrations used.</p>
+            <p>• Support or managed optimization plans may be offered separately.</p>
+            <p>• You receive a clear quotation after the discovery process — never a guessed price.</p>
+          </div>
+          <p className="text-gray-800 font-semibold max-w-xl mx-auto mb-8">
+            One well-designed AI Employee can handle repetitive work across several business functions at a fraction
+            of the cost of building a larger manual team.
+          </p>
+          <StartDiagnosisButton label="Get My AI Employee Plan" initialMessage="I'd like a plan and quote for an AI Employee." />
         </div>
       </section>
 
       {/* FAQ */}
       <section className="bg-[#F5F7FA] section-padding">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeader eyebrow="Common Questions" title="Before you start" className="mb-12" />
+          <SectionHeader eyebrow="FAQ" title="Common questions" className="mb-10" />
           <FAQAccordion items={FAQS.map((f) => ({ question: f.q, answer: f.a }))} />
         </div>
       </section>
 
-      {/* RELATED */}
-      <section className="bg-white border-t border-gray-100 py-10">
-        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
-          <p className="text-sm text-gray-500 font-medium mb-4">Also explore</p>
-          <div className="flex flex-wrap gap-3">
+      {/* FINAL CTA */}
+      <section className="bg-[#050816] section-padding relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-blue-600/12 rounded-full blur-[130px]" />
+        </div>
+        <div className="relative max-w-[720px] mx-auto px-5 sm:px-8 lg:px-10 text-center">
+          <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
+            Discover the AI Employee your business actually needs
+          </h2>
+          <p className="text-gray-400 mb-8">
+            Complete the free assessment and receive a personalized recommendation based on your business, customer
+            channels and most expensive repetitive workflow.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
+            <StartDiagnosisButton label="Find My AI Employee" />
             <Link
-              href="/services/business-automation"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all"
+              href="/book-consultation"
+              className="min-h-[48px] inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all"
             >
-              Business Automation & AI Service →
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all"
-            >
-              Contact RaveSoft →
+              Book a Free AI Strategy Call
             </Link>
             <a
               href={`https://wa.me/${COMPANY.whatsapp.replace(/[^0-9]/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 hover:border-green-300 hover:bg-green-50 hover:text-green-700 transition-all"
+              className="min-h-[48px] inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all"
             >
-              Chat on WhatsApp →
+              Chat With RaveSoft
             </a>
           </div>
+          <p className="text-xs text-gray-500">Free assessment · No obligation · Human consultation available</p>
         </div>
       </section>
-
-      {/* FINAL CTA */}
-      <CTASection
-        headline="Discover which AI Employee your business actually needs"
-        subheadline="Complete the guided diagnosis and get a tailored recommendation, implementation priorities, and next-step plan."
-        primaryCTA={{ label: "Start My Free AI Business Diagnosis", href: "/contact" }}
-        secondaryCTA={{ label: "Book a Strategy Call", href: "/book-consultation" }}
-      />
     </>
   );
 }

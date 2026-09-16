@@ -164,8 +164,9 @@ export default function ChatWidget() {
         onClick={() => handleOpen()}
         aria-label={isOpen ? "Close chat" : "Chat with Rave AI"}
         aria-expanded={isOpen}
+        style={{ bottom: "var(--fab-bottom-offset, 1.5rem)" }}
         className={cn(
-          "fixed bottom-6 left-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[0_8px_32px_rgba(37,99,235,0.45)] hover:shadow-[0_12px_40px_rgba(37,99,235,0.6)] hover:scale-110 transition-all duration-200 bg-blue-600 text-white",
+          "fixed left-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[0_8px_32px_rgba(37,99,235,0.45)] hover:shadow-[0_12px_40px_rgba(37,99,235,0.6)] hover:scale-110 transition-all duration-200 bg-blue-600 text-white",
           isOpen && "hidden"
         )}
       >

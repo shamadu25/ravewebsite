@@ -87,3 +87,31 @@ export async function sendHumanHandoffNotification(input: HumanHandoffNotificati
 
   await send("🙋 Human handoff requested on RaveSoft website", html);
 }
+
+export interface AssessmentCompletedNotificationInput {
+  leadId: number;
+  contactName: string;
+  businessName: string;
+  contactEmail: string;
+  contactWhatsapp: string;
+  recommendedAgent: string;
+  complexity: string;
+}
+
+export async function sendAssessmentCompletedNotification(input: AssessmentCompletedNotificationInput): Promise<void> {
+  const html = wrapper(
+    "📋 New AI Employee Assessment",
+    "A visitor completed the AI Employee assessment on the website",
+    `<table style="width:100%;border-collapse:collapse;">
+      ${row("Contact", input.contactName)}
+      ${row("Business", input.businessName)}
+      ${row("Email", input.contactEmail)}
+      ${row("WhatsApp", input.contactWhatsapp)}
+      ${row("Recommended", input.recommendedAgent)}
+      ${row("Complexity", input.complexity)}
+    </table>
+    <p style="margin-top:16px;"><a href="${APP_URL}/admin/leads/${input.leadId}" style="color:#3b82f6;font-weight:600;">View lead in admin dashboard →</a></p>`
+  );
+
+  await send(`📋 AI Employee assessment: ${input.contactName} (${input.businessName})`, html);
+}

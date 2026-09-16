@@ -13,8 +13,11 @@ export default function WhatsAppButton() {
       rel="noopener noreferrer"
       aria-label="Chat with RaveSoft on WhatsApp"
       onClick={() => trackEvent("whatsapp_click", { location: "floating_button" })}
-      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[0_8px_32px_rgba(37,211,102,0.45)] hover:shadow-[0_12px_40px_rgba(37,211,102,0.6)] hover:scale-110 transition-all duration-200"
-      style={{ background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)" }}
+      className="fixed right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[0_8px_32px_rgba(37,211,102,0.45)] hover:shadow-[0_12px_40px_rgba(37,211,102,0.6)] hover:scale-110 transition-all duration-200"
+      style={{
+        background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
+        bottom: "var(--fab-bottom-offset, 1.5rem)",
+      }}
     >
       {/* WhatsApp SVG icon */}
       <svg viewBox="0 0 24 24" fill="white" className="w-7 h-7">

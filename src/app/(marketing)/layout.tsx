@@ -7,6 +7,8 @@ import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import ChatWidgetLoader from "@/components/ai/ChatWidgetLoader";
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
 import GoogleAnalytics from "@/components/seo/GoogleAnalytics";
+import MetaPixel from "@/components/seo/MetaPixel";
+import ClarityScript from "@/components/seo/ClarityScript";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -161,6 +163,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col antialiased bg-white text-gray-900">
         <OrganizationSchema />
         <GoogleAnalytics />
+        <MetaPixel />
+        <ClarityScript />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
