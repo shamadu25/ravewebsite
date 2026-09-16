@@ -1,6 +1,8 @@
 import { VisitorContext } from "./session";
 
-const API_BASE = process.env.NEXT_PUBLIC_AI_API_URL ?? "http://localhost:8000/api/ai";
+// Same-origin — the AI agent lives in this same Next.js project (src/app/api/ai),
+// not a separate backend/subdomain.
+const API_BASE = "/api/ai";
 
 export interface ChatMessage {
   id: number;

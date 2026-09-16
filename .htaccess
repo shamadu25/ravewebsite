@@ -2,13 +2,4 @@ Options -Indexes
 DirectoryIndex disabled
 
 RewriteEngine On
-
-# RaveSoft AI backend (Laravel) — served from ./api/ai (a symlink to the
-# Laravel app's public/ folder). Let Apache handle these natively instead
-# of proxying them to the Next.js Node app, so they hit Laravel's own
-# public/.htaccess front controller. Everything else, including Next's own
-# /api/contact and /api/og routes, still proxies to Node below.
-RewriteCond %{REQUEST_URI} ^/api/ai/
-RewriteRule ^ - [L]
-
 RewriteRule .* unix:/tmp/rave_ravesoft.sock|http://ravesoftsolutions.com%{REQUEST_URI} [P,L,NE]

@@ -1,0 +1,375 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Identity ────────────────────────────────────────────────────────────
+
+model Company {
+  id          Int      @id @default(autoincrement())
+  name        String
+  industry    String?
+  companySize String?  @map("company_size")
+  website     String?
+  country     String?
+  contacts    Contact[]
+  leads       Lead[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("companies")
+}
+
+model Contact {
+  id              Int      @id @default(autoincrement())
+  companyId       Int?     @map("company_id")
+  company         Company? @relation(fields: [companyId], references: [id])
+  firstName       String?  @map("first_name")
+  lastName        String?  @map("last_name")
+  jobTitle        String?  @map("job_title")
+  email           String?
+  phone           String?
+  whatsapp        String?
+  country         String?
+  city            String?
+  consentWhatsapp Boolean  @default(false) @map("consent_whatsapp")
+  consentEmail    Boolean  @default(false) @map("consent_email")
+  visitors        Visitor[]
+  conversations   Conversation[]
+  leads           Lead[]
+  conversionEvents ConversionEvent[]
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("contacts")
+}
+
+model Visitor {
+  id            Int       @id @default(autoincrement())
+  externalId    String    @unique @map("external_id")
+  contactId     Int?      @map("contact_id")
+  contact       Contact?  @relation(fields: [contactId], references: [id])
+  firstSeenAt   DateTime? @map("first_seen_at")
+  lastSeenAt    DateTime? @map("last_seen_at")
+  sessionsCount Int       @default(0) @map("sessions_count")
+  sessions      VisitorSession[]
+  conversations Conversation[]
+  conversionEvents ConversionEvent[]
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("visitors")
+}
+
+model VisitorSession {
+  id          Int      @id @default(autoincrement())
+  visitorId   Int      @map("visitor_id")
+  visitor     Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  landingPage String?  @map("landing_page")
+  currentPage String?  @map("current_page")
+  referrer    String?
+  utmSource   String?  @map("utm_source")
+  utmMedium   String?  @map("utm_medium")
+  utmCampaign String?  @map("utm_campaign")
+  utmContent  String?  @map("utm_content")
+  utmTerm     String?  @map("utm_term")
+  device      String?
+  browser     String?
+  language    String?
+  startedAt   DateTime? @map("started_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("visitor_sessions")
+}
+
+// ── Conversations ───────────────────────────────────────────────────────
+
+model Conversation {
+  id              Int       @id @default(autoincrement())
+  externalId      String    @unique @map("external_id")
+  visitorId       Int?      @map("visitor_id")
+  visitor         Visitor?  @relation(fields: [visitorId], references: [id])
+  contactId       Int?      @map("contact_id")
+  contact         Contact?  @relation(fields: [contactId], references: [id])
+  channel         String    @default("website")
+  stage           String    @default("new")
+  status          String    @default("open")
+  landingPage     String?   @map("landing_page")
+  currentPage     String?   @map("current_page")
+  lastMessageAt   DateTime? @map("last_message_at")
+  messages        Message[]
+  summaries       ConversationSummary[]
+  leads           Lead[]
+  intentDetections IntentDetection[]
+  agentRuns       AgentRun[]
+  conversionEvents ConversionEvent[]
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("conversations")
+}
+
+model Message {
+  id                Int          @id @default(autoincrement())
+  conversationId    Int          @map("conversation_id")
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role              String
+  content           String       @db.Text
+  structuredOutput  Json?        @map("structured_output")
+  promptVersionId   Int?         @map("prompt_version_id")
+  model             String?
+  inputTokens       Int?         @map("input_tokens")
+  outputTokens      Int?         @map("output_tokens")
+  latencyMs         Int?         @map("latency_ms")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  @@map("messages")
+}
+
+model ConversationSummary {
+  id             Int          @id @default(autoincrement())
+  conversationId Int          @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  summary        String       @db.Text
+  generatedAt    DateTime     @map("generated_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@map("conversation_summaries")
+}
+
+// ── Intent ──────────────────────────────────────────────────────────────
+
+model Intent {
+  id                 Int               @id @default(autoincrement())
+  key                String            @unique
+  label              String
+  category           String?
+  primaryDetections  IntentDetection[] @relation("PrimaryIntent")
+  secondaryDetections IntentDetection[] @relation("SecondaryIntent")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+
+  @@map("intents")
+}
+
+model IntentDetection {
+  id                Int          @id @default(autoincrement())
+  conversationId    Int          @map("conversation_id")
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  messageId         Int?         @map("message_id")
+  primaryIntentId   Int          @map("primary_intent_id")
+  primaryIntent     Intent       @relation("PrimaryIntent", fields: [primaryIntentId], references: [id])
+  secondaryIntentId Int?         @map("secondary_intent_id")
+  secondaryIntent   Intent?      @relation("SecondaryIntent", fields: [secondaryIntentId], references: [id])
+  confidence        Float        @default(0)
+  detectedService   String?      @map("detected_service")
+  detectedIndustry  String?      @map("detected_industry")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  @@map("intent_detections")
+}
+
+// ── Leads ───────────────────────────────────────────────────────────────
+
+model Lead {
+  id              Int           @id @default(autoincrement())
+  contactId       Int           @map("contact_id")
+  contact         Contact       @relation(fields: [contactId], references: [id])
+  companyId       Int?          @map("company_id")
+  company         Company?      @relation(fields: [companyId], references: [id])
+  conversationId  Int?          @unique @map("conversation_id")
+  conversation    Conversation? @relation(fields: [conversationId], references: [id])
+  source          String?
+  serviceInterest String?       @map("service_interest")
+  stage           String        @default("new")
+  priority        String?
+  owner           String?
+  scores          LeadScore[]
+  conversionEvents ConversionEvent[]
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("leads")
+}
+
+model LeadScore {
+  id         Int                  @id @default(autoincrement())
+  leadId     Int                  @map("lead_id")
+  lead       Lead                 @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  totalScore Int                  @default(0) @map("total_score")
+  level      String               @default("low")
+  computedAt DateTime             @map("computed_at")
+  components LeadScoreComponent[]
+  createdAt  DateTime             @default(now()) @map("created_at")
+  updatedAt  DateTime             @updatedAt @map("updated_at")
+
+  @@map("lead_scores")
+}
+
+model LeadScoreComponent {
+  id          Int       @id @default(autoincrement())
+  leadScoreId Int       @map("lead_score_id")
+  leadScore   LeadScore @relation(fields: [leadScoreId], references: [id], onDelete: Cascade)
+  key         String
+  points      Int
+  reason      String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("lead_score_components")
+}
+
+// ── Prompt versioning ───────────────────────────────────────────────────
+
+model AiPrompt {
+  id          Int             @id @default(autoincrement())
+  agentKey    String          @unique @map("agent_key")
+  name        String
+  description String?         @db.Text
+  versions    AiPromptVersion[]
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  @@map("ai_prompts")
+}
+
+model AiPromptVersion {
+  id                 Int       @id @default(autoincrement())
+  aiPromptId         Int       @map("ai_prompt_id")
+  aiPrompt           AiPrompt  @relation(fields: [aiPromptId], references: [id], onDelete: Cascade)
+  version            Int
+  content            String    @db.Text
+  status             String    @default("draft")
+  createdBy          String?   @map("created_by")
+  approvedBy         String?   @map("approved_by")
+  publishedAt        DateTime? @map("published_at")
+  performanceMetrics Json?     @map("performance_metrics")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  @@unique([aiPromptId, version])
+  @@map("ai_prompt_versions")
+}
+
+// ── Knowledge base ──────────────────────────────────────────────────────
+
+model KnowledgeDocument {
+  id            Int       @id @default(autoincrement())
+  title         String
+  slug          String    @unique
+  category      String
+  content       String    @db.Text
+  source        String?
+  version       Int       @default(1)
+  status        String    @default("draft")
+  effectiveDate DateTime? @map("effective_date")
+  expiresAt     DateTime? @map("expires_at")
+  approvedBy    String?   @map("approved_by")
+  chunks        KnowledgeChunk[]
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@map("knowledge_documents")
+}
+
+model KnowledgeChunk {
+  id                  Int               @id @default(autoincrement())
+  knowledgeDocumentId Int               @map("knowledge_document_id")
+  document            KnowledgeDocument @relation(fields: [knowledgeDocumentId], references: [id], onDelete: Cascade)
+  chunkIndex          Int               @default(0) @map("chunk_index")
+  content             String            @db.Text
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+
+  @@map("knowledge_chunks")
+}
+
+// ── Observability ───────────────────────────────────────────────────────
+
+model AgentRun {
+  id              Int          @id @default(autoincrement())
+  conversationId  Int          @map("conversation_id")
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  messageId       Int?         @map("message_id")
+  agentKey        String       @map("agent_key")
+  promptVersionId Int?         @map("prompt_version_id")
+  model           String?
+  inputTokens     Int?         @map("input_tokens")
+  outputTokens    Int?         @map("output_tokens")
+  latencyMs       Int?         @map("latency_ms")
+  status          String       @default("success")
+  error           String?      @db.Text
+  actions         AgentAction[]
+  toolCalls       ToolCall[]
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@map("agent_runs")
+}
+
+model AgentAction {
+  id         Int      @id @default(autoincrement())
+  agentRunId Int      @map("agent_run_id")
+  agentRun   AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  actionType String   @map("action_type")
+  payload    Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("agent_actions")
+}
+
+model ToolCall {
+  id         Int      @id @default(autoincrement())
+  agentRunId Int      @map("agent_run_id")
+  agentRun   AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  toolName   String   @map("tool_name")
+  input      Json?
+  output     Json?
+  status     String   @default("success")
+  error      String?  @db.Text
+  latencyMs  Int?     @map("latency_ms")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("tool_calls")
+}
+
+model ConversionEvent {
+  id             Int           @id @default(autoincrement())
+  visitorId      Int?          @map("visitor_id")
+  visitor        Visitor?      @relation(fields: [visitorId], references: [id])
+  contactId      Int?          @map("contact_id")
+  contact        Contact?      @relation(fields: [contactId], references: [id])
+  leadId         Int?          @map("lead_id")
+  lead           Lead?         @relation(fields: [leadId], references: [id])
+  conversationId Int?          @map("conversation_id")
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  eventType      String        @map("event_type")
+  metadata       Json?
+  occurredAt     DateTime      @map("occurred_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@index([eventType])
+  @@map("conversion_events")
+}
+
+model SystemSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
