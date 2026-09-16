@@ -202,6 +202,9 @@ function contextualOpener(currentPage?: string): string {
   if (currentPage.includes("business-automation")) {
     return "Want to automate part of your business? I can help identify where an AI employee would produce the most value.";
   }
+  if (currentPage.includes("ai-employee")) {
+    return "What kind of business do you run, and where are you currently losing the most time or customers — sales, support, follow-up, or something else?";
+  }
 
   return defaultOpener;
 }

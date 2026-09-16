@@ -13,6 +13,7 @@ import {
   startConversation,
 } from "@/lib/ai/api";
 import { buildVisitorContext, getStoredConversationId, storeConversationId } from "@/lib/ai/session";
+import { OPEN_CHAT_EVENT, OpenChatDetail } from "@/lib/ai/openChat";
 
 const FALLBACK_MESSAGE =
   "Our AI assistant is temporarily unavailable. Leave a message on WhatsApp and the RaveSoft team will get back to you.";
@@ -74,7 +75,7 @@ export default function ChatWidget() {
     );
   };
 
-  const initConversation = async () => {
+  const initConversation = async (): Promise<string | null> => {
     setIsLoading(true);
     setUnavailable(false);
 
@@ -87,33 +88,26 @@ export default function ChatWidget() {
 
       storeConversationId(data.id);
       applyConversation(data);
+      return data.id;
     } catch {
       setUnavailable(true);
+      return null;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleOpen = () => {
-    setIsOpen(true);
-    trackEvent("chat_opened", { location: "floating_launcher" });
-
-    if (!initialized.current) {
-      initialized.current = true;
-      void initConversation();
-    }
-  };
-
-  const submitMessage = async (text: string) => {
+  const submitMessage = async (text: string, conversationIdOverride?: string) => {
     const trimmed = text.trim();
-    if (!trimmed || !conversationId || isSending) return;
+    const id = conversationIdOverride ?? conversationId;
+    if (!trimmed || !id || isSending) return;
 
     setMessages((prev) => [...prev, { id: `local-${Date.now()}`, role: "visitor", content: trimmed }]);
     setInputValue("");
     setIsSending(true);
 
     try {
-      const result = await sendMessage(conversationId, trimmed, window.location.pathname);
+      const result = await sendMessage(id, trimmed, window.location.pathname);
       setMessages((prev) => [
         ...prev,
         { id: `local-${Date.now()}-reply`, role: "assistant", content: result.message, cta: result.cta },
@@ -131,6 +125,33 @@ export default function ChatWidget() {
     }
   };
 
+  const handleOpen = (detail: OpenChatDetail = {}) => {
+    setIsOpen(true);
+    trackEvent("chat_opened", { location: detail.initialMessage ? "cta" : "floating_launcher" });
+
+    if (!initialized.current) {
+      initialized.current = true;
+      void initConversation().then((id) => {
+        if (id && detail.initialMessage) {
+          void submitMessage(detail.initialMessage, id);
+        }
+      });
+    } else if (detail.initialMessage) {
+      void submitMessage(detail.initialMessage);
+    }
+  };
+
+  useEffect(() => {
+    const onOpenRequest = (event: Event) => {
+      const detail = (event as CustomEvent<OpenChatDetail>).detail ?? {};
+      handleOpen(detail);
+    };
+
+    window.addEventListener(OPEN_CHAT_EVENT, onOpenRequest);
+    return () => window.removeEventListener(OPEN_CHAT_EVENT, onOpenRequest);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     void submitMessage(inputValue);
@@ -140,7 +161,7 @@ export default function ChatWidget() {
     <>
       <button
         type="button"
-        onClick={handleOpen}
+        onClick={() => handleOpen()}
         aria-label={isOpen ? "Close chat" : "Chat with Rave AI"}
         aria-expanded={isOpen}
         className={cn(
