@@ -26,7 +26,7 @@ export function normalizeCta(value: string): KnownCta {
 
 export const AI_CONFIG = {
   enabled: process.env.AI_AGENT_ENABLED !== "false",
-  assistantName: process.env.AI_ASSISTANT_NAME ?? "Rave AI",
+  assistantName: process.env.AI_ASSISTANT_NAME ?? "Ama",
   openai: {
     apiKey: process.env.OPENAI_API_KEY ?? "",
     model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",

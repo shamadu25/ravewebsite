@@ -14,7 +14,7 @@ describe("ChatWidget", () => {
   it("renders a launcher button and keeps the panel closed by default", () => {
     render(<ChatWidget />);
 
-    expect(screen.getByRole("button", { name: /chat with rave ai/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /chat with ama/i })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
@@ -22,7 +22,7 @@ describe("ChatWidget", () => {
     global.fetch = jest.fn().mockRejectedValue(new Error("network error"));
 
     render(<ChatWidget />);
-    fireEvent.click(screen.getByRole("button", { name: /chat with rave ai/i }));
+    fireEvent.click(screen.getByRole("button", { name: /chat with ama/i }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
     expect(
@@ -41,7 +41,7 @@ describe("ChatWidget", () => {
         id: "conv-123",
         stage: "new",
         status: "open",
-        assistant_name: "Rave AI",
+        assistant_name: "Ama",
         quick_actions: [{ label: "Get More Sales", message: "I want more sales" }],
         messages: [
           { id: 1, role: "assistant", content: "Hi — how can I help?", created_at: null },
@@ -50,7 +50,7 @@ describe("ChatWidget", () => {
     }) as unknown as typeof fetch;
 
     render(<ChatWidget />);
-    fireEvent.click(screen.getByRole("button", { name: /chat with rave ai/i }));
+    fireEvent.click(screen.getByRole("button", { name: /chat with ama/i }));
 
     await waitFor(() => {
       expect(screen.getByText("Hi — how can I help?")).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe("ChatWidget", () => {
           id: "conv-456",
           stage: "new",
           status: "open",
-          assistant_name: "Rave AI",
+          assistant_name: "Ama",
           quick_actions: [],
           messages: [{ id: 1, role: "assistant", content: "Hi there!", created_at: null }],
         }),
@@ -83,7 +83,7 @@ describe("ChatWidget", () => {
       }) as unknown as typeof fetch;
 
     render(<ChatWidget />);
-    fireEvent.click(screen.getByRole("button", { name: /chat with rave ai/i }));
+    fireEvent.click(screen.getByRole("button", { name: /chat with ama/i }));
 
     await waitFor(() => expect(screen.getByText("Hi there!")).toBeInTheDocument());
 

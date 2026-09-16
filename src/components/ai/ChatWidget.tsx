@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { X, Send, Loader2 } from "lucide-react";
 import { COMPANY } from "@/lib/data";
 import { cn, trackEvent } from "@/lib/utils";
 import {
@@ -33,8 +34,8 @@ function whatsAppContinuationUrl(messages: DisplayMessage[]): string {
   const topic = lastVisitorMessage ? lastVisitorMessage.slice(0, 200) : null;
 
   const text = topic
-    ? `Hi RaveSoft! I was chatting with Rave AI on your website about: "${topic}". Continuing here.`
-    : "Hi RaveSoft! I was chatting with Rave AI on your website and would like to continue here.";
+    ? `Hi RaveSoft! I was chatting with Ama on your website about: "${topic}". Continuing here.`
+    : "Hi RaveSoft! I was chatting with Ama on your website and would like to continue here.";
 
   return whatsAppUrl(text);
 }
@@ -56,7 +57,7 @@ export default function ChatWidget() {
   const [isSending, setIsSending] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [assistantName, setAssistantName] = useState("Rave AI");
+  const [assistantName, setAssistantName] = useState("Ama");
   const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -280,15 +281,15 @@ export default function ChatWidget() {
       <button
         type="button"
         onClick={() => handleOpen()}
-        aria-label={isOpen ? "Close chat" : "Chat with Rave AI"}
+        aria-label={isOpen ? "Close chat" : `Chat with ${assistantName}`}
         aria-expanded={isOpen}
         style={{ bottom: "var(--fab-bottom-offset, 1.5rem)" }}
         className={cn(
-          "fixed left-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[0_8px_32px_rgba(37,99,235,0.45)] hover:shadow-[0_12px_40px_rgba(37,99,235,0.6)] hover:scale-110 transition-all duration-200 bg-blue-600 text-white",
+          "fixed left-6 z-50 flex items-center justify-center w-14 h-14 rounded-full overflow-hidden ring-2 ring-white shadow-[0_8px_32px_rgba(37,99,235,0.45)] hover:shadow-[0_12px_40px_rgba(37,99,235,0.6)] hover:scale-110 transition-all duration-200 bg-blue-600",
           isOpen && "hidden"
         )}
       >
-        <MessageCircle className="w-7 h-7" />
+        <Image src="/img/ama.png" alt="" width={56} height={56} className="w-full h-full object-cover" />
       </button>
 
       {isOpen && (
@@ -298,9 +299,18 @@ export default function ChatWidget() {
           className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:left-6 z-50 flex flex-col w-full sm:w-96 h-full sm:h-[32rem] sm:rounded-2xl bg-white sm:shadow-2xl border border-gray-200 overflow-hidden"
         >
           <div className="flex items-center justify-between px-4 py-3 bg-blue-600 text-white shrink-0">
-            <div>
-              <p className="font-semibold text-sm">{assistantName}</p>
-              <p className="text-xs text-blue-100">RaveSoft AI Business Consultant</p>
+            <div className="flex items-center gap-2.5">
+              <Image
+                src="/img/ama.png"
+                alt=""
+                width={36}
+                height={36}
+                className="w-9 h-9 rounded-full object-cover ring-2 ring-white/40 shrink-0"
+              />
+              <div>
+                <p className="font-semibold text-sm">{assistantName}</p>
+                <p className="text-xs text-blue-100">RaveSoft AI Business Consultant</p>
+              </div>
             </div>
             <div className="flex items-center gap-1">
               {conversationId && !unavailable && (
