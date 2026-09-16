@@ -1,11 +1,21 @@
 const mockCreate = jest.fn();
+const mockFindFirst = jest.fn();
+const mockLeadFindUnique = jest.fn();
 
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     leadScore: {
       create: (...args: unknown[]) => mockCreate(...args),
+      findFirst: (...args: unknown[]) => mockFindFirst(...args),
+    },
+    lead: {
+      findUnique: (...args: unknown[]) => mockLeadFindUnique(...args),
     },
   },
+}));
+
+jest.mock("@/lib/mail/notifications", () => ({
+  sendHotLeadNotification: jest.fn(),
 }));
 
 import { scoreLead } from "@/lib/services/leadScoring";
@@ -18,6 +28,13 @@ describe("scoreLead", () => {
       id: 1,
       components: data.components.create,
     }));
+    mockFindFirst.mockResolvedValue(null);
+    mockLeadFindUnique.mockResolvedValue({
+      id: 1,
+      serviceInterest: null,
+      contact: { firstName: "Test", lastName: "Lead", email: null, phone: null, whatsapp: null },
+      company: null,
+    });
   });
 
   it("sums weighted signals into a total score", async () => {

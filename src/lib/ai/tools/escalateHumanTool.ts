@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { sendHumanHandoffNotification } from "@/lib/mail/notifications";
 import { Tool } from "./types";
 
 /**
- * Logs a human handoff request (spec §27/§28). Does not send a real
- * notification yet — no Slack/email/WhatsApp credentials are configured.
- * Wire a notifier here once those are available.
+ * Logs a human handoff request (spec §27/§28) and emails the RaveSoft team
+ * via the same SMTP configuration used for the contact form. WhatsApp/Slack
+ * notifications can be added later once those integrations exist.
  */
 export const EscalateHumanTool: Tool = {
   name: "EscalateHumanTool",
@@ -19,6 +20,7 @@ export const EscalateHumanTool: Tool = {
     const conversation = await prisma.conversation.update({
       where: { id: conversationId },
       data: { stage: "human_handoff" },
+      include: { contact: true },
     });
 
     await prisma.conversionEvent.create({
@@ -31,9 +33,20 @@ export const EscalateHumanTool: Tool = {
       },
     });
 
+    const reason = typeof input.reason === "string" ? input.reason : null;
+    const contactName = conversation.contact
+      ? [conversation.contact.firstName, conversation.contact.lastName].filter(Boolean).join(" ") || null
+      : null;
+
+    await sendHumanHandoffNotification({
+      conversationExternalId: conversation.externalId,
+      contactName,
+      reason,
+    });
+
     console.info("RaveSoft AI human handoff requested", {
       conversationId: conversation.id,
-      reason: input.reason,
+      reason,
     });
 
     return { escalated: true };
