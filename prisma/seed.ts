@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { COMPANY, SERVICES, PRODUCTS, FAQ_ITEMS } from "../src/lib/data";
+import { AGENT_KEY, DEFAULT_PROMPT } from "../src/lib/ai/agent/raveConcierge";
 
 const prisma = new PrismaClient();
 
@@ -92,21 +93,9 @@ async function seedKnowledge() {
   }
 }
 
-const DEFAULT_PROMPT = `Your job: greet visitors contextually, understand what they're trying to improve in their
-business, ask one or two diagnostic questions at a time, recommend the most relevant RaveSoft
-service, and progressively capture contact details once you've demonstrated value. Follow a
-diagnose -> personalize -> recommend -> prove -> CTA flow. Never dump a full feature list
-unprompted. When you have enough information and consent, request the CreateLeadTool tool with
-the contact details gathered so far, then ScoreLeadTool with observed signals as booleans keyed
-by: decision_maker, clear_problem, high_business_impact, implementation_under_30_days,
-pricing_interest, demo_interest, meaningful_lead_volume, contact_details_complete,
-returning_high_intent_visitor. Use SearchKnowledgeTool before answering factual questions about
-RaveSoft products/pricing/services. Use EscalateHumanTool and set needs_human=true for angry
-customers, enterprise/complex requests, pricing exceptions, or explicit requests for a human.`;
-
 async function seedPrompt() {
   const existing = await prisma.aiPrompt.findUnique({
-    where: { agentKey: "rave_concierge" },
+    where: { agentKey: AGENT_KEY },
     include: { versions: { where: { status: "production" } } },
   });
 
@@ -115,9 +104,9 @@ async function seedPrompt() {
   }
 
   const prompt = await prisma.aiPrompt.upsert({
-    where: { agentKey: "rave_concierge" },
+    where: { agentKey: AGENT_KEY },
     update: {},
-    create: { agentKey: "rave_concierge", name: "Rave Concierge" },
+    create: { agentKey: AGENT_KEY, name: "Rave Concierge" },
   });
 
   await prisma.aiPromptVersion.create({

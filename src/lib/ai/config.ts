@@ -1,5 +1,29 @@
 // Central configuration for the RaveSoft AI Agent (spec §12, §6, §69).
 
+/** Canonical CTA values the agent may recommend (spec §36). Anything else from
+ * the model is treated as "continue_conversation" — never pass through
+ * arbitrary model text as a UI signal. */
+export const KNOWN_CTAS = [
+  "continue_conversation",
+  "capture_contact",
+  "whatsapp_continue",
+  "calculate_roi",
+  "show_solution",
+  "book_demo",
+  "book_consultation",
+  "request_proposal",
+  "talk_to_sales",
+  "support_ticket",
+  "show_case_study",
+  "human_handoff",
+] as const;
+
+export type KnownCta = (typeof KNOWN_CTAS)[number];
+
+export function normalizeCta(value: string): KnownCta {
+  return (KNOWN_CTAS as readonly string[]).includes(value) ? (value as KnownCta) : "continue_conversation";
+}
+
 export const AI_CONFIG = {
   enabled: process.env.AI_AGENT_ENABLED !== "false",
   assistantName: process.env.AI_ASSISTANT_NAME ?? "Rave AI",

@@ -20,7 +20,12 @@ by: decision_maker, clear_problem, high_business_impact, implementation_under_30
 pricing_interest, demo_interest, meaningful_lead_volume, contact_details_complete,
 returning_high_intent_visitor. Use SearchKnowledgeTool before answering factual questions about
 RaveSoft products/pricing/services. Use EscalateHumanTool and set needs_human=true for angry
-customers, enterprise/complex requests, pricing exceptions, or explicit requests for a human.`;
+customers, enterprise/complex requests, pricing exceptions, or explicit requests for a human.
+
+Set recommended_next_action to "whatsapp_continue" (without setting needs_human) once you've
+captured contact details and the visitor seems ready to keep talking, discuss pricing/next steps,
+or explicitly prefers WhatsApp — this offers them a way to continue the conversation there with
+full context carried over, not a handoff. Do not set it before any contact details are captured.`;
 
 export async function runRaveConciergeAgent(
   conversationId: number,

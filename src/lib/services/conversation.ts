@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { AI_CONFIG } from "@/lib/ai/config";
+import { AI_CONFIG, normalizeCta } from "@/lib/ai/config";
 import { runRaveConciergeAgent } from "@/lib/ai/agent/raveConcierge";
 import { AiProviderUnavailableError } from "@/lib/ai/providers/types";
 import type { Conversation } from "@prisma/client";
@@ -79,6 +79,7 @@ export interface SendMessageResult {
   message: string;
   needsHuman: boolean;
   aiUnavailable: boolean;
+  cta: string;
 }
 
 export async function sendMessage(
@@ -121,7 +122,7 @@ export async function sendMessage(
       data: { status: "human_handoff", lastMessageAt: new Date() },
     });
 
-    return { message: AI_FALLBACK_MESSAGE, needsHuman: true, aiUnavailable: true };
+    return { message: AI_FALLBACK_MESSAGE, needsHuman: true, aiUnavailable: true, cta: "human_handoff" };
   }
 
   await prisma.message.create({
@@ -156,7 +157,12 @@ export async function sendMessage(
     });
   }
 
-  return { message: structured.message, needsHuman: structured.needsHuman, aiUnavailable: false };
+  return {
+    message: structured.message,
+    needsHuman: structured.needsHuman,
+    aiUnavailable: false,
+    cta: normalizeCta(structured.recommendedNextAction),
+  };
 }
 
 async function recordIntent(conversationId: number, intentKey: string): Promise<void> {

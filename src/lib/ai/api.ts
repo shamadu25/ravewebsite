@@ -29,6 +29,7 @@ export interface SendMessageResponse {
   message: string;
   needs_human: boolean;
   ai_unavailable: boolean;
+  cta: string;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
