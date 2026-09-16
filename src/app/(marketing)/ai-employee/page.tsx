@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Headset,
   ClipboardList,
@@ -427,6 +428,16 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
       <section className="bg-[#F5F7FA] section-padding">
         <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
           <SectionHeader eyebrow="See It Work" title="Choose a scenario" className="mb-8" />
+          <div className="rounded-2xl overflow-hidden border border-gray-200 mb-8">
+            <Image
+              src="/img/ai-image2.png"
+              alt="Illustrative preview of an AI Employee dashboard showing inquiry status, lead qualification and consultation booking"
+              width={1672}
+              height={941}
+              className="w-full h-auto"
+              sizes="(min-width: 1024px) 1100px, 100vw"
+            />
+          </div>
           <LiveDemoSelector />
         </div>
       </section>
