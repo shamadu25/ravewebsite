@@ -206,7 +206,7 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
       <StickyMobileCta targetId="assessment" />
 
       {/* HERO */}
-      <section className="relative bg-[#050816] pt-28 pb-14 lg:pt-32 lg:pb-20 overflow-hidden">
+      <section className="relative bg-[#050816] pt-10 pb-14 lg:pt-14 lg:pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute bg-grid-dark inset-0 opacity-50" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-blue-700/14 rounded-full blur-[120px]" />
