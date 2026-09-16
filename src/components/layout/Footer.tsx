@@ -1,10 +1,63 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Mail, Phone, MapPin, ArrowRight, ExternalLink } from "lucide-react";
 import { COMPANY, FOOTER_LINKS } from "@/lib/data";
 
+/** Simplified footer for paid-social landing pages — logo, real contact
+ * info, and legal links only. No large nav groups or low-value exit links,
+ * to keep ad traffic focused on the page's own conversion path. */
+function CampaignFooter() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="bg-[#050816] text-gray-300">
+      <div className="max-w-[1100px] mx-auto px-5 sm:px-8 py-10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-8">
+        <div className="text-center sm:text-left">
+          <Image src="/img/logo.png" alt="RaveSoft Digital Solutions" width={120} height={72} className="h-9 w-auto rounded-lg mx-auto sm:mx-0 mb-3" />
+          <p className="text-sm text-gray-400 font-medium">RaveSoft Digital Solutions Ltd</p>
+          <p className="text-xs text-gray-600 mt-1">{COMPANY.location}</p>
+        </div>
+        <div className="flex flex-col items-center sm:items-start gap-2 text-sm text-gray-400">
+          <a href={`mailto:${COMPANY.email}`} className="hover:text-white transition-colors">
+            {COMPANY.email}
+          </a>
+          <a href={`tel:${COMPANY.phoneGhana}`} className="hover:text-white transition-colors">
+            WhatsApp/Phone: {COMPANY.phoneGhana}
+          </a>
+          <p className="text-xs text-gray-600 max-w-xs text-center sm:text-left">
+            Your business and customer data is kept in your own project database and is never sold.
+          </p>
+        </div>
+      </div>
+      <div className="border-t border-white/8">
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-gray-600 text-center">
+            © {currentYear} RaveSoft Digital Solutions Ltd. All rights reserved.
+          </p>
+          <div className="flex items-center gap-5">
+            <Link href="/privacy" className="text-xs text-gray-600 hover:text-gray-300 transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="text-xs text-gray-600 hover:text-gray-300 transition-colors">
+              Terms
+            </Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/ai-employee")) {
+    return <CampaignFooter />;
+  }
 
   return (
     <footer className="bg-[#050816] text-gray-300 relative overflow-hidden">

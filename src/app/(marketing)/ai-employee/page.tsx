@@ -18,13 +18,16 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 import FAQSchema from "@/components/seo/FAQSchema";
 import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
-import StartDiagnosisButton from "@/components/ai/StartDiagnosisButton";
 import AssessmentWidget from "@/components/ai-employee/AssessmentWidget";
+import AssessmentPrimaryCta from "@/components/ai-employee/AssessmentPrimaryCta";
+import HeroDemo from "@/components/ai-employee/HeroDemo";
 import LiveDemoSelector from "@/components/ai-employee/LiveDemoSelector";
+import ProofSection from "@/components/ai-employee/ProofSection";
 import StickyMobileCta from "@/components/ai-employee/StickyMobileCta";
 import FabOffsetController from "@/components/ai-employee/FabOffsetController";
 import ScrollDepthTracker from "@/components/ai-employee/ScrollDepthTracker";
-import { resolveHeroContent, resolveIndustryExample } from "@/lib/assessment/campaignContent";
+import CampaignVariantTracker from "@/components/ai-employee/CampaignVariantTracker";
+import { buildUtmQueryString, resolveHeroContent, resolveIndustryExample } from "@/lib/assessment/campaignContent";
 import { COMPANY } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -64,44 +67,56 @@ const AGENT_TYPES = [
   {
     icon: Headset,
     name: "AI Sales Employee",
-    whoFor: "Businesses with inbound sales inquiries",
+    problem: "Inbound inquiries aren't qualified or followed up consistently.",
+    bestFor: "Businesses with inbound sales inquiries",
     tasks: ["Replies to prospects instantly", "Asks qualifying questions", "Follows up automatically"],
     outcome: "More qualified leads reach a booking or purchase.",
+    mainProblem: "lead_qualification",
   },
   {
     icon: ClipboardList,
     name: "AI Customer Support Employee",
-    whoFor: "Teams overloaded with routine questions",
+    problem: "Staff time is consumed answering the same questions repeatedly.",
+    bestFor: "Teams overloaded with routine questions",
     tasks: ["Answers approved FAQs", "Guides customers through requests", "Escalates complex issues"],
     outcome: "Faster support without more headcount.",
+    mainProblem: "repetitive_support",
   },
   {
     icon: WhatsAppIcon,
     name: "AI WhatsApp Employee",
-    whoFor: "Businesses that sell through WhatsApp",
+    problem: "WhatsApp inquiries wait too long for a reply.",
+    bestFor: "Businesses that sell through WhatsApp",
     tasks: ["Manages incoming WhatsApp inquiries", "Follows up with prospects", "Keeps conversations consistent"],
     outcome: "No WhatsApp inquiry goes unanswered.",
+    mainProblem: "slow_response",
   },
   {
     icon: CalendarClock,
     name: "AI Appointment & Booking Employee",
-    whoFor: "Service and hospitality businesses",
+    problem: "Appointments and bookings are missed or mismanaged.",
+    bestFor: "Service and hospitality businesses",
     tasks: ["Checks requirements", "Books appointments", "Sends reminders"],
     outcome: "Fewer missed meetings and no-shows.",
+    mainProblem: "missed_bookings",
   },
   {
     icon: Wallet,
     name: "AI Receivables Employee",
-    whoFor: "Businesses managing outstanding payments",
+    problem: "Outstanding payments aren't followed up consistently.",
+    bestFor: "Businesses managing outstanding payments",
     tasks: ["Tracks outstanding payments", "Sends professional reminders", "Escalates overdue accounts"],
     outcome: "More consistent, less awkward collections.",
+    mainProblem: "payment_collection",
   },
   {
     icon: Layers,
     name: "AI Operations Employee",
-    whoFor: "Teams drowning in repetitive admin",
+    problem: "Repetitive internal admin work is consuming staff time.",
+    bestFor: "Teams drowning in repetitive admin",
     tasks: ["Connects forms, email, CRM and spreadsheets", "Routes repetitive workflows", "Flags exceptions"],
     outcome: "Staff time freed from repetitive internal work.",
+    mainProblem: "repetitive_internal",
   },
 ];
 
@@ -172,6 +187,8 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const hero = resolveHeroContent(params.agent);
   const industryExample = resolveIndustryExample(params.industry);
+  const utmQuery = buildUtmQueryString(params);
+  const agentParam = Array.isArray(params.agent) ? params.agent[0] : (params.agent ?? null);
 
   return (
     <>
@@ -184,47 +201,52 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
       />
       <FabOffsetController />
       <ScrollDepthTracker />
+      <CampaignVariantTracker agent={agentParam} />
       <StickyMobileCta targetId="assessment" />
 
       {/* HERO */}
-      <section className="relative bg-[#050816] pt-28 pb-14 lg:pt-36 lg:pb-20 overflow-hidden">
+      <section className="relative bg-[#050816] pt-28 pb-14 lg:pt-32 lg:pb-20 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute bg-grid-dark inset-0 opacity-50" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-blue-700/14 rounded-full blur-[120px]" />
         </div>
-        <div className="relative max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/12 border border-amber-500/25 mb-5">
-              <span className="text-xs font-bold tracking-wide text-amber-300 uppercase">
-                AI Employees for Sales, Support and Operations
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-[1.1] tracking-tight mb-4">
-              {hero.headline}
-            </h1>
-            <p className="text-gray-400 text-base sm:text-lg leading-relaxed mb-2">
-              {hero.supporting}
-              {industryExample && ` Built for businesses handling ${industryExample}.`}
-            </p>
-            <p className="text-gray-500 text-sm mb-7">Built and managed by RaveSoft Digital Solutions</p>
+        <div className="relative max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-10">
+          <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center">
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/12 border border-amber-500/25 mb-5">
+                <span className="text-xs font-bold tracking-wide text-amber-300 uppercase">
+                  AI Employees for Sales, Support and Operations
+                </span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-black text-white leading-[1.15] tracking-tight mb-4 text-balance">
+                {hero.headline}
+              </h1>
+              <p className="text-gray-400 text-base sm:text-lg leading-relaxed mb-2">
+                {hero.supporting}
+                {industryExample && ` Built for businesses handling ${industryExample}.`}
+              </p>
+              <p className="text-gray-500 text-sm mb-7">Built and managed by RaveSoft Digital Solutions</p>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
-              <StartDiagnosisButton
-                label="Find My AI Employee"
-                initialMessage="I'd like to find out which AI Employee is right for my business."
-              />
-              <Link
-                href="#how-it-works"
-                className="min-h-[48px] inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all"
-              >
-                See How It Works
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-3">
+                <AssessmentPrimaryCta location="hero" />
+                <Link
+                  href="#how-it-works"
+                  className="min-h-[48px] inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all"
+                >
+                  See How It Works
+                </Link>
+              </div>
+              <p className="text-xs text-gray-500 mb-8 lg:mb-0">Free assessment • Takes about 2 minutes • No obligation</p>
             </div>
-            <p className="text-xs text-gray-500">Free 2-minute assessment · No technical knowledge required</p>
+
+            {/* Above-the-fold demo — beside hero copy on desktop, beneath CTA on mobile */}
+            <div className="lg:mt-0">
+              <HeroDemo />
+            </div>
           </div>
 
           {/* Result strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto mt-10">
             {["Reply instantly", "Follow up automatically", "Qualify every lead", "Book more customers"].map((r) => (
               <div key={r} className="text-center px-3 py-3 rounded-xl bg-white/5 border border-white/10">
                 <span className="text-white text-sm font-semibold">{r}</span>
@@ -257,12 +279,7 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
             </p>
           </div>
           <div className="text-center">
-            <StartDiagnosisButton
-              label="Find the Right AI Employee"
-              initialMessage="Help me find the right AI Employee for my business."
-              variant="outline"
-              className="!border-blue-200 !bg-blue-50 !text-blue-700 hover:!bg-blue-100"
-            />
+            <AssessmentPrimaryCta location="pain_section" variant="outline" />
           </div>
         </div>
       </section>
@@ -322,7 +339,11 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
       {/* AI EMPLOYEE TYPES */}
       <section className="bg-white section-padding">
         <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
-          <SectionHeader eyebrow="Choose The Outcome You Need" title="We build the AI Employee" className="mb-10" />
+          <SectionHeader eyebrow="Choose The Outcome You Need" title="We build the AI Employee" className="mb-4" />
+          <p className="text-center text-gray-600 max-w-2xl mx-auto mb-10">
+            You do not need to decide which agent to build. Complete the assessment and we will recommend the first
+            AI Employee most likely to create measurable value for your business.
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {AGENT_TYPES.map((agent) => (
               <div key={agent.name} className="p-6 rounded-2xl bg-[#F5F7FA] border border-gray-100">
@@ -333,21 +354,22 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
                   <agent.icon className="w-5 h-5" />
                 </div>
                 <h3 className="font-bold text-gray-900 mb-1">{agent.name}</h3>
-                <p className="text-xs text-gray-500 mb-3">For: {agent.whoFor}</p>
-                <ul className="space-y-1.5 mb-4">
+                <p className="text-sm text-gray-600 mb-3">{agent.problem}</p>
+                <ul className="space-y-1.5 mb-3">
                   {agent.tasks.map((t) => (
                     <li key={t} className="text-sm text-gray-700 flex items-start gap-2">
                       <span className="text-blue-500 mt-0.5">•</span> {t}
                     </li>
                   ))}
                 </ul>
-                <p className="text-sm font-medium text-gray-900 mb-4">{agent.outcome}</p>
-                <Link
-                  href="#assessment"
-                  className="text-sm font-semibold text-blue-600 hover:underline"
-                >
-                  Explore This AI Employee →
-                </Link>
+                <p className="text-sm font-medium text-gray-900 mb-1">{agent.outcome}</p>
+                <p className="text-xs text-gray-500 mb-4">Best fit: {agent.bestFor}</p>
+                <AssessmentPrimaryCta
+                  location="employee_card"
+                  variant="outline"
+                  presetProblem={agent.mainProblem}
+                  className="!px-5 !py-2.5 !text-sm w-full sm:w-auto"
+                />
               </div>
             ))}
           </div>
@@ -413,25 +435,22 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
       <section className="bg-white section-padding">
         <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
           <SectionHeader title="Practical business outcomes — not vague AI promises" className="mb-10" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {[
-              "Faster first response",
-              "More consistent follow-up",
-              "Better-qualified sales conversations",
-              "Fewer repetitive tasks for staff",
-              "More organized customer information",
-              "More inquiries handled outside office hours",
-              "Clearer handoff between AI and employees",
-              "Better visibility into lost and converted leads",
+              "Respond to every qualified inquiry",
+              "Follow up without depending on staff memory",
+              "Handle repetitive requests outside office hours",
+              "Move qualified customers toward booking, payment or human assistance",
             ].map((o) => (
-              <div key={o} className="flex items-center gap-3 p-4 rounded-xl bg-[#F5F7FA] border border-gray-100">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                <span className="text-gray-700 text-sm font-medium">{o}</span>
+              <div key={o} className="p-6 rounded-2xl bg-[#F5F7FA] border border-gray-200">
+                <p className="text-gray-900 text-lg font-bold leading-snug">{o}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      <ProofSection />
 
       {/* TRUST — no fabricated testimonials; real company info only */}
       <section className="bg-[#F5F7FA] section-padding">
@@ -464,22 +483,20 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      {/* INVESTMENT CLARITY */}
+      {/* COMMERCIAL MODEL */}
       <section className="bg-white section-padding">
         <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10 text-center">
-          <SectionHeader title="Built for your business — not sold as a generic bot" className="mb-8" align="center" />
-          <div className="max-w-2xl mx-auto text-left space-y-3 text-gray-600 text-[15px] leading-relaxed mb-8">
-            <p>• Implementation and integration is scoped as a project, based on your workflows and channels.</p>
-            <p>• Ongoing AI model/API usage may carry a monthly operating cost, depending on volume.</p>
-            <p>• Final operating cost depends on conversation volume, models, channels and integrations used.</p>
-            <p>• Support or managed optimization plans may be offered separately.</p>
-            <p>• You receive a clear quotation after the discovery process — never a guessed price.</p>
-          </div>
+          <SectionHeader title="How AI Employee pricing works" className="mb-8" align="center" />
+          <p className="max-w-2xl mx-auto text-gray-600 text-[15px] leading-relaxed mb-8">
+            Every AI Employee is designed around your workflows, channels and required integrations. Your proposal
+            will clearly separate the one-time implementation cost from ongoing AI usage, infrastructure and support
+            costs. You will approve the complete scope and operating cost before development begins.
+          </p>
           <p className="text-gray-800 font-semibold max-w-xl mx-auto mb-8">
             One well-designed AI Employee can handle repetitive work across several business functions at a fraction
             of the cost of building a larger manual team.
           </p>
-          <StartDiagnosisButton label="Get My AI Employee Plan" initialMessage="I'd like a plan and quote for an AI Employee." />
+          <AssessmentPrimaryCta location="pricing_section" />
         </div>
       </section>
 
@@ -505,12 +522,12 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
             channels and most expensive repetitive workflow.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
-            <StartDiagnosisButton label="Find My AI Employee" />
+            <AssessmentPrimaryCta location="final_cta" />
             <Link
-              href="/book-consultation"
+              href={`/book-consultation${utmQuery}`}
               className="min-h-[48px] inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all"
             >
-              Book a Free AI Strategy Call
+              Book a Free Strategy Call
             </Link>
             <a
               href={`https://wa.me/${COMPANY.whatsapp.replace(/[^0-9]/g, "")}`}
@@ -518,10 +535,10 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
               rel="noopener noreferrer"
               className="min-h-[48px] inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all"
             >
-              Chat With RaveSoft
+              Chat on WhatsApp
             </a>
           </div>
-          <p className="text-xs text-gray-500">Free assessment · No obligation · Human consultation available</p>
+          <p className="text-xs text-gray-500">Free assessment • Takes about 2 minutes • No obligation</p>
         </div>
       </section>
     </>
