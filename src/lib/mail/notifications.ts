@@ -2,6 +2,21 @@ import { getMailTransporter, isMailConfigured, notificationRecipient } from "./t
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ravesoftsolutions.com";
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** Strips CR/LF so lead-supplied text can never inject extra headers into
+ * the outgoing notification email via the subject line. */
+function sanitizeHeaderValue(value: string): string {
+  return value.replace(/[\r\n]+/g, " ").trim();
+}
+
 function wrapper(title: string, subtitle: string, bodyHtml: string): string {
   return `
     <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#f8fafc;border-radius:12px;">
@@ -16,7 +31,7 @@ function wrapper(title: string, subtitle: string, bodyHtml: string): string {
 }
 
 function row(label: string, value: string): string {
-  return `<tr><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:14px;width:140px;">${label}</td><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:14px;color:#0f172a;font-weight:600;">${value}</td></tr>`;
+  return `<tr><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:14px;width:140px;">${escapeHtml(label)}</td><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:14px;color:#0f172a;font-weight:600;">${escapeHtml(value)}</td></tr>`;
 }
 
 async function send(subject: string, html: string): Promise<void> {
@@ -29,7 +44,7 @@ async function send(subject: string, html: string): Promise<void> {
     await getMailTransporter().sendMail({
       from: `"RaveSoft AI Agent" <${process.env.SMTP_USER}>`,
       to: notificationRecipient(),
-      subject,
+      subject: sanitizeHeaderValue(subject),
       html,
     });
   } catch (error) {
@@ -114,4 +129,59 @@ export async function sendAssessmentCompletedNotification(input: AssessmentCompl
   );
 
   await send(`📋 AI Employee assessment: ${input.contactName} (${input.businessName})`, html);
+}
+
+export interface ConsultationBookedNotificationInput {
+  leadId: number | null;
+  contactName: string;
+  contactEmail: string;
+  eventName: string | null;
+  startTime: string | null;
+  isReschedule: boolean;
+}
+
+export async function sendConsultationBookedNotification(input: ConsultationBookedNotificationInput): Promise<void> {
+  const html = wrapper(
+    input.isReschedule ? "📅 Consultation Rescheduled" : "📅 New Consultation Booked",
+    "A visitor booked a free consultation via Calendly",
+    `<table style="width:100%;border-collapse:collapse;">
+      ${row("Contact", input.contactName)}
+      ${row("Email", input.contactEmail)}
+      ${input.eventName ? row("Event", input.eventName) : ""}
+      ${input.startTime ? row("When", input.startTime) : ""}
+    </table>
+    ${
+      input.leadId
+        ? `<p style="margin-top:16px;"><a href="${APP_URL}/admin/leads/${input.leadId}" style="color:#3b82f6;font-weight:600;">View lead in admin dashboard →</a></p>`
+        : ""
+    }`
+  );
+
+  await send(`📅 Consultation booked: ${input.contactName}`, html);
+}
+
+export interface ConsultationCanceledNotificationInput {
+  leadId: number | null;
+  contactName: string;
+  contactEmail: string;
+  eventName: string | null;
+}
+
+export async function sendConsultationCanceledNotification(input: ConsultationCanceledNotificationInput): Promise<void> {
+  const html = wrapper(
+    "❌ Consultation Canceled",
+    "A visitor canceled their booked consultation",
+    `<table style="width:100%;border-collapse:collapse;">
+      ${row("Contact", input.contactName)}
+      ${row("Email", input.contactEmail)}
+      ${input.eventName ? row("Event", input.eventName) : ""}
+    </table>
+    ${
+      input.leadId
+        ? `<p style="margin-top:16px;"><a href="${APP_URL}/admin/leads/${input.leadId}" style="color:#3b82f6;font-weight:600;">View lead in admin dashboard →</a></p>`
+        : ""
+    }`
+  );
+
+  await send(`❌ Consultation canceled: ${input.contactName}`, html);
 }
