@@ -278,38 +278,56 @@ export default function ChatWidget() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => handleOpen()}
-        aria-label={isOpen ? "Close chat" : `Chat with ${assistantName}`}
-        aria-expanded={isOpen}
+      <div
+        className={cn("fixed right-6 z-50", isOpen && "hidden")}
         style={{ bottom: "var(--fab-bottom-offset, 1.5rem)" }}
-        className={cn(
-          "fixed left-6 z-50 flex items-center justify-center w-14 h-14 rounded-full overflow-hidden ring-2 ring-white shadow-[0_8px_32px_rgba(37,99,235,0.45)] hover:shadow-[0_12px_40px_rgba(37,99,235,0.6)] hover:scale-110 transition-all duration-200 bg-blue-600",
-          isOpen && "hidden"
-        )}
       >
-        <Image src="/img/ama.png" alt="" width={56} height={56} className="w-full h-full object-cover" />
-      </button>
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 rounded-full bg-blue-500 opacity-60 animate-ping [animation-duration:2.5s] pointer-events-none"
+        />
+        <button
+          type="button"
+          onClick={() => handleOpen()}
+          aria-label={`Chat with ${assistantName} — online now`}
+          aria-expanded={isOpen}
+          className="relative flex items-center justify-center w-14 h-14 rounded-full overflow-hidden ring-2 ring-white shadow-[0_8px_32px_rgba(37,99,235,0.45)] hover:shadow-[0_12px_40px_rgba(37,99,235,0.6)] hover:scale-110 transition-all duration-200 bg-blue-600"
+        >
+          <Image src="/img/ama.png" alt="" width={56} height={56} className="w-full h-full object-cover" />
+        </button>
+        <span
+          aria-hidden="true"
+          className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white pointer-events-none"
+        />
+      </div>
 
       {isOpen && (
         <div
           role="dialog"
           aria-label={`${assistantName} chat`}
-          className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:left-6 z-50 flex flex-col w-full sm:w-96 h-full sm:h-[32rem] sm:rounded-2xl bg-white sm:shadow-2xl border border-gray-200 overflow-hidden"
+          className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 flex flex-col w-full sm:w-96 h-full sm:h-[32rem] sm:rounded-2xl bg-white sm:shadow-2xl border border-gray-200 overflow-hidden"
         >
           <div className="flex items-center justify-between px-4 py-3 bg-blue-600 text-white shrink-0">
             <div className="flex items-center gap-2.5">
-              <Image
-                src="/img/ama.png"
-                alt=""
-                width={36}
-                height={36}
-                className="w-9 h-9 rounded-full object-cover ring-2 ring-white/40 shrink-0"
-              />
+              <div className="relative shrink-0">
+                <Image
+                  src="/img/ama.png"
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="w-9 h-9 rounded-full object-cover ring-2 ring-white/40"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-400 border-2 border-blue-600"
+                />
+              </div>
               <div>
                 <p className="font-semibold text-sm">{assistantName}</p>
-                <p className="text-xs text-blue-100">RaveSoft AI Business Consultant</p>
+                <p className="text-xs text-blue-100 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" aria-hidden="true" />
+                  Online now
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-1">

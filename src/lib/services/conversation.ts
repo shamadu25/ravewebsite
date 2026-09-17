@@ -203,7 +203,7 @@ function headline(key: string): string {
 
 function contextualOpener(currentPage?: string): string {
   const assistantName = AI_CONFIG.assistantName;
-  const defaultOpener = `Hi — I'm ${assistantName}, RaveSoft's AI Business Consultant. Tell me what you're trying to improve in your business and I'll help identify the right solution.`;
+  const defaultOpener = `Hi, I'm ${assistantName} from RaveSoft. What are you trying to get done, or what's slowing your business down right now?`;
 
   if (!currentPage) return defaultOpener;
   if (currentPage.includes("cliqpos")) {
