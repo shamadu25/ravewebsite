@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { CheckCircle2, Clock, Video, MessageSquare, FileText } from "lucide-react";
+import { Clock, Video, MessageSquare, FileText, CheckCircle2 } from "lucide-react";
+import CalendlyEmbed from "@/components/booking/CalendlyEmbed";
+import { buildUtmQueryString } from "@/lib/assessment/campaignContent";
 
 export const metadata: Metadata = {
   title: "Book a Free Consultation | RaveSoft Digital Solutions",
   description:
     "Book a free 30-minute consultation with the RaveSoft team. We will discuss your project, recommend the right approach, and give you a clear path forward.",
 };
+
+const CALENDLY_URL = "https://calendly.com/ravesoftsolutions23";
 
 const BENEFITS = [
   "Get expert advice on the right technology for your goals",
@@ -34,7 +37,14 @@ const FORMATS = [
   },
 ];
 
-export default function BookConsultationPage() {
+interface PageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function BookConsultationPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const calendlyUrl = `${CALENDLY_URL}${buildUtmQueryString(params)}`;
+
   return (
     <>
       {/* HERO */}
@@ -109,22 +119,7 @@ export default function BookConsultationPage() {
                   Pick a time that works for you. All times shown in your local timezone.
                 </p>
 
-                {/* Calendly / Cal.com embed placeholder */}
-                <div className="w-full h-80 rounded-xl bg-[#F5F7FA] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center p-6">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center mb-4">
-                    <Clock className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <p className="font-semibold text-gray-700 mb-1">Booking calendar coming soon</p>
-                  <p className="text-sm text-gray-400 mb-5">
-                    While we set up our scheduling system, click below to reach us directly.
-                  </p>
-                  <Link
-                    href="/contact"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all"
-                  >
-                    Contact Us Instead
-                  </Link>
-                </div>
+                <CalendlyEmbed url={calendlyUrl} />
 
                 <p className="text-xs text-gray-400 text-center mt-4">
                   Prefer to email? Write to us at{" "}
