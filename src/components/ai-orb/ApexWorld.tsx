@@ -15,6 +15,7 @@ import ApexHeroOrb, { type OrbState } from "./ApexHeroOrb";
 import ReasoningWebJs from "./ReasoningWeb";
 import ShaderBackgroundJs from "./ShaderBackground";
 import OrbStatusBar from "./OrbStatusBar";
+import { trackEvent } from "@/lib/utils";
 
 export type NodeSel = { name: string; key: string; color: string };
 
@@ -296,6 +297,7 @@ export default function ApexWorld({
   // hidden accessible list, so both routes behave identically.
   const openAgent = (n: NodeSel) => {
     setSelected(n);
+    trackEvent("ai_agents_demo_agent_opened", { agent: n.key });
   };
 
   useEffect(() => {

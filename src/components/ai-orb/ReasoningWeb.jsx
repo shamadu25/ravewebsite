@@ -59,8 +59,8 @@ const ROSTER = [
   ['qa', 'QA', 'doer', 140, 480, true, 20, 6],
   ['customer_success', 'Success', 'doer', 480, 460, true, -20, 6.5],
   ['dataml', 'Data/ML', 'doer', 650, 420, true, -24, 6.5],
-  ['bizdev', 'BizDev', 'doer', 700, 250, true, -22, 6],
-  ['hr', 'HR', 'tool', 700, 130, false, -20, 5.5],
+  ['bizdev', 'BizDev', 'doer', 655, 250, true, -22, 6],
+  ['hr', 'HR', 'tool', 655, 130, false, -20, 5.5],
 ]
 const META = {}; ROSTER.forEach((r) => { META[r[0]] = { label: r[1], col: COL[r[2]] } })
 
