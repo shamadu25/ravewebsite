@@ -519,7 +519,7 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
       </section>
 
       {/* FAQ */}
-      <section className="bg-[#F5F7FA] section-padding">
+      <section id="faq" className="bg-[#F5F7FA] section-padding scroll-mt-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeader eyebrow="FAQ" title="Common questions" className="mb-10" />
           <FAQAccordion items={FAQS.map((f) => ({ question: f.q, answer: f.a }))} />

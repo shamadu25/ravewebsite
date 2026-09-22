@@ -94,7 +94,7 @@ export default function ActivityFeed() {
             </div>
           ))}
         </div>
-        <div style={{ marginTop: 10, fontSize: 9, color: "rgba(240,237,232,0.32)", letterSpacing: "0.02em" }}>
+        <div style={{ marginTop: 10, fontSize: 9, color: "rgba(240,237,232,0.5)", letterSpacing: "0.02em" }}>
           Simulated activity — illustrates the volume Ama handles for clients.
         </div>
       </div>

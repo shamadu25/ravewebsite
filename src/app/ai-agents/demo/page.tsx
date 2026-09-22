@@ -6,6 +6,7 @@ import ApexOverviewPanel from "@/components/ai-orb/ApexOverviewPanel";
 import AmaChatPanel from "@/components/ai-agents-demo/AmaChatPanel";
 import ActivityFeed from "@/components/ai-agents-demo/ActivityFeed";
 import OrbTapHint from "@/components/ai-agents-demo/OrbTapHint";
+import QuickActions from "@/components/ai-agents-demo/QuickActions";
 import { useFirstVisit } from "@/components/ai-agents-demo/useFirstVisit";
 import { BrandBadge, Headline, TrustStrip } from "@/components/ai-agents-demo/DemoOverlay";
 import type { OrbState } from "@/components/ai-orb/ApexHeroOrb";
@@ -51,6 +52,7 @@ export default function AiAgentsDemo() {
       </section>
 
       <AmaChatPanel open={chatOpen} onClose={() => setChatOpen(false)} onStateChange={setOrbState} />
+      <QuickActions hidden={chatOpen} />
     </main>
   );
 }

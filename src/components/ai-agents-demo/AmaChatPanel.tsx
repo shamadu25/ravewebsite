@@ -301,7 +301,7 @@ export default function AmaChatPanel({
       </div>
 
       <div style={{ padding: "10px 16px 0" }}>
-        <p style={{ margin: 0, fontSize: 9.5, lineHeight: 1.4, color: "rgba(240,237,232,0.35)" }}>
+        <p style={{ margin: 0, fontSize: 9.5, lineHeight: 1.4, color: "rgba(240,237,232,0.55)" }}>
           This is a real, working conversation — messages may be reviewed to improve Ama. Please
           don&apos;t share sensitive information here. See our{" "}
           <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(240,237,232,0.5)", textDecoration: "underline" }}>
