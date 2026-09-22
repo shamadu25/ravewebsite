@@ -11,7 +11,7 @@ import CTASection from "@/components/ui/CTASection";
 
 type IndustrySlugParams = { params: Promise<{ id: string }> };
 
-const INDUSTRY_ICONS: Record<string, React.ElementType> = {
+const INDUSTRY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   ShoppingCart, UtensilsCrossed, Heart, GraduationCap, Building2,
   Globe2, Truck, Home, Briefcase, TrendingUp,
 };

@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored third-party UI (MIT, github.com/RubenM1990/APEX-UI): kept
+    // as-is to preserve its upstream animation behavior, including
+    // imperative r3f/canvas patterns this repo's stricter hooks rules flag.
+    "src/components/ai-orb/**",
   ]),
 ]);
 
