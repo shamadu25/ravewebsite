@@ -35,7 +35,7 @@ function useClock() {
   return now;
 }
 
-export function BrandBadge() {
+export function BrandBadge({ ctaPulse = false }: { ctaPulse?: boolean } = {}) {
   return (
     <div style={{
       position: "fixed", top: 14, right: "clamp(12px, 3vw, 32px)", zIndex: 40,
@@ -59,7 +59,7 @@ export function BrandBadge() {
         </span>
       </Link>
 
-      <div style={{
+      <div className="demo-agents-chip" style={{
         display: "flex", alignItems: "center", gap: 6, padding: "5px 12px",
         background: "rgba(4,8,15,0.5)", border: `1px solid ${ACCENT}22`, borderRadius: 20,
         backdropFilter: "blur(8px)",
@@ -70,18 +70,32 @@ export function BrandBadge() {
         </span>
       </div>
 
-      <a
-        href="/book-consultation"
-        style={{
-          display: "flex", alignItems: "center", gap: 7, padding: "9px 16px",
-          background: ACCENT, color: "#04080f", borderRadius: 20, textDecoration: "none",
-          fontSize: 12, fontWeight: 700, letterSpacing: "0.02em",
-          boxShadow: `0 4px 20px ${ACCENT}44`,
-        }}
-      >
-        <CalendarCheck size={14} />
-        Book a live demo
-      </a>
+      <div className="demo-cta-row" style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <a
+          href="/ai-employee#assessment"
+          style={{
+            display: "flex", alignItems: "center", gap: 6, padding: "9px 14px",
+            background: "rgba(4,8,15,0.55)", color: "rgba(240,237,232,0.85)", borderRadius: 20,
+            border: `1px solid ${ACCENT}33`, textDecoration: "none",
+            fontSize: 11.5, fontWeight: 600, letterSpacing: "0.01em", backdropFilter: "blur(8px)", whiteSpace: "nowrap",
+          }}
+        >
+          Free 2-min AI assessment
+        </a>
+        <a
+          href="/book-consultation"
+          className={ctaPulse ? "demo-cta-pulse" : undefined}
+          style={{
+            display: "flex", alignItems: "center", gap: 7, padding: "9px 16px",
+            background: ACCENT, color: "#04080f", borderRadius: 20, textDecoration: "none",
+            fontSize: 12, fontWeight: 700, letterSpacing: "0.02em", whiteSpace: "nowrap",
+            boxShadow: `0 4px 20px ${ACCENT}44`,
+          }}
+        >
+          <CalendarCheck size={14} />
+          Get your own Ama
+        </a>
+      </div>
     </div>
   );
 }
@@ -102,6 +116,12 @@ export function Headline() {
       }}>
         Meet <span style={{ color: ACCENT, fontWeight: 600 }}>Ama</span> — RaveSoft&apos;s AI Employee, and the full company she runs with
       </h1>
+      <p style={{
+        margin: "5px 0 0", fontSize: "clamp(9.5px, 1.1vw, 11px)", letterSpacing: "0.03em",
+        color: "rgba(240,237,232,0.55)", textShadow: "0 2px 10px rgba(4,8,15,0.9)",
+      }}>
+        Replies instantly · Follows up automatically · Qualifies every lead · Books more customers
+      </p>
     </div>
   );
 }
@@ -124,7 +144,11 @@ export function TrustStrip() {
           color: "rgba(240,237,232,0.5)", letterSpacing: "0.02em",
         }}
       >
-        <span style={{ flexShrink: 0 }}>500+ businesses run on RaveSoft-built software</span>
+        <span style={{ flexShrink: 0, color: "rgba(240,237,232,0.7)" }}>
+          Does the work of a growing team, at a fraction of the cost of hiring one
+        </span>
+        <span style={{ opacity: 0.3, flexShrink: 0 }}>·</span>
+        <span className="demo-trust-secondary" style={{ flexShrink: 0 }}>500+ businesses run on RaveSoft-built software</span>
         <span className="demo-trust-secondary" style={{ opacity: 0.3, flexShrink: 0 }}>·</span>
         <span className="demo-trust-secondary" style={{ flexShrink: 0 }}>Data encrypted in transit &amp; at rest</span>
         <span className="demo-trust-secondary" style={{ opacity: 0.3, flexShrink: 0 }}>·</span>

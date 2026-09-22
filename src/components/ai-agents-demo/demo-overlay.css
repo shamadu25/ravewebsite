@@ -2,6 +2,44 @@
    strip, activity feed). Plain media queries — the pieces are otherwise
    styled inline, but inline styles can't express breakpoints. */
 
+/* Entrance — the first frame should feel deliberate, not a snap-render. */
+@keyframes demoEntrance {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: scale(1); }
+}
+.demo-entrance {
+  animation: demoEntrance 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-entrance {
+    animation: none;
+  }
+}
+
+/* First-visit cues (OrbTapHint ring + the CTA nudge in BrandBadge). */
+@keyframes orbTapHintPulse {
+  0%   { transform: scale(0.94); opacity: 0.85; }
+  70%  { transform: scale(1.14); opacity: 0; }
+  100% { transform: scale(1.14); opacity: 0; }
+}
+.orb-tap-hint-ring {
+  animation: orbTapHintPulse 2.2s ease-out infinite;
+}
+
+@keyframes demoCtaPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(0,229,255,0.44); }
+  50%      { box-shadow: 0 4px 20px rgba(0,229,255,0.44), 0 0 0 6px rgba(0,229,255,0.18); }
+}
+.demo-cta-pulse {
+  animation: demoCtaPulse 1.8s ease-in-out 4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb-tap-hint-ring, .demo-cta-pulse {
+    animation: none;
+  }
+}
+
 .demo-headline {
   top: 78px;
 }
@@ -14,9 +52,27 @@
   }
 }
 
+/* The two-button CTA row is wide enough to overlap the clock HUD on narrow
+   screens (both are independently fixed-positioned overlays); stacking
+   keeps the brand column narrow again. */
+@media (max-width: 640px) {
+  .demo-cta-row {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}
+
 @media (max-width: 480px) {
+  /* The brand column now stacks 4 items (logo, status chip, 2 CTAs) and
+     runs taller than the headline's default clearance, so it needs more
+     room; dropping the status chip here trims that stack back down. */
   .demo-headline {
-    top: 132px;
+    top: 200px;
+  }
+  /* Inline `display: flex` on this element (color/layout) otherwise beats
+     the stylesheet — same reason .demo-chat-panel needs !important below. */
+  .demo-agents-chip {
+    display: none !important;
   }
 }
 
