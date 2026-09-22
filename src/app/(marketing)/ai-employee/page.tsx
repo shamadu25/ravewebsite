@@ -14,6 +14,7 @@ import {
   CalendarX,
   Target,
   EyeOff,
+  ArrowRight,
 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import FAQAccordion from "@/components/ui/FAQAccordion";
@@ -226,7 +227,13 @@ export default async function AiEmployeePage({ searchParams }: PageProps) {
                 {hero.supporting}
                 {industryExample && ` Built for businesses handling ${industryExample}.`}
               </p>
-              <p className="text-gray-500 text-sm mb-7">Built and managed by RaveSoft Digital Solutions</p>
+              <p className="text-gray-500 text-sm mb-2">Built and managed by RaveSoft Digital Solutions</p>
+              <Link
+                href="/ai-agents/demo"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-cyan-400 hover:text-cyan-300 mb-7 transition-colors"
+              >
+                See Ama live in an interactive demo <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-3">
                 <AssessmentPrimaryCta location="hero" />

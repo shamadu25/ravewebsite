@@ -1,0 +1,68 @@
+/* Responsive placement for the demo overlay (brand badge, headline, trust
+   strip, activity feed). Plain media queries — the pieces are otherwise
+   styled inline, but inline styles can't express breakpoints. */
+
+.demo-headline {
+  top: 78px;
+}
+
+/* Below ~1000px the OVERVIEW HUD (ai-orb.css .apex-overview) goes full-width
+   and taller (clock + date stack), so the headline needs to clear it. */
+@media (max-width: 1000px) {
+  .demo-headline {
+    top: 118px;
+  }
+}
+
+@media (max-width: 480px) {
+  .demo-headline {
+    top: 132px;
+  }
+}
+
+/* The activity feed is a nice-to-have flourish; on small screens the bottom
+   of the viewport is already contested by the trust strip and the orb's own
+   status bar, so it steps aside rather than overlapping either. */
+@media (max-width: 640px) {
+  .demo-activity-feed {
+    display: none;
+  }
+}
+
+.demo-trust-strip {
+  font-size: 10.5px;
+}
+
+.demo-trust-strip .demo-trust-secondary {
+  display: inline;
+}
+
+/* Full-screen on small devices — a floating box leaves the headline poking
+   through the top, which reads as broken rather than deliberate. */
+@media (max-width: 640px) {
+  .demo-chat-panel {
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .demo-trust-strip {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Keep the mobile strip to one scrollable line — the security/uptime line
+     is still there, just a swipe away, instead of wrapping and burying the
+     orb's own status readout underneath it. */
+  .demo-trust-strip .demo-trust-secondary {
+    display: none;
+  }
+}

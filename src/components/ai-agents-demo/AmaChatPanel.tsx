@@ -17,15 +17,28 @@ import {
   startConversation,
 } from "@/lib/ai/api";
 import { buildVisitorContext, getStoredConversationId, storeConversationId } from "@/lib/ai/session";
+import { trackEvent } from "@/lib/utils";
+import { COMPANY } from "@/lib/data";
 import type { OrbState } from "@/components/ai-orb/ApexHeroOrb";
+import "./demo-overlay.css";
 
 interface DisplayMessage {
   id: string;
   role: "visitor" | "assistant";
   content: string;
+  whatsappCta?: boolean;
 }
 
 const ACCENT = "#00e5ff";
+
+// No streaming yet — past this, the honest move is to point to a channel
+// that will actually respond, not leave the spinner running indefinitely.
+const RESPONSE_TIMEOUT_MS = 30000;
+
+function whatsAppUrl(): string {
+  const text = "Hi RaveSoft! I was trying Ama on your live demo page and wanted to continue here.";
+  return `https://wa.me/${COMPANY.whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(text)}`;
+}
 
 // A real reply can take several seconds (no streaming yet) — without a
 // progressive message a long wait reads as broken rather than working.
@@ -76,6 +89,10 @@ export default function AmaChatPanel({
   useEffect(() => () => { if (speakTimer.current) clearTimeout(speakTimer.current); }, []);
 
   useEffect(() => {
+    if (open) trackEvent("chat_opened", { location: "ai_agents_demo" });
+  }, [open]);
+
+  useEffect(() => {
     if (!open || initialized.current) return;
     initialized.current = true;
 
@@ -108,8 +125,27 @@ export default function AmaChatPanel({
     setIsSending(true);
     onStateChange("thinking");
 
+    let timedOut = false;
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      setIsSending(false);
+      onStateChange("idle");
+      trackEvent("ai_unavailable", { reason: "timeout", location: "ai_agents_demo" });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `local-${Date.now()}-timeout`,
+          role: "assistant",
+          content: "This one's taking longer than expected. For a faster reply right now, try WhatsApp — the RaveSoft team is there too.",
+          whatsappCta: true,
+        },
+      ]);
+    }, RESPONSE_TIMEOUT_MS);
+
     try {
       const result = await sendMessage(conversationId, trimmed, window.location.pathname);
+      clearTimeout(timeoutId);
+
       setMessages((prev) => [
         ...prev,
         { id: `local-${Date.now()}-reply`, role: "assistant", content: result.message },
@@ -117,11 +153,15 @@ export default function AmaChatPanel({
       onStateChange("speaking");
       if (speakTimer.current) clearTimeout(speakTimer.current);
       speakTimer.current = setTimeout(() => onStateChange("idle"), 6000);
+      if (result.ai_unavailable) trackEvent("ai_unavailable", { location: "ai_agents_demo" });
+      if (!timedOut) setIsSending(false);
     } catch {
-      setUnavailable(true);
-      onStateChange("idle");
-    } finally {
-      setIsSending(false);
+      clearTimeout(timeoutId);
+      if (!timedOut) {
+        setUnavailable(true);
+        onStateChange("idle");
+        setIsSending(false);
+      }
     }
   };
 
@@ -131,6 +171,7 @@ export default function AmaChatPanel({
     <div
       role="dialog"
       aria-label="Chat with Ama"
+      className="demo-chat-panel"
       style={{
         position: "fixed", right: "clamp(12px, 3vw, 32px)", bottom: "clamp(12px, 3vh, 32px)",
         width: "min(380px, 92vw)", height: "min(560px, 78vh)", zIndex: 70,
@@ -176,18 +217,33 @@ export default function AmaChatPanel({
         )}
 
         {messages.map((m) => (
-          <div
-            key={m.id}
-            style={{
-              maxWidth: "86%", padding: "9px 13px", borderRadius: 14, fontSize: 13, lineHeight: 1.55,
-              whiteSpace: "pre-wrap",
-              alignSelf: m.role === "assistant" ? "flex-start" : "flex-end",
-              background: m.role === "assistant" ? "rgba(255,255,255,0.06)" : `${ACCENT}22`,
-              border: m.role === "assistant" ? "1px solid rgba(255,255,255,0.08)" : `1px solid ${ACCENT}44`,
-              color: "#f0ede8",
-            }}
-          >
-            {m.content}
+          <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: m.role === "assistant" ? "flex-start" : "flex-end", gap: 6 }}>
+            <div
+              style={{
+                maxWidth: "86%", padding: "9px 13px", borderRadius: 14, fontSize: 13, lineHeight: 1.55,
+                whiteSpace: "pre-wrap",
+                background: m.role === "assistant" ? "rgba(255,255,255,0.06)" : `${ACCENT}22`,
+                border: m.role === "assistant" ? "1px solid rgba(255,255,255,0.08)" : `1px solid ${ACCENT}44`,
+                color: "#f0ede8",
+              }}
+            >
+              {m.content}
+            </div>
+            {m.whatsappCta && (
+              <a
+                href={whatsAppUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackEvent("whatsapp_continue_clicked", { location: "ai_agents_demo" })}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 600,
+                  padding: "6px 12px", borderRadius: 20, background: "rgba(52,211,153,0.12)",
+                  border: "1px solid rgba(52,211,153,0.35)", color: "#6ee7b7", textDecoration: "none",
+                }}
+              >
+                Continue on WhatsApp →
+              </a>
+            )}
           </div>
         ))}
 
@@ -198,9 +254,21 @@ export default function AmaChatPanel({
         )}
 
         {unavailable && (
-          <div style={{ padding: "10px 13px", borderRadius: 12, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", color: "#f5d199", fontSize: 12.5 }}>
-            Ama is temporarily unavailable. Try the live site chat, or{" "}
-            <a href="/contact" style={{ color: ACCENT, textDecoration: "underline" }}>contact RaveSoft directly</a>.
+          <div style={{ padding: "10px 13px", borderRadius: 12, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", color: "#f5d199", fontSize: 12.5, display: "flex", flexDirection: "column", gap: 8 }}>
+            <span>Ama is temporarily unavailable here. Leave a message on WhatsApp and the RaveSoft team will get back to you.</span>
+            <a
+              href={whatsAppUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackEvent("whatsapp_continue_clicked", { location: "ai_agents_demo_unavailable" })}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 600,
+                padding: "6px 12px", borderRadius: 20, background: "rgba(52,211,153,0.12)",
+                border: "1px solid rgba(52,211,153,0.35)", color: "#6ee7b7", textDecoration: "none", alignSelf: "flex-start",
+              }}
+            >
+              Continue on WhatsApp →
+            </a>
           </div>
         )}
       </div>

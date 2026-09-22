@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarCheck } from "lucide-react";
+import "./demo-overlay.css";
 
 const ACCENT = "#00e5ff";
 
@@ -76,11 +77,14 @@ export function BrandBadge() {
 
 export function Headline() {
   return (
-    <div style={{
-      position: "fixed", top: 78, left: "50%", transform: "translateX(-50%)", zIndex: 20,
-      width: "min(560px, 88vw)", textAlign: "center", pointerEvents: "none",
-      fontFamily: "system-ui, -apple-system, sans-serif",
-    }}>
+    <div
+      className="demo-headline"
+      style={{
+        position: "fixed", left: "50%", transform: "translateX(-50%)", zIndex: 20,
+        width: "min(560px, 88vw)", textAlign: "center", pointerEvents: "none",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+      }}
+    >
       <h1 style={{ margin: 0, fontSize: "clamp(18px, 2.6vw, 26px)", fontWeight: 300, color: "#f0ede8", letterSpacing: "0.01em" }}>
         Meet <span style={{ color: ACCENT, fontWeight: 600 }}>Ama</span> — RaveSoft&apos;s AI Employee
       </h1>
@@ -100,19 +104,22 @@ export function TrustStrip() {
       background: "linear-gradient(0deg, rgba(4,8,15,0.85) 0%, rgba(4,8,15,0) 100%)",
       paddingTop: 24,
     }}>
-      <div style={{
-        display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center",
-        gap: "8px 24px", padding: "10px 16px 12px",
-        fontFamily: "system-ui, -apple-system, sans-serif", fontSize: 10.5,
-        color: "rgba(240,237,232,0.5)", letterSpacing: "0.02em",
-      }}>
-        <span>500+ businesses run on RaveSoft-built software</span>
-        <span style={{ opacity: 0.3 }}>·</span>
-        <span>Data encrypted in transit &amp; at rest</span>
-        <span style={{ opacity: 0.3 }}>·</span>
-        <span>Always-on monitoring, human escalation when it matters</span>
-        <span style={{ opacity: 0.3 }}>·</span>
-        <span style={{ display: "flex", gap: 12 }}>
+      <div
+        className="demo-trust-strip"
+        style={{
+          display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center",
+          gap: "8px 24px", padding: "10px 16px 12px",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          color: "rgba(240,237,232,0.5)", letterSpacing: "0.02em",
+        }}
+      >
+        <span style={{ flexShrink: 0 }}>500+ businesses run on RaveSoft-built software</span>
+        <span className="demo-trust-secondary" style={{ opacity: 0.3, flexShrink: 0 }}>·</span>
+        <span className="demo-trust-secondary" style={{ flexShrink: 0 }}>Data encrypted in transit &amp; at rest</span>
+        <span className="demo-trust-secondary" style={{ opacity: 0.3, flexShrink: 0 }}>·</span>
+        <span className="demo-trust-secondary" style={{ flexShrink: 0 }}>Always-on monitoring, human escalation when it matters</span>
+        <span style={{ opacity: 0.3, flexShrink: 0 }}>·</span>
+        <span style={{ display: "flex", gap: 12, flexShrink: 0 }}>
           {ZONES.map((z) => (
             <span key={z.city}>
               {z.city}{" "}

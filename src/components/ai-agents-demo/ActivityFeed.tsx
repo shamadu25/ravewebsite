@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useState } from "react";
+import "./demo-overlay.css";
 
 const ACCENT = "#00e5ff";
 
@@ -61,6 +62,7 @@ export default function ActivityFeed() {
 
   return (
     <div
+      className="demo-activity-feed"
       style={{
         position: "fixed", left: "clamp(12px, 3vw, 32px)", bottom: 64, zIndex: 25,
         width: "min(300px, 86vw)", pointerEvents: "none",
