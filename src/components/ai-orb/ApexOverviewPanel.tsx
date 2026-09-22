@@ -44,7 +44,7 @@ function Clock() {
     // Via our own API route, so open-meteo never sees visitor IPs. The route
     // returns the visitor's own city + weather (Vercel geo headers).
     const load = () =>
-      fetch("/api/weather")
+      fetch("/ai-agents/demo/api/weather")
         .then((r) => r.json())
         .then((d) => { if (ok) setWx({ temp: d.current?.temperature_2m ?? null, code: d.current?.weather_code ?? null, city: d.city || "your town" }); })
         .catch(() => {});

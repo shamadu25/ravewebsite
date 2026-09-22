@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 };
 
 /**
- * Independent root layout for /ai-orb — a standalone, full-bleed showcase
- * with no Header/Footer/ChatWidget, same pattern as /admin.
+ * Independent root layout for /ai-agents/demo — a standalone, full-bleed
+ * showcase with no Header/Footer/ChatWidget, same pattern as /admin.
  */
 export default function AiOrbRootLayout({ children }: { children: React.ReactNode }) {
   return (
