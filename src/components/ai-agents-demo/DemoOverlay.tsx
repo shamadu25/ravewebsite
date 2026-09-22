@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarCheck } from "lucide-react";
+import { ROSTER } from "@/components/ai-orb/roster";
 import "./demo-overlay.css";
 
 const ACCENT = "#00e5ff";
@@ -66,7 +67,7 @@ export function BrandBadge({ ctaPulse = false }: { ctaPulse?: boolean } = {}) {
       }}>
         <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#34d399", boxShadow: "0 0 6px #34d399", flexShrink: 0 }} />
         <span style={{ fontSize: 9.5, letterSpacing: "0.12em", color: "rgba(240,237,232,0.6)", textTransform: "uppercase", fontFamily: "var(--font-mono)" }}>
-          27 agents online
+          {ROSTER.length} agents online
         </span>
       </div>
 

@@ -3,10 +3,11 @@ import "@/components/ai-orb/ai-orb.css";
 import GoogleAnalytics from "@/components/seo/GoogleAnalytics";
 import MetaPixel from "@/components/seo/MetaPixel";
 import ClarityScript from "@/components/seo/ClarityScript";
+import { ROSTER } from "@/components/ai-orb/roster";
 
 const TITLE = "Meet Ama | RaveSoft AI Employee";
 const DESCRIPTION =
-  "A live, interactive look at Ama — RaveSoft's AI employee — and the full 27-agent team she runs with. Tap the core to chat with the real thing.";
+  `A live, interactive look at Ama — RaveSoft's AI employee — and the full ${ROSTER.length}-agent team she runs with. Tap the core to chat with the real thing.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ravesoftsolutions.com"),
