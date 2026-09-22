@@ -40,6 +40,19 @@
   }
 }
 
+@keyframes demoMicListening {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.45); }
+  50%      { box-shadow: 0 0 0 6px rgba(245,166,35,0); }
+}
+.demo-mic-listening {
+  animation: demoMicListening 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-mic-listening {
+    animation: none;
+  }
+}
+
 .demo-headline {
   top: 78px;
 }

@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Loader2, X, RotateCcw } from "lucide-react";
+import { Send, Loader2, X, RotateCcw, Mic, Square, Volume2, VolumeX } from "lucide-react";
 import {
   ChatMessage,
   fetchConversation,
@@ -24,6 +24,7 @@ import {
 } from "@/lib/ai/session";
 import { trackEvent } from "@/lib/utils";
 import { COMPANY } from "@/lib/data";
+import { useVoice } from "./useVoice";
 import type { OrbState } from "@/components/ai-orb/ApexHeroOrb";
 import "./demo-overlay.css";
 
@@ -81,6 +82,7 @@ export default function AmaChatPanel({
   const [isSending, setIsSending] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
   const initialized = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const speakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -133,10 +135,18 @@ export default function AmaChatPanel({
     void loadConversation(true);
   };
 
+  const submitRef = useRef<(text: string) => void>(() => {});
+  const voice = useVoice((finalText) => {
+    setInputValue("");
+    trackEvent("ai_agents_demo_voice_input_used", {});
+    submitRef.current(finalText);
+  });
+
   const submit = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || !conversationId || isSending) return;
 
+    voice.cancelSpeaking();
     setMessages((prev) => [...prev, { id: `local-${Date.now()}`, role: "visitor", content: trimmed }]);
     setInputValue("");
     setIsSending(true);
@@ -167,9 +177,17 @@ export default function AmaChatPanel({
         ...prev,
         { id: `local-${Date.now()}-reply`, role: "assistant", content: result.message },
       ]);
-      onStateChange("speaking");
-      if (speakTimer.current) clearTimeout(speakTimer.current);
-      speakTimer.current = setTimeout(() => onStateChange("idle"), 6000);
+      if (voiceOutputEnabled && voice.speechSupported) {
+        // The orb's "speaking" state now tracks real audio instead of a fixed timer.
+        voice.speak(result.message, {
+          onStart: () => onStateChange("speaking"),
+          onEnd: () => onStateChange("idle"),
+        });
+      } else {
+        onStateChange("speaking");
+        if (speakTimer.current) clearTimeout(speakTimer.current);
+        speakTimer.current = setTimeout(() => onStateChange("idle"), 6000);
+      }
       if (result.ai_unavailable) trackEvent("ai_unavailable", { location: "ai_agents_demo" });
       if (!timedOut) setIsSending(false);
     } catch {
@@ -181,6 +199,20 @@ export default function AmaChatPanel({
       }
     }
   };
+
+  useEffect(() => {
+    submitRef.current = (text: string) => void submit(text);
+  });
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mirroring live dictation into the input as it's transcribed, not derived render state
+    if (voice.isListening && voice.interimTranscript) setInputValue(voice.interimTranscript);
+  }, [voice.interimTranscript, voice.isListening]);
+
+  useEffect(() => {
+    if (!open) voice.cancelSpeaking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open) return null;
 
@@ -212,6 +244,25 @@ export default function AmaChatPanel({
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {voice.speechSupported && (
+            <button
+              type="button"
+              onClick={() => {
+                const next = !voiceOutputEnabled;
+                setVoiceOutputEnabled(next);
+                trackEvent("ai_agents_demo_voice_output_toggled", { enabled: next });
+                if (!next) voice.cancelSpeaking();
+              }}
+              aria-label={voiceOutputEnabled ? "Turn off Ama's voice" : "Turn on Ama's voice"}
+              title={voiceOutputEnabled ? "Ama speaks her replies — tap to mute" : "Tap to have Ama speak her replies"}
+              style={{
+                background: "none", border: "none", cursor: "pointer", padding: 6,
+                color: voiceOutputEnabled ? ACCENT : "rgba(240,237,232,0.5)",
+              }}
+            >
+              {voiceOutputEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            </button>
+          )}
           <button
             type="button" onClick={startFresh} aria-label="Start a new conversation"
             title="Start a new conversation"
@@ -310,6 +361,10 @@ export default function AmaChatPanel({
         </p>
       </div>
 
+      {voice.micError && (
+        <p style={{ margin: "0 16px", fontSize: 10.5, color: "#f5a623" }}>{voice.micError}</p>
+      )}
+
       <form
         onSubmit={(e) => { e.preventDefault(); void submit(inputValue); }}
         style={{ display: "flex", gap: 8, padding: 12, borderTop: `1px solid ${ACCENT}1a` }}
@@ -318,15 +373,34 @@ export default function AmaChatPanel({
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Ask Ama anything…"
+          placeholder={voice.isListening ? "Listening…" : "Ask Ama anything…"}
           disabled={isLoading || unavailable}
           aria-label="Message"
           style={{
-            flex: 1, minWidth: 0, borderRadius: 10, border: `1px solid ${ACCENT}33`,
+            flex: 1, minWidth: 0, borderRadius: 10, border: `1px solid ${voice.isListening ? "#f5a623" : ACCENT}33`,
             background: "rgba(255,255,255,0.04)", color: "#f0ede8", padding: "9px 12px", fontSize: 13,
             outline: "none",
           }}
         />
+        {voice.micSupported && (
+          <button
+            type="button"
+            onClick={() => (voice.isListening ? voice.stopListening() : voice.startListening())}
+            disabled={isLoading || unavailable}
+            aria-label={voice.isListening ? "Stop listening" : "Speak to Ama"}
+            title={voice.isListening ? "Stop listening" : "Speak to Ama"}
+            className={voice.isListening ? "demo-mic-listening" : undefined}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", width: 38, height: 38,
+              borderRadius: 10, border: `1px solid ${voice.isListening ? "#f5a623" : ACCENT + "33"}`,
+              background: voice.isListening ? "rgba(245,166,35,0.15)" : "rgba(255,255,255,0.04)",
+              color: voice.isListening ? "#f5a623" : "rgba(240,237,232,0.75)",
+              cursor: "pointer", opacity: isLoading || unavailable ? 0.4 : 1,
+            }}
+          >
+            {voice.isListening ? <Square size={14} /> : <Mic size={16} />}
+          </button>
+        )}
         <button
           type="submit"
           disabled={isLoading || unavailable || isSending || !inputValue.trim()}
