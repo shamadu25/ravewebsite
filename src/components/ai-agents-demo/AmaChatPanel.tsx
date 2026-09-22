@@ -9,14 +9,19 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Loader2, X } from "lucide-react";
+import { Send, Loader2, X, RotateCcw } from "lucide-react";
 import {
   ChatMessage,
   fetchConversation,
   sendMessage,
   startConversation,
 } from "@/lib/ai/api";
-import { buildVisitorContext, getStoredConversationId, storeConversationId } from "@/lib/ai/session";
+import {
+  buildVisitorContext,
+  clearStoredConversationId,
+  getStoredConversationId,
+  storeConversationId,
+} from "@/lib/ai/session";
 import { trackEvent } from "@/lib/utils";
 import { COMPANY } from "@/lib/data";
 import type { OrbState } from "@/components/ai-orb/ApexHeroOrb";
@@ -92,29 +97,41 @@ export default function AmaChatPanel({
     if (open) trackEvent("chat_opened", { location: "ai_agents_demo" });
   }, [open]);
 
+  const loadConversation = async (fresh: boolean) => {
+    setIsLoading(true);
+    setUnavailable(false);
+    try {
+      const storedId = fresh ? null : getStoredConversationId();
+      const data = storedId
+        ? await fetchConversation(storedId)
+        : await startConversation(buildVisitorContext());
+      storeConversationId(data.id);
+      setConversationId(data.id);
+      setMessages(
+        data.messages.map((m: ChatMessage) => ({ id: String(m.id), role: m.role, content: m.content }))
+      );
+    } catch {
+      setUnavailable(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!open || initialized.current) return;
     initialized.current = true;
-
-    (async () => {
-      setIsLoading(true);
-      try {
-        const storedId = getStoredConversationId();
-        const data = storedId
-          ? await fetchConversation(storedId)
-          : await startConversation(buildVisitorContext());
-        storeConversationId(data.id);
-        setConversationId(data.id);
-        setMessages(
-          data.messages.map((m: ChatMessage) => ({ id: String(m.id), role: m.role, content: m.content }))
-        );
-      } catch {
-        setUnavailable(true);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
+    void loadConversation(false);
   }, [open]);
+
+  const startFresh = () => {
+    if (isLoading || isSending) return;
+    clearStoredConversationId();
+    setMessages([]);
+    setConversationId(null);
+    onStateChange("idle");
+    trackEvent("ai_agents_demo_conversation_reset", {});
+    void loadConversation(true);
+  };
 
   const submit = async (text: string) => {
     const trimmed = text.trim();
@@ -194,12 +211,22 @@ export default function AmaChatPanel({
             RaveSoft AI Employee — live
           </div>
         </div>
-        <button
-          type="button" onClick={onClose} aria-label="Close chat"
-          style={{ background: "none", border: "none", color: "rgba(240,237,232,0.5)", cursor: "pointer", padding: 6 }}
-        >
-          <X size={18} />
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <button
+            type="button" onClick={startFresh} aria-label="Start a new conversation"
+            title="Start a new conversation"
+            disabled={isLoading || isSending}
+            style={{ background: "none", border: "none", color: "rgba(240,237,232,0.5)", cursor: "pointer", padding: 6, opacity: isLoading || isSending ? 0.4 : 1 }}
+          >
+            <RotateCcw size={16} />
+          </button>
+          <button
+            type="button" onClick={onClose} aria-label="Close chat"
+            style={{ background: "none", border: "none", color: "rgba(240,237,232,0.5)", cursor: "pointer", padding: 6 }}
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -271,6 +298,16 @@ export default function AmaChatPanel({
             </a>
           </div>
         )}
+      </div>
+
+      <div style={{ padding: "10px 16px 0" }}>
+        <p style={{ margin: 0, fontSize: 9.5, lineHeight: 1.4, color: "rgba(240,237,232,0.35)" }}>
+          This is a real, working conversation — messages may be reviewed to improve Ama. Please
+          don&apos;t share sensitive information here. See our{" "}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(240,237,232,0.5)", textDecoration: "underline" }}>
+            privacy policy
+          </a>.
+        </p>
       </div>
 
       <form

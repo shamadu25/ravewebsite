@@ -45,6 +45,11 @@ export default async function AdminConversationsPage() {
                 <p className="text-sm text-gray-500 truncate max-w-md">{lastMessage?.content ?? "—"}</p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
+                {conversation.channel === "demo" && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                    Demo
+                  </span>
+                )}
                 <span
                   className={cn(
                     "px-2 py-0.5 rounded-full text-xs font-medium capitalize",

@@ -44,6 +44,10 @@ export function storeConversationId(id: string): void {
   safeStorage(() => window.sessionStorage)?.setItem(CONVERSATION_ID_KEY, id);
 }
 
+export function clearStoredConversationId(): void {
+  safeStorage(() => window.sessionStorage)?.removeItem(CONVERSATION_ID_KEY);
+}
+
 export interface VisitorContext {
   visitor_id: string;
   current_page: string;

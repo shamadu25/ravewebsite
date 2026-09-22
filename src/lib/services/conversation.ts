@@ -53,11 +53,16 @@ export async function startConversation(input: StartConversationInput): Promise<
     },
   });
 
+  // The /ai-agents/demo showcase hits this same endpoint — tag its
+  // conversations so they don't read as real leads in the admin CRM.
+  const originPage = input.landingPage ?? input.currentPage ?? "";
+  const channel = originPage.startsWith("/ai-agents/demo") ? "demo" : "website";
+
   const conversation = await prisma.conversation.create({
     data: {
       externalId: randomUUID(),
       visitorId: visitor.id,
-      channel: "website",
+      channel,
       stage: "new",
       status: "open",
       landingPage: input.landingPage ?? input.currentPage,
