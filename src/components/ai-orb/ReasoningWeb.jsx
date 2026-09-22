@@ -26,6 +26,12 @@ const COL = { consultant: '#00e5ff', doer: '#f5a623', tool: '#7f9bb3' }
 
 // Right side re-spaced into a clean vertical ladder (drive→finance→editor→memory→email→design)
 // so no label collides with a neighbouring circle. Left/bottom unchanged.
+//
+// Site adaptation: the outer ring (product, security, legal, devops, qa,
+// customer_success, dataml, bizdev, hr) rounds the roster out to full
+// software-company coverage — leadership/strategy, engineering, go-to-market
+// and support functions — placed in the margin the wider viewBox opens up
+// below, well clear of the original 18's spacing.
 const ROSTER = [
   ['chief_of_staff', 'Chief of staff', 'consultant', 250, 212, true, 18, 9],
   ['memory', 'Memory', 'consultant', 452, 250, true, -18, 8],
@@ -45,6 +51,16 @@ const ROSTER = [
   ['calendar', 'Calendar', 'tool', 560, 356, true, -24, 5.5],
   ['email', 'Email', 'tool', 608, 286, false, -26, 5.5],
   ['drive', 'Drive', 'tool', 582, 132, false, 24, 5.5],
+  // Outer ring — full company coverage
+  ['product', 'Product', 'consultant', 340, 72, true, 12, 7],
+  ['security', 'Security', 'consultant', 60, 60, true, 26, 6.5],
+  ['legal', 'Legal', 'consultant', 630, 60, true, -22, 6],
+  ['devops', 'DevOps', 'doer', 30, 280, true, 24, 6.5],
+  ['qa', 'QA', 'doer', 140, 480, true, 20, 6],
+  ['customer_success', 'Success', 'doer', 480, 460, true, -20, 6.5],
+  ['dataml', 'Data/ML', 'doer', 650, 420, true, -24, 6.5],
+  ['bizdev', 'BizDev', 'doer', 700, 250, true, -22, 6],
+  ['hr', 'HR', 'tool', 700, 130, false, -20, 5.5],
 ]
 const META = {}; ROSTER.forEach((r) => { META[r[0]] = { label: r[1], col: COL[r[2]] } })
 
@@ -310,7 +326,7 @@ export default function ReasoningWeb({ state = 'standby', trace = null, mode = '
   return (
     <>
       <style>{`@keyframes rwTwinkle{0%,100%{opacity:.14}50%{opacity:.42}}@keyframes rwFlow{to{stroke-dashoffset:-14}}`}</style>
-      <svg ref={svgRef} width="100%" height="100%" viewBox={viewBox || "0 0 680 480"}
+      <svg ref={svgRef} width="100%" height="100%" viewBox={viewBox || "-70 -50 820 580"}
            preserveAspectRatio="xMidYMid meet"
            style={{ fontFamily: 'inherit', pointerEvents: 'none', overflow: 'visible' }}
            role="img" aria-label="Ama reasoning web" />

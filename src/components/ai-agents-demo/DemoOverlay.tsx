@@ -85,12 +85,12 @@ export function Headline() {
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      <h1 style={{ margin: 0, fontSize: "clamp(18px, 2.6vw, 26px)", fontWeight: 300, color: "#f0ede8", letterSpacing: "0.01em" }}>
-        Meet <span style={{ color: ACCENT, fontWeight: 600 }}>Ama</span> — RaveSoft&apos;s AI Employee
+      <h1 style={{
+        margin: 0, fontSize: "clamp(15px, 2vw, 20px)", fontWeight: 300, color: "#f0ede8", letterSpacing: "0.01em",
+        textShadow: "0 2px 16px rgba(4,8,15,0.9), 0 0 4px rgba(4,8,15,0.9)",
+      }}>
+        Meet <span style={{ color: ACCENT, fontWeight: 600 }}>Ama</span> — RaveSoft&apos;s AI Employee, and the full company she runs with
       </h1>
-      <p style={{ margin: "6px 0 0", fontSize: "clamp(11px, 1.3vw, 13px)", color: "rgba(240,237,232,0.55)" }}>
-        One AI, orchestrating a full front office — sales, support, and operations — 24/7, in every timezone.
-      </p>
     </div>
   );
 }

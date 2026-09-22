@@ -23,6 +23,12 @@ const EVENTS = [
   "Logged a new contact into the CRM pipeline",
   "Drafted a follow-up email for the sales team to review",
   "Handled an after-hours enquiry outside business hours",
+  "Flagged a data-access risk before a new integration shipped",
+  "Ran a QA pass on this week's release before go-live",
+  "Sized a new feature request for the product roadmap",
+  "Checked production health after a deploy",
+  "Onboarded a new client onto their dashboard",
+  "Sourced a potential partner for a new market",
 ];
 
 function useTicker(seed: number) {
