@@ -228,8 +228,14 @@ export function AgentOverview({ sel, onClose }: { sel: NodeSel; onClose: () => v
   );
 }
 
-/* ── The world ── */
-export default function ApexWorld() {
+/* ── The world ──
+ * `state` + `onCoreTap` let a caller drive the orb from a real event (e.g. a
+ * live chat reply) instead of the decorative tap-cycle. Omit them and the orb
+ * cycles idle → thinking → speaking on tap exactly as before. */
+export default function ApexWorld({
+  state: controlledState,
+  onCoreTap,
+}: { state?: OrbState; onCoreTap?: () => void } = {}) {
   const [selected, setSelected] = useState<NodeSel | null>(null);
   const [reduced, setReduced] = useState(false);
 
@@ -237,9 +243,13 @@ export default function ApexWorld() {
   // backdrop, the light-cast and the reasoning web's activity level.
   const [showState, setShowState] = useState<OrbState>("idle");
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const orbState: OrbState = showState;
+  const orbState: OrbState = controlledState ?? showState;
 
   const boost = () => {
+    if (onCoreTap) {
+      onCoreTap();
+      return;
+    }
     const next: OrbState = showState === "idle" ? "thinking" : showState === "thinking" ? "speaking" : "idle";
     setShowState(next);
     if (showTimer.current) clearTimeout(showTimer.current);
@@ -329,7 +339,7 @@ export default function ApexWorld() {
       <div
         role="button"
         tabIndex={0}
-        aria-label="Ama core - tap to energize"
+        aria-label={onCoreTap ? "Talk to Ama" : "Ama core - tap to energize"}
         onClick={boost}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); boost(); } }}
         onMouseDown={(e) => e.preventDefault()}
