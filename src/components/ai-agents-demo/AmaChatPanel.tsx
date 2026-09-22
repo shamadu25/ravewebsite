@@ -27,6 +27,27 @@ interface DisplayMessage {
 
 const ACCENT = "#00e5ff";
 
+// A real reply can take several seconds (no streaming yet) — without a
+// progressive message a long wait reads as broken rather than working.
+const THINKING_STAGES = [
+  { after: 0, text: "Ama is thinking…" },
+  { after: 4000, text: "Reading through the details…" },
+  { after: 9000, text: "Putting together a full answer…" },
+  { after: 16000, text: "Almost there — thorough answers take a little longer…" },
+];
+
+function useThinkingLabel(active: boolean): string {
+  const [label, setLabel] = useState(THINKING_STAGES[0].text);
+
+  useEffect(() => {
+    if (!active) return;
+    const timers = THINKING_STAGES.map((stage) => setTimeout(() => setLabel(stage.text), stage.after));
+    return () => timers.forEach(clearTimeout);
+  }, [active]);
+
+  return label;
+}
+
 export default function AmaChatPanel({
   open,
   onClose,
@@ -45,6 +66,7 @@ export default function AmaChatPanel({
   const initialized = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const speakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const thinkingLabel = useThinkingLabel(isSending);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -171,7 +193,7 @@ export default function AmaChatPanel({
 
         {isSending && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(240,237,232,0.5)", fontSize: 12.5 }}>
-            <Loader2 size={14} className="animate-spin" /> Ama is thinking…
+            <Loader2 size={14} className="animate-spin" /> {thinkingLabel}
           </div>
         )}
 
