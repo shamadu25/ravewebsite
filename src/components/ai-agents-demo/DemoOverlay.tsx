@@ -59,6 +59,17 @@ export function BrandBadge() {
         </span>
       </Link>
 
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6, padding: "5px 12px",
+        background: "rgba(4,8,15,0.5)", border: `1px solid ${ACCENT}22`, borderRadius: 20,
+        backdropFilter: "blur(8px)",
+      }}>
+        <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#34d399", boxShadow: "0 0 6px #34d399", flexShrink: 0 }} />
+        <span style={{ fontSize: 9.5, letterSpacing: "0.12em", color: "rgba(240,237,232,0.6)", textTransform: "uppercase", fontFamily: "var(--font-mono)" }}>
+          27 agents online
+        </span>
+      </div>
+
       <a
         href="/book-consultation"
         style={{

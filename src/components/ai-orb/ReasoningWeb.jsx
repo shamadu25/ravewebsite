@@ -66,12 +66,33 @@ const META = {}; ROSTER.forEach((r) => { META[r[0]] = { label: r[1], col: COL[r[
 
 const LEVEL = { standby: 0.32, listening: 0.6, processing: 0.85, reasoning: 0.95, speaking: 0.78 }
 
+// Site adaptation: `autoFire` plays these as an ambient loop so the roster reads as agents
+// actually handing work to each other, not a static org chart — real handoffs a software
+// company's AI employee would make (a lead routed to sales and logged, a release moving
+// through product→engineering→QA→devops, a security review before it ships, etc).
+const AUTO_FIRE_CHAINS = [
+  ['chief_of_staff', 'sales', 'crm'],
+  ['product', 'engineering', 'qa', 'devops'],
+  ['marketing', 'social_media', 'analytics'],
+  ['finance', 'ops'],
+  ['security', 'devops', 'engineering'],
+  ['customer_success', 'crm', 'email'],
+  ['researcher', 'strategist', 'product'],
+  ['bizdev', 'sales', 'finance'],
+  ['legal', 'security'],
+  ['hr', 'ops'],
+  ['memory', 'chief_of_staff', 'sales'],
+  ['editor', 'social_media'],
+  ['dataml', 'analytics', 'strategist'],
+  ['design', 'engineering', 'qa'],
+]
+
 function nodeIdFromHelper(h) {
   const s = String(h || '').replace(/^(ask_|call_|run_|fetch_|get_|delegate_to_|delegate_)/, '')
   return ({ create_visual: 'design', render_visual: 'design', visual: 'design' })[s] || s   // a visual lights Design
 }
 
-export default function ReasoningWeb({ state = 'standby', trace = null, mode = 'full', coreless = false, onSelect = null, light = false, roster = null, anchor = null, viewBox = null, traces = true }) {
+export default function ReasoningWeb({ state = 'standby', trace = null, mode = 'full', coreless = false, onSelect = null, light = false, roster = null, anchor = null, viewBox = null, traces = true, autoFire = false }) {
   const svgRef = useRef(null)
   const apiRef = useRef(null)
   const stateRef = useRef(state)
@@ -133,7 +154,7 @@ export default function ReasoningWeb({ state = 'standby', trace = null, mode = '
       coreG.append(halo, ring, gold, hot, lab)
     }
 
-    let fire
+    let fire, autoFireTimer = null
     if (mode === 'full') {
       // Concentric orbit rings + PCB circuit traces — thin, faint, "structured chaos".
       ;[72, 128, 186].forEach((r) => ringsG.append(mk('circle', { cx: AX, cy: AY, r, fill: 'none', stroke: P.ring, opacity: 0.32, 'stroke-width': 1, 'stroke-dasharray': '1 7' })))
@@ -238,6 +259,20 @@ export default function ReasoningWeb({ state = 'standby', trace = null, mode = '
       }
       allNodes = pts
       apiRef.current = { fire, liveNodes: pts.filter((p) => p.live), allSpokes: pts.map((p) => p.spoke) }
+
+      // Ambient collaboration loop — plays a random realistic handoff chain every few
+      // seconds so the roster reads as agents actively working together, not a static
+      // diagram. Only fires ids present in this roster (guards custom/smaller rosters).
+      if (autoFire) {
+        const scheduleAutoFire = () => {
+          autoFireTimer = setTimeout(() => {
+            const chain = AUTO_FIRE_CHAINS[(Math.random() * AUTO_FIRE_CHAINS.length) | 0].filter((id) => map[id])
+            if (chain.length > 1) fire(chain)
+            scheduleAutoFire()
+          }, 3400 + Math.random() * 3200)
+        }
+        scheduleAutoFire()
+      }
     } else {
       // mini — calm core, on-demand bloom.
       ;[34, 64].forEach((r) => ringsG.append(mk('circle', { cx: AX, cy: AY, r, fill: 'none', stroke: P.ring, opacity: 0.3, 'stroke-width': 1, 'stroke-dasharray': '1 7' })))
@@ -314,8 +349,8 @@ export default function ReasoningWeb({ state = 'standby', trace = null, mode = '
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
-    return () => { cancelAnimationFrame(raf); apiRef.current = null; svg.replaceChildren() }
-  }, [mode, coreless, roster, anchor, viewBox, traces])
+    return () => { cancelAnimationFrame(raf); clearTimeout(autoFireTimer); apiRef.current = null; svg.replaceChildren() }
+  }, [mode, coreless, roster, anchor, viewBox, traces, autoFire])
 
   useEffect(() => {
     if (!trace || !apiRef.current) return

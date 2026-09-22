@@ -22,7 +22,7 @@ export type NodeSel = { name: string; key: string; color: string };
 // the copied .jsx defaults onSelect to null, which TS infers as `null | undefined`
 const ReasoningWeb = ReasoningWebJs as unknown as React.ComponentType<{
   state?: string; trace?: unknown; mode?: string; coreless?: boolean;
-  onSelect?: (n: NodeSel) => void; light?: boolean;
+  onSelect?: (n: NodeSel) => void; light?: boolean; autoFire?: boolean;
 }>;
 const ShaderBackground = ShaderBackgroundJs as unknown as React.ComponentType<{
   opacity?: number; voiceActive?: boolean; gold?: boolean;
@@ -349,6 +349,7 @@ export default function ApexWorld({
           state={webState}
           mode="full"
           coreless
+          autoFire
           onSelect={(n: NodeSel) => { openAgent(n); }}
         />
       </div>
