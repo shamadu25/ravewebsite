@@ -21,7 +21,7 @@ export default function OrganizationSchema() {
     contactPoint: [
       {
         "@type": "ContactPoint",
-        telephone: "+233503319610",
+        telephone: "+233531561484",
         contactType: "customer service",
         areaServed: "GH",
         availableLanguage: "English",

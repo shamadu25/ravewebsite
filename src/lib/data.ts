@@ -9,10 +9,10 @@ export const COMPANY = {
   description:
     "RaveSoft Digital Solutions Ltd builds custom software, SaaS platforms, POS & ERP systems, mobile apps, AI automation, and premium websites for businesses across Ghana, Nigeria, Kenya, South Africa, Ivory Coast, Senegal, Tanzania, Uganda, Ethiopia, Rwanda, Cameroon, and all 54 African countries.",
   email: "info@ravesoftsolutions.com",
-  phone: "0503319610",
-  phoneGhana: "0503319610",
+  phone: "0531561484",
+  phoneGhana: "0531561484",
   phoneUS: "+1 (406) 518-6775",
-  whatsapp: "+233503319610",
+  whatsapp: "+233531561484",
   location: "Accra, Ghana",
   website: "https://ravesoftsolutions.com",
   social: {

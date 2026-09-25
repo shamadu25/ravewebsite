@@ -187,7 +187,7 @@ export default function HomePage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
-                href={`https://wa.me/233503319610?text=Hi%20RaveSoft%2C%20I%27d%20like%20to%20discuss%20a%20project`}
+                href={`https://wa.me/233531561484?text=Hi%20RaveSoft%2C%20I%27d%20like%20to%20discuss%20a%20project`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/30 hover:border-white/50 bg-white/5 hover:bg-white/10 text-white font-semibold text-base transition-all hover:-translate-y-0.5"
