@@ -32,6 +32,9 @@ export interface PaymentInput {
  */
 export async function recordPayment(p: PaymentInput, a: Actor) {
   if (!Number.isInteger(p.amountCents) || p.amountCents <= 0) throw new Error("amountCents must be a positive integer.");
+  // A payment whose period started over a week ago is history being loaded (backfill/late webhook), not a new sale:
+  // it must not trigger onboarding workflows, alerts or automation rules.
+  const historical = !!p.occurredAt && p.occurredAt.getTime() < Date.now() - 7 * 86400_000;
 
   const dupe = await prisma.osRevenueEntry.findUnique({ where: { orgId_source_externalRef: { orgId: ORG_ID, source: p.source, externalRef: p.externalRef } } });
   if (dupe) return { entry: dupe, customerId: dupe.customerId, duplicate: true };
@@ -70,7 +73,13 @@ export async function recordPayment(p: PaymentInput, a: Actor) {
   // Customer MRR is always recomputed from live ledger entries — never incremented — so renewals and plan changes cannot drift.
   if (p.recurring) {
     const all = await prisma.osRevenueEntry.findMany({ where: { orgId: ORG_ID, customerId: customer.id, kind: "RECURRING" }, select: { kind: true, amountCents: true, periodMonths: true, occurredAt: true, recurringEndsAt: true } });
-    customer = await prisma.osCustomer.update({ where: { id: customer.id }, data: { mrrCents: mrrCentsAt(all, new Date()) } });
+    const mrrCents = mrrCentsAt(all, new Date());
+    // Status follows the ledger: a live plan means ACTIVE; a historical customer with nothing live has lapsed.
+    let status = customer.status;
+    if (newCustomer) status = historical ? (mrrCents > 0 ? "ACTIVE" : "CHURNED") : "ONBOARDING";
+    else if (mrrCents > 0 && status === "CHURNED") status = "ACTIVE";
+    else if (mrrCents === 0 && historical && status !== "ONBOARDING") status = "CHURNED";
+    customer = await prisma.osCustomer.update({ where: { id: customer.id }, data: { mrrCents, status } });
   }
 
   if (opp) {
@@ -80,8 +89,8 @@ export async function recordPayment(p: PaymentInput, a: Actor) {
   }
   await audit({ ...a, action: "revenue.payment_recorded", resource: "revenue_entry", resourceId: entry.id, input: { amountCents: p.amountCents, recurring: p.recurring, source: p.source, externalRef: p.externalRef, customerId: customer.id } });
 
-  await emit("payment.received", { id: entry.id, customerId: customer.id, opportunityId: opp?.id ?? null, amountCents: p.amountCents, recurring: p.recurring, newCustomer });
-  if (newCustomer) {
+  if (!historical) await emit("payment.received", { id: entry.id, customerId: customer.id, opportunityId: opp?.id ?? null, amountCents: p.amountCents, recurring: p.recurring, newCustomer });
+  if (newCustomer && !historical) {
     await enqueueTask({
       agentKey: "onboarding-agent", title: `Onboard ${customer.name}`, priority: "HIGH", createdBy: a.actor,
       idempotencyKey: `onboard:${customer.id}`, input: { customerId: customer.id }, customerId: customer.id, opportunityId: opp?.id, isDemo: customer.isDemo,
