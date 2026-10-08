@@ -17,8 +17,10 @@ Never expose the secret to browsers or mobile apps — send events from the prod
 | email, name | no | shown in the customer record |
 | amountCents | PAYMENT | integer, USD cents. Creates/updates the customer and books revenue |
 | recurring | no | defaults to true for PAYMENT |
+| periodMonths | PAYMENT | months of service the payment covers (monthly = 1, annual = 12). MRR = amount ÷ periodMonths |
+| periodEndsAt | PAYMENT | ISO end of the paid period. **Send it**: without it a payment counts as MRR forever and renewals stack |
 | count | USAGE | number of actions since last event (feeds customer health) |
-| occurredAt | no | ISO-8601; defaults to now |
+| occurredAt | no | ISO-8601; defaults to now. For PAYMENT use the period **start** so an upcoming renewal only counts once it begins |
 
 Define **ACTIVATED** per product (e.g. CliqPOS: first sale recorded; KOVABOT: first AI employee live) —
 the funnel page measures registration → activation → payment from these three events.
