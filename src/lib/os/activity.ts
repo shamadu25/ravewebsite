@@ -34,7 +34,7 @@ export async function recentActivity(limit = 6): Promise<ActivityItem[]> {
       case "task.fail": item = { title: "A task failed", detail: r.actor.replace(/^agent:/, ""), href: `/admin/tasks/${r.resourceId}`, tone: "danger" }; break;
       case "commander.loop": item = { title: "Operating loop ran", detail: "Priorities refreshed", href: "/admin", tone: "default" }; break;
       case "workflow.start": item = { title: "Workflow started", detail: String(r.resourceId ?? ""), href: "/admin/workflows", tone: "default" }; break;
-      case "product.event": item = { title: "Product event received", detail: `${(r.input as { type?: string } | null)?.type ?? ""} · ${r.actor.replace("product:", "")}`, href: "/admin/products", tone: "default" }; break;
+      case "product.batch": item = { title: "Product events received", detail: `${(r.input as { new?: number } | null)?.new ?? 0} new · ${r.actor.replace("product:", "")}`, href: "/admin/products", tone: "default" }; break;
     }
     if (item) out.push({ id: r.id, at: r.createdAt, ...item });
     if (out.length >= limit) break;
