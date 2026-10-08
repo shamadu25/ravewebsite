@@ -1,0 +1,28 @@
+name: AI OS scheduler
+
+# Drives the RaveSoft AI Operating System: operating loop -> heartbeats -> drain task queue.
+# Requires repository secrets: CRON_SECRET (same value as in Vercel) and APP_URL (e.g. https://ravesoftsolutions.com).
+# GitHub may delay scheduled runs by several minutes under load; every tick is idempotent.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: os-cron
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Call scheduler endpoint
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then echo "APP_URL and CRON_SECRET secrets must be set"; exit 1; fi
+          code=$(curl -sS -o response.json -w '%{http_code}' --max-time 120 -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/os/cron")
+          cat response.json; echo
+          [ "$code" = "200" ] || { echo "Scheduler returned HTTP $code"; exit 1; }

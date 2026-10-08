@@ -373,3 +373,528 @@ model SystemSetting {
 
   @@map("system_settings")
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// RaveSoft AI Operating System (tables prefixed os_)
+// Every row carries org_id so additional tenants can be added later.
+// Statuses/priorities are strings validated in src/lib/os/constants.ts.
+// ═══════════════════════════════════════════════════════════════════════
+
+model OsAgent {
+  id               Int      @id @default(autoincrement())
+  orgId            String   @default("ravesoft") @map("org_id")
+  key              String   @unique
+  name             String
+  description      String?  @db.Text
+  department       String
+  role             String
+  parentKey        String?  @map("parent_key")
+  isDirector       Boolean  @default(false) @map("is_director")
+  handler          String?
+  systemPrompt     String   @db.Text @map("system_prompt")
+  status           String   @default("DRAFT")
+  autonomy         String   @default("ASSISTED")
+  version          Int      @default(1)
+  modelTier        String   @default("fast") @map("model_tier")
+  temperature      Float    @default(0.3)
+  tools            Json
+  knowledgeSources Json     @map("knowledge_sources")
+  triggerTypes     Json     @map("trigger_types")
+  approvalRules    Json     @map("approval_rules")
+  inputSchema      Json?    @map("input_schema")
+  outputSchema     Json?    @map("output_schema")
+  budgetLimitUsd   Float    @default(25) @map("budget_limit_usd")
+  maxExecutionSec  Int      @default(60) @map("max_execution_sec")
+  maxRetries       Int      @default(3) @map("max_retries")
+  heartbeatMinutes Int?     @map("heartbeat_minutes")
+  lastHeartbeatAt  DateTime? @map("last_heartbeat_at")
+  owner            String?
+  isDemo           Boolean  @default(false) @map("is_demo")
+  versions         OsAgentVersion[]
+  tasks            OsTask[]
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([orgId, department])
+  @@index([orgId, status])
+  @@map("os_agents")
+}
+
+model OsAgentVersion {
+  id        Int      @id @default(autoincrement())
+  agentId   Int      @map("agent_id")
+  agent     OsAgent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  version   Int
+  snapshot  Json
+  changedBy String?  @map("changed_by")
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([agentId, version])
+  @@map("os_agent_versions")
+}
+
+model OsTask {
+  id               Int       @id @default(autoincrement())
+  orgId            String    @default("ravesoft") @map("org_id")
+  agentId          Int       @map("agent_id")
+  agent            OsAgent   @relation(fields: [agentId], references: [id])
+  department       String
+  title            String
+  priority         String    @default("MEDIUM")
+  priorityScore    Float     @default(0) @map("priority_score")
+  status           String    @default("QUEUED")
+  input            Json?
+  output           Json?
+  error            String?   @db.Text
+  retryCount       Int       @default(0) @map("retry_count")
+  costUsd          Float     @default(0) @map("cost_usd")
+  inputTokens      Int       @default(0) @map("input_tokens")
+  outputTokens     Int       @default(0) @map("output_tokens")
+  approvalRequired Boolean   @default(false) @map("approval_required")
+  approvedBy       String?   @map("approved_by")
+  deadLetter       Boolean   @default(false) @map("dead_letter")
+  idempotencyKey   String?   @unique @map("idempotency_key")
+  runAfter         DateTime  @default(now()) @map("run_after")
+  lockedAt         DateTime? @map("locked_at")
+  parentTaskId     Int?      @map("parent_task_id")
+  createdBy        String    @map("created_by")
+  opportunityId    Int?      @map("opportunity_id")
+  customerId       Int?      @map("customer_id")
+  isDemo           Boolean   @default(false) @map("is_demo")
+  startedAt        DateTime? @map("started_at")
+  completedAt      DateTime? @map("completed_at")
+  traces           OsTrace[]
+  approvals        OsApproval[]
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([orgId, status, runAfter])
+  @@index([agentId, createdAt])
+  @@map("os_tasks")
+}
+
+model OsTrace {
+  id        Int      @id @default(autoincrement())
+  taskId    Int      @map("task_id")
+  task      OsTask   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  seq       Int
+  kind      String
+  summary   String   @db.Text
+  data      Json?
+  latencyMs Int?     @map("latency_ms")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([taskId, seq])
+  @@map("os_traces")
+}
+
+model OsApproval {
+  id               Int       @id @default(autoincrement())
+  orgId            String    @default("ravesoft") @map("org_id")
+  taskId           Int?      @map("task_id")
+  task             OsTask?   @relation(fields: [taskId], references: [id])
+  kind             String
+  title            String
+  objective        String    @db.Text
+  context          String?   @db.Text
+  options          Json?
+  recommendation   String    @db.Text
+  expectedImpact   String?   @db.Text @map("expected_impact")
+  confidence       Float?
+  risks            String?   @db.Text
+  requiredRole     String    @default("CEO") @map("required_role")
+  status           String    @default("PENDING")
+  action           Json?
+  requestedBy      String    @map("requested_by")
+  decidedBy        String?   @map("decided_by")
+  decisionNote     String?   @db.Text @map("decision_note")
+  decidedAt        DateTime? @map("decided_at")
+  executionResult  Json?     @map("execution_result")
+  isDemo           Boolean   @default(false) @map("is_demo")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([orgId, status])
+  @@map("os_approvals")
+}
+
+model OsOpportunity {
+  id               Int       @id @default(autoincrement())
+  orgId            String    @default("ravesoft") @map("org_id")
+  companyName      String    @map("company_name")
+  industry         String?
+  website          String?
+  country          String?
+  contactName      String?   @map("contact_name")
+  contactEmail     String?   @map("contact_email")
+  contactPhone     String?   @map("contact_phone")
+  businessUnit     String    @default("KOVABOT") @map("business_unit")
+  revenueEngine    String    @default("SAAS") @map("revenue_engine")
+  stage            String    @default("NEW")
+  score            Int?
+  scoreBreakdown   Json?     @map("score_breakdown")
+  signals          Json?
+  recommendedEmployees Json? @map("recommended_employees")
+  painPoints       Json?     @map("pain_points")
+  valueProposition String?   @db.Text @map("value_proposition")
+  suggestedOffer   String?   @map("suggested_offer")
+  confidence       Float?
+  dealValueCents   Int       @default(0) @map("deal_value_cents")
+  probability      Float     @default(0)
+  expectedCloseAt  DateTime? @map("expected_close_at")
+  ownerUser        String?   @map("owner_user")
+  ownerAgentKey    String?   @map("owner_agent_key")
+  nextAction       String?   @map("next_action")
+  nextFollowUpAt   DateTime? @map("next_follow_up_at")
+  lastContactAt    DateTime? @map("last_contact_at")
+  qualification    Json?
+  notes            String?   @db.Text
+  customFields     Json?     @map("custom_fields")
+  source           String?
+  leadId           Int?      @map("lead_id")
+  isDemo           Boolean   @default(false) @map("is_demo")
+  activities       OsActivity[]
+  outreach         OsOutreach[]
+  customer         OsCustomer?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([orgId, stage])
+  @@index([orgId, score])
+  @@map("os_opportunities")
+}
+
+model OsActivity {
+  id            Int           @id @default(autoincrement())
+  opportunityId Int           @map("opportunity_id")
+  opportunity   OsOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  type          String
+  channel       String?
+  summary       String        @db.Text
+  actor         String
+  actorType     String        @map("actor_type")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@index([opportunityId, createdAt])
+  @@map("os_activities")
+}
+
+model OsOutreach {
+  id            Int           @id @default(autoincrement())
+  orgId         String        @default("ravesoft") @map("org_id")
+  opportunityId Int           @map("opportunity_id")
+  opportunity   OsOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  channel       String
+  toAddress     String?       @map("to_address")
+  subject       String?
+  body          String        @db.Text
+  generatedBy   String        @map("generated_by")
+  status        String        @default("DRAFT")
+  approvalId    Int?          @map("approval_id")
+  providerRef   String?       @map("provider_ref")
+  error         String?       @db.Text
+  sentAt        DateTime?     @map("sent_at")
+  followUpAt    DateTime?     @map("follow_up_at")
+  responseText  String?       @db.Text @map("response_text")
+  respondedAt   DateTime?     @map("responded_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@index([opportunityId])
+  @@map("os_outreach")
+}
+
+model OsOptOut {
+  id        Int      @id @default(autoincrement())
+  orgId     String   @default("ravesoft") @map("org_id")
+  address   String
+  channel   String
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([orgId, channel, address])
+  @@map("os_opt_outs")
+}
+
+model OsCustomer {
+  id             Int            @id @default(autoincrement())
+  orgId          String         @default("ravesoft") @map("org_id")
+  opportunityId  Int?           @unique @map("opportunity_id")
+  opportunity    OsOpportunity? @relation(fields: [opportunityId], references: [id])
+  name           String
+  businessUnit   String         @map("business_unit")
+  revenueEngine  String         @default("SAAS") @map("revenue_engine")
+  plan           String?
+  status         String         @default("ONBOARDING")
+  health         String         @default("YELLOW")
+  healthReasons  Json?          @map("health_reasons")
+  mrrCents       Int            @default(0) @map("mrr_cents")
+  onboarding     Json?
+  lastActiveAt   DateTime?      @map("last_active_at")
+  usage30d       Int?           @map("usage_30d")
+  usagePrev30d   Int?           @map("usage_prev_30d")
+  externalRef    String?        @map("external_ref")
+  isDemo         Boolean        @default(false) @map("is_demo")
+  revenue        OsRevenueEntry[]
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  @@index([orgId, status])
+  @@map("os_customers")
+}
+
+model OsRevenueEntry {
+  id            Int         @id @default(autoincrement())
+  orgId         String      @default("ravesoft") @map("org_id")
+  customerId    Int?        @map("customer_id")
+  customer      OsCustomer? @relation(fields: [customerId], references: [id])
+  businessUnit  String      @map("business_unit")
+  revenueEngine String      @map("revenue_engine")
+  kind          String
+  amountCents   Int         @map("amount_cents")
+  currency      String      @default("USD")
+  description   String?
+  source        String
+  externalRef   String?     @map("external_ref")
+  recurringEndsAt DateTime? @map("recurring_ends_at")
+  occurredAt    DateTime    @map("occurred_at")
+  isDemo        Boolean     @default(false) @map("is_demo")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@unique([orgId, source, externalRef])
+  @@index([orgId, occurredAt])
+  @@map("os_revenue_entries")
+}
+
+model OsBrainEntry {
+  id         Int      @id @default(autoincrement())
+  orgId      String   @default("ravesoft") @map("org_id")
+  section    String
+  title      String
+  content    String   @db.Text
+  tags       Json?
+  sourceUrl  String?  @map("source_url")
+  allowedDepartments Json? @map("allowed_departments")
+  version    Int      @default(1)
+  isDemo     Boolean  @default(false) @map("is_demo")
+  createdBy  String   @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([orgId, section])
+  @@map("os_brain_entries")
+}
+
+model OsAuditLog {
+  id           Int      @id @default(autoincrement())
+  orgId        String   @default("ravesoft") @map("org_id")
+  actor        String
+  actorType    String   @map("actor_type")
+  action       String
+  resource     String
+  resourceId   String?  @map("resource_id")
+  input        Json?
+  output       Json?
+  ip           String?
+  approvalId   Int?     @map("approval_id")
+  result       String   @default("SUCCESS")
+  prevHash     String   @map("prev_hash")
+  hash         String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([orgId, createdAt])
+  @@index([resource, resourceId])
+  @@map("os_audit_logs")
+}
+
+model OsAlert {
+  id         Int       @id @default(autoincrement())
+  orgId      String    @default("ravesoft") @map("org_id")
+  severity   String
+  category   String
+  title      String
+  body       String?   @db.Text
+  dedupeKey  String?   @map("dedupe_key")
+  resolvedAt DateTime? @map("resolved_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@unique([orgId, dedupeKey])
+  @@index([orgId, resolvedAt])
+  @@map("os_alerts")
+}
+
+model OsEmployeeTemplate {
+  id          Int      @id @default(autoincrement())
+  orgId       String   @default("ravesoft") @map("org_id")
+  key         String
+  industry    String
+  name        String
+  role        String
+  description String?  @db.Text
+  keywords    Json
+  employees   Json
+  monthlyPriceUsd Int  @default(0) @map("monthly_price_usd")
+  definition  Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([orgId, key])
+  @@map("os_employee_templates")
+}
+
+model OsBrief {
+  id        Int      @id @default(autoincrement())
+  orgId     String   @default("ravesoft") @map("org_id")
+  kind      String
+  forDate   String   @map("for_date")
+  content   Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([orgId, kind, forDate])
+  @@map("os_briefs")
+}
+
+model OsProductEvent {
+  id           Int      @id @default(autoincrement())
+  orgId        String   @default("ravesoft") @map("org_id")
+  businessUnit String   @map("business_unit")
+  type         String
+  externalId   String   @map("external_id")
+  userRef      String   @map("user_ref")
+  email        String?
+  name         String?
+  amountCents  Int?     @map("amount_cents")
+  count        Int?
+  payload      Json?
+  occurredAt   DateTime @map("occurred_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([orgId, businessUnit, externalId])
+  @@index([orgId, businessUnit, type])
+  @@index([orgId, businessUnit, userRef])
+  @@map("os_product_events")
+}
+
+model OsCampaign {
+  id                     Int      @id @default(autoincrement())
+  orgId                  String   @default("ravesoft") @map("org_id")
+  name                   String
+  businessUnit           String   @default("KOVABOT") @map("business_unit")
+  channel                String
+  goal                   String
+  audience               String
+  offer                  String
+  status                 String   @default("PLANNED")
+  budgetCents            Int      @default(0) @map("budget_cents")
+  spendCents             Int      @default(0) @map("spend_cents")
+  expectedLeads          Int      @default(0) @map("expected_leads")
+  expectedCustomers      Int      @default(0) @map("expected_customers")
+  expectedRevenueCents   Int      @default(0) @map("expected_revenue_cents")
+  impressions            Int      @default(0)
+  clicks                 Int      @default(0)
+  leads                  Int      @default(0)
+  customers              Int      @default(0)
+  revenueCents           Int      @default(0) @map("revenue_cents")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  @@index([orgId, status])
+  @@map("os_campaigns")
+}
+
+model OsContent {
+  id         Int      @id @default(autoincrement())
+  orgId      String   @default("ravesoft") @map("org_id")
+  type       String
+  title      String
+  body       String   @db.Text
+  status     String   @default("DRAFT")
+  channel    String?
+  campaignId Int?     @map("campaign_id")
+  generatedBy String  @map("generated_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([orgId, status])
+  @@map("os_content")
+}
+
+model OsWorkflow {
+  id         Int      @id @default(autoincrement())
+  orgId      String   @default("ravesoft") @map("org_id")
+  key        String
+  name       String
+  trigger    String
+  everyMinutes Int?   @map("every_minutes")
+  definition Json
+  enabled    Boolean  @default(true)
+  lastRunAt  DateTime? @map("last_run_at")
+  runs       OsWorkflowRun[]
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([orgId, key])
+  @@map("os_workflows")
+}
+
+model OsWorkflowRun {
+  id         Int        @id @default(autoincrement())
+  workflowId Int        @map("workflow_id")
+  workflow   OsWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  status     String     @default("RUNNING")
+  nodeId     String?    @map("node_id")
+  context    Json
+  resumeAt   DateTime   @default(now()) @map("resume_at")
+  waitingOn  Json?      @map("waiting_on")
+  steps      Int        @default(0)
+  log        Json
+  error      String?    @db.Text
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  @@index([status, resumeAt])
+  @@map("os_workflow_runs")
+}
+
+model OsRule {
+  id        Int      @id @default(autoincrement())
+  orgId     String   @default("ravesoft") @map("org_id")
+  name      String
+  event     String
+  condition Json?
+  action    Json
+  enabled   Boolean  @default(true)
+  fired     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([orgId, event])
+  @@map("os_rules")
+}
+
+model OsUser {
+  id           Int      @id @default(autoincrement())
+  orgId        String   @default("ravesoft") @map("org_id")
+  email        String   @unique
+  name         String
+  role         String
+  passwordHash String   @map("password_hash")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("os_users")
+}
+
+model OsLearning {
+  id          Int      @id @default(autoincrement())
+  orgId       String   @default("ravesoft") @map("org_id")
+  agentKey    String   @map("agent_key")
+  observation String   @db.Text
+  proposal    Json
+  status      String   @default("PROPOSED")
+  decidedBy   String?  @map("decided_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([orgId, status])
+  @@map("os_learnings")
+}

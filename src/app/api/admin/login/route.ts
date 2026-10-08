@@ -3,6 +3,7 @@ import { z } from "zod";
 import { verifyAdminCredentials } from "@/lib/auth/credentials";
 import { createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/auth/session";
 import { isRateLimited } from "@/lib/ai/rateLimit";
+import { authenticateOsUser } from "@/lib/os/users";
 
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -24,11 +25,15 @@ export async function POST(request: NextRequest) {
 
   const { email, password } = parsed.data;
 
+  let sessionEmail = email;
   if (!verifyAdminCredentials(email, password)) {
-    return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+    // Fall back to team members created in the OS Users page (individual roles).
+    const member = await authenticateOsUser(email, password).catch(() => null);
+    if (!member) return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+    sessionEmail = member.email;
   }
 
-  const token = await createSessionToken({ email });
+  const token = await createSessionToken({ email: sessionEmail });
 
   const response = NextResponse.json({ ok: true });
   response.cookies.set(SESSION_COOKIE, token, {
