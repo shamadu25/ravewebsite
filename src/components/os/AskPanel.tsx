@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ApiButton from "./ApiButton";
 
 interface Turn {
@@ -19,10 +19,16 @@ const SUGGESTIONS = [
   "Pause all outbound campaigns.",
 ];
 
-export default function AskPanel() {
+export default function AskPanel({ initialQuestion }: { initialQuestion?: string }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const fired = useRef(false);
+  useEffect(() => {
+    if (initialQuestion && !fired.current) { fired.current = true; void ask(initialQuestion); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuestion]);
 
   async function ask(q: string) {
     if (!q.trim() || busy) return;
@@ -50,7 +56,7 @@ export default function AskPanel() {
       </div>
       <div className="space-y-4">
         {turns.map((t, i) => (
-          <div key={i} className="rounded-2xl border border-gray-200 bg-white p-4">
+          <div key={i} className="os-card p-4">
             <p className="text-sm font-medium text-gray-900">{t.q}</p>
             {t.a && <p className="mt-2 whitespace-pre-wrap text-sm text-gray-700">{t.a}</p>}
             {t.grounded && <p className="mt-2 text-[11px] uppercase tracking-wide text-gray-400">{t.grounded === "llm" ? "Model analysis over live data" : "Deterministic data readout"}</p>}
@@ -66,7 +72,7 @@ export default function AskPanel() {
       </div>
       <form onSubmit={(e) => { e.preventDefault(); ask(text); }} className="flex gap-2">
         <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Ask about revenue, risks, opportunities — or give a command" className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm" />
-        <button disabled={busy} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">{busy ? "Thinking…" : "Ask"}</button>
+        <button disabled={busy} className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50">{busy ? "Thinking…" : "Ask"}</button>
       </form>
     </div>
   );

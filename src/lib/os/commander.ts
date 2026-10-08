@@ -18,6 +18,7 @@ import type { Role } from "./rbac";
 import { refreshUsageFromEvents } from "./products";
 import { tickWorkflows } from "./workflows";
 import { proposeLearnings } from "./learning";
+import { setLoopLock } from "./loop-lock";
 
 const WEIGHTS_KEY = `os:${ORG_ID}:priority_weights`;
 const day = () => new Date().toISOString().slice(0, 10);
@@ -115,6 +116,15 @@ export async function rankPriorities(): Promise<PriorityItem[]> {
 // ── THINK → DECIDE → ACT ─────────────────────────────────────────────────────────
 
 export async function runOperatingLoop() {
+  await setLoopLock(true);
+  try {
+    return await runOperatingLoopInner();
+  } finally {
+    await setLoopLock(false);
+  }
+}
+
+async function runOperatingLoopInner() {
   const d = day();
   const ingested = await syncWebsiteLeads();
   await refreshUsageFromEvents();

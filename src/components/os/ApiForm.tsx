@@ -55,7 +55,7 @@ export default function ApiForm({ url, method = "POST", fields, submitLabel, ext
     }
   }
 
-  const input = "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none";
+  const input = "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none";
   return (
     <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
       {fields.map((f) => (
@@ -75,7 +75,7 @@ export default function ApiForm({ url, method = "POST", fields, submitLabel, ext
         </label>
       ))}
       <div className="sm:col-span-2 flex items-center gap-3">
-        <button disabled={busy} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50">{busy ? "Saving…" : submitLabel}</button>
+        <button disabled={busy} className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50">{busy ? "Saving…" : submitLabel}</button>
         {msg && <span className={msg.ok ? "text-xs text-emerald-700" : "text-xs text-red-700"}>{msg.text}</span>}
       </div>
     </form>

@@ -17,9 +17,9 @@ export default async function TasksPage({ searchParams }: { searchParams: Promis
       <AutoRefresh seconds={15} />
       <PageHeader title="Tasks" subtitle="Every agent action is a task with a trace of its decisions and tool calls." />
       <div className="mb-4 flex flex-wrap gap-2">
-        {FILTERS.map((f) => <Link key={f} href={f === "ALL" ? "/admin/tasks" : `/admin/tasks?status=${f}`} className={`rounded-full border px-3 py-1 text-xs ${(status ?? "ALL") === f ? "border-gray-900 bg-gray-900 text-white" : "border-gray-300 bg-white text-gray-700"}`}>{f.replace(/_/g, " ")}</Link>)}
+        {FILTERS.map((f) => <Link key={f} href={f === "ALL" ? "/admin/tasks" : `/admin/tasks?status=${f}`} className={`rounded-full border px-3 py-1 text-xs ${(status ?? "ALL") === f ? "border-[var(--primary)] bg-[var(--primary)] text-white" : "border-gray-300 bg-white text-gray-700"}`}>{f.replace(/_/g, " ")}</Link>)}
       </div>
-      <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto os-card">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-gray-200 text-left text-xs text-gray-500"><th className="px-4 py-2 font-medium">Task</th><th className="px-4 py-2 font-medium">Agent</th><th className="px-4 py-2 font-medium">Priority</th><th className="px-4 py-2 font-medium">Status</th><th className="px-4 py-2 font-medium">Cost</th><th className="px-4 py-2 font-medium">Created</th></tr></thead>
           <tbody>

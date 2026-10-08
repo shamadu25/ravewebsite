@@ -22,7 +22,7 @@ export default async function PerformancePage() {
           ))}
         </Card>
       )}
-      <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto os-card">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-gray-200 text-left text-xs text-gray-500">{["Agent", "Tasks", "Success", "Avg time", "Cost", "Escalations", "Deals won", "Revenue influenced", "Cost / $"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
           <tbody>

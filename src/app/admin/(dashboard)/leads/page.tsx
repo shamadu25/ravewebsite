@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const LEVEL_STYLES: Record<string, string> = {
   hot: "bg-red-100 text-red-700",
   sales_qualified: "bg-orange-100 text-orange-700",
-  qualified: "bg-blue-100 text-blue-700",
+  qualified: "bg-blue-100 text-[var(--primary)]",
   nurture: "bg-amber-100 text-amber-700",
   low: "bg-gray-100 text-gray-600",
 };

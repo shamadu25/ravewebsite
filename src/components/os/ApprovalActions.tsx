@@ -35,7 +35,7 @@ export default function ApprovalActions({ id }: { id: number }) {
     <div className="mt-4 space-y-2">
       <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional note (kept in the audit record)" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
       <div className="flex flex-wrap items-center gap-2">
-        <button disabled={busy} onClick={() => decide("APPROVE")} className={`${b} bg-gray-900 text-white hover:bg-gray-700`}>Approve</button>
+        <button disabled={busy} onClick={() => decide("APPROVE")} className={`${b} bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]`}>Approve</button>
         <button disabled={busy} onClick={() => decide("REJECT")} className={`${b} border border-red-300 text-red-700 hover:bg-red-50`}>Reject</button>
         <button disabled={busy} onClick={() => decide("REQUEST_INFO")} className={`${b} border border-gray-300 text-gray-700 hover:bg-gray-50`}>Request info</button>
         {msg && <span className={msg.ok ? "text-xs text-emerald-700" : "text-xs text-red-700"}>{msg.text}</span>}

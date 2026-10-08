@@ -3,14 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { ORG_ID } from "@/lib/os/constants";
 import ApiForm from "@/components/os/ApiForm";
 import AutoRefresh from "@/components/os/AutoRefresh";
-import { Badge, Card, PageHeader, centsToUsd } from "@/components/os/ui";
+import { Card, PageHeader, Stat, centsToUsd, usd } from "@/components/os/ui";
+import { goalState, priorities } from "@/lib/os/dashboard-data";
+import { daysAgo } from "@/lib/os/time";
 
 export const dynamic = "force-dynamic";
 
 // Spec §52 board columns mapped onto the pipeline stages.
 const COLUMNS: Array<{ title: string; stages: string[] }> = [
-  { title: "Discovered", stages: ["NEW", "RESEARCHED"] },
-  { title: "Outreach", stages: ["CONTACTED"] },
+  { title: "Research", stages: ["NEW", "RESEARCHED"] },
+  { title: "Contacted", stages: ["CONTACTED"] },
   { title: "Engaged", stages: ["ENGAGED"] },
   { title: "Qualified", stages: ["QUALIFIED"] },
   { title: "Demo", stages: ["DEMO"] },
@@ -21,12 +23,38 @@ const COLUMNS: Array<{ title: string; stages: string[] }> = [
 ];
 
 export default async function RevenuePage() {
-  const opps = await prisma.osOpportunity.findMany({ where: { orgId: ORG_ID }, orderBy: [{ score: "desc" }, { id: "desc" }], take: 300 });
+  const [opps, { pipeline }, ranked] = await Promise.all([
+    prisma.osOpportunity.findMany({ where: { orgId: ORG_ID }, orderBy: [{ score: "desc" }, { id: "desc" }], take: 300 }),
+    goalState(), priorities(),
+  ]);
+  const since = daysAgo(30);
+  const newLeads = opps.filter((o) => o.createdAt >= since && !["WON", "LOST"].includes(o.stage)).length;
+  const qualified = opps.filter((o) => ["QUALIFIED", "DEMO", "PROPOSAL", "NEGOTIATION", "VERBAL_COMMITMENT"].includes(o.stage)).length;
+  const won = opps.filter((o) => o.stage === "WON"), lost = opps.filter((o) => o.stage === "LOST").length;
+  const wonRevenue = won.reduce((n, o) => n + o.dealValueCents, 0);
+  const conversion = won.length + lost >= 3 ? Math.round((won.length / (won.length + lost)) * 100) : null;
+  const nextActions = opps.filter((o) => o.nextAction && !["WON", "LOST", "NURTURE"].includes(o.stage)).slice(0, 4);
 
   return (
     <div className="space-y-6">
       <AutoRefresh seconds={30} />
-      <PageHeader title="Revenue opportunities" subtitle="Adding a prospect queues the Prospecting Agent, which analyses the website, scores the fit and recommends an AI employee." />
+      <PageHeader title="Leads & Sales" subtitle="Adding a prospect queues the Prospecting Agent, which analyses the website, scores the fit and recommends an AI employee." />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+        <Stat label="New leads (30d)" value={String(newLeads)} />
+        <Stat label="Qualified leads" value={String(qualified)} />
+        <Stat label="Pipeline" value={usd(pipeline.openValueUsd)} hint={`${usd(pipeline.weightedValueUsd)} weighted`} />
+        <Stat label="Conversion rate" value={conversion == null ? "No data" : `${conversion}%`} hint={conversion == null ? "Needs 3+ closed deals" : undefined} />
+        <Stat label="Won revenue" value={centsToUsd(wonRevenue)} />
+      </div>
+      <Card>
+        <h2 className="mb-3 text-[16px] font-semibold">Recommended next actions</h2>
+        {nextActions.length === 0 && ranked.length === 0 ? <p className="text-[14px] text-[var(--muted)]">Add a prospect and the AI will recommend what to do next.</p> : (
+          <ul className="space-y-2 text-[14px]">
+            {ranked.slice(0, 2).map((r) => <li key={r.title}><b>{r.title}</b> <span className="text-[var(--muted)]">— {r.why}</span></li>)}
+            {nextActions.map((o) => <li key={o.id}><Link className="font-medium hover:underline" href={`/admin/revenue/${o.id}`}>{o.companyName}</Link> <span className="text-[var(--muted)]">— {o.nextAction}</span></li>)}
+          </ul>
+        )}
+      </Card>
       <Card>
         <h2 className="mb-3 text-sm font-semibold text-gray-900">Add prospect</h2>
         <ApiForm
@@ -57,7 +85,7 @@ export default async function RevenuePage() {
                       <span className="text-gray-700">{centsToUsd(o.dealValueCents)}</span>
                     </div>
                     {(o.recommendedEmployees as string[] | null)?.[0] && <p className="mt-1 truncate text-xs text-gray-500">{(o.recommendedEmployees as string[])[0]}</p>}
-                    {o.nextAction && <p className="mt-1 truncate text-xs text-blue-700">Next: {o.nextAction}</p>}
+                    {o.nextAction && <p className="mt-1 truncate text-xs text-[var(--primary)]">Next: {o.nextAction}</p>}
                   </Link>
                 ))}
                 {items.length === 0 && <p className="rounded-xl border border-dashed border-gray-200 p-3 text-xs text-gray-400">Empty</p>}
@@ -66,7 +94,7 @@ export default async function RevenuePage() {
           );
         })}
       </div>
-      <p className="text-xs text-gray-400">Stage <Badge>NEW</Badge> and RESEARCHED share the Discovered column.</p>
+      <p className="text-[12px] text-[var(--muted)]">NEW and RESEARCHED prospects share the Research column.</p>
     </div>
   );
 }

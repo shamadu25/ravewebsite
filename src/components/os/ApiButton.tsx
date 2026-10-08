@@ -30,7 +30,7 @@ const FORMATTERS: Record<ResultFormat, (d: Data) => string | null> = {
 };
 
 const STYLES = {
-  primary: "bg-gray-900 text-white hover:bg-gray-700",
+  primary: "bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]",
   secondary: "bg-white text-gray-800 border border-gray-300 hover:bg-gray-50",
   danger: "bg-white text-red-700 border border-red-300 hover:bg-red-50",
 };

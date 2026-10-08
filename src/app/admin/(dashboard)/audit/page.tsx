@@ -14,7 +14,7 @@ export default async function AuditPage() {
       <Card className={chain.intact ? "border-emerald-200" : "border-red-300"}>
         <p className="text-sm">{chain.intact ? <>Chain intact — <b>{chain.checked}</b> entries verified.</> : <span className="text-red-700">Chain BROKEN at entry #{chain.brokenAtId}. Records were altered or removed.</span>}</p>
       </Card>
-      <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto os-card">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-gray-200 text-left text-xs text-gray-500"><th className="px-4 py-2 font-medium">When</th><th className="px-4 py-2 font-medium">Actor</th><th className="px-4 py-2 font-medium">Action</th><th className="px-4 py-2 font-medium">Resource</th><th className="px-4 py-2 font-medium">Result</th></tr></thead>
           <tbody>

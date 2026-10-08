@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { ORG_ID } from "@/lib/os/constants";
 import ApiButton from "@/components/os/ApiButton";
 import ApiForm from "@/components/os/ApiForm";
-import { Badge, Card, PageHeader, centsToUsd } from "@/components/os/ui";
+import { Badge, Card, PageHeader, Stat, centsToUsd } from "@/components/os/ui";
 
 export const dynamic = "force-dynamic";
 const NEXT: Record<string, string | undefined> = { DRAFT: "REVIEW", REVIEW: "APPROVED", APPROVED: "PUBLISHED" };
@@ -12,8 +12,15 @@ export default async function MarketingPage() {
     prisma.osCampaign.findMany({ where: { orgId: ORG_ID }, orderBy: { id: "desc" }, take: 50 }),
     prisma.osContent.findMany({ where: { orgId: ORG_ID }, orderBy: { id: "desc" }, take: 50 }),
   ]);
+  const sum = (f: (c: (typeof campaigns)[number]) => number) => campaigns.reduce((n, c) => n + f(c), 0);
+  const spend = sum((c) => c.spendCents), revenue = sum((c) => c.revenueCents), customers = sum((c) => c.customers), leads = sum((c) => c.leads);
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
+        <Stat label="Leads" value={String(leads)} /><Stat label="Campaigns" value={String(campaigns.length)} /><Stat label="Spend" value={centsToUsd(spend)} />
+        <Stat label="CAC" value={spend > 0 && customers > 0 ? centsToUsd(spend / customers) : "No data"} hint={spend > 0 && customers > 0 ? undefined : "Needs spend and customers"} />
+        <Stat label="Revenue" value={centsToUsd(revenue)} /><Stat label="ROAS" value={spend > 0 ? `${(revenue / spend).toFixed(2)}x` : "No data"} />
+      </div>
       <PageHeader title="Marketing" subtitle="Judged by revenue, not volume. Campaign figures are entered here — they are not synced from ad platforms (no ads integration is connected)." />
       <Card>
         <h2 className="mb-3 text-sm font-semibold">New campaign</h2>

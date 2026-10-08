@@ -16,7 +16,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   return (
     <div className="space-y-4">
       <PageHeader title="Search" subtitle="Customers, prospects, agents, tasks, knowledge, decisions and audit events." />
-      <form className="flex gap-2"><input name="q" defaultValue={q} placeholder="Search…" className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm" /><button className="rounded-lg bg-gray-900 px-4 py-2 text-sm text-white">Search</button></form>
+      <form className="flex gap-2"><input name="q" defaultValue={q} placeholder="Search…" className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm" /><button className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm text-white">Search</button></form>
       {q && results.length === 0 && <p className="text-sm text-gray-500">No results for “{q}”.</p>}
       <Card><ul className="divide-y divide-gray-100 text-sm">{results.map((r, i) => <li key={i} className="py-2"><Link href={r.href} className="block"><span className="mr-2 text-[11px] uppercase text-gray-400">{r.type}</span><span className="font-medium text-gray-900">{r.title}</span><span className="block text-xs text-gray-500">{r.subtitle}</span></Link></li>)}</ul></Card>
     </div>

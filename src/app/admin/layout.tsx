@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
+import "./admin.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`h-full ${inter.variable}`}>
-      <body className="min-h-full antialiased bg-gray-50 text-gray-900">{children}</body>
+      <body className="admin-shell min-h-full antialiased">{children}</body>
     </html>
   );
 }

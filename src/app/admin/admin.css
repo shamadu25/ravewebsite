@@ -1,0 +1,43 @@
+/* RaveSoft Admin design tokens (scoped to the admin shell so the marketing site is untouched). */
+.admin-shell {
+  --background: #f8fafc;
+  --foreground: #111827;
+  --muted: #64748b;
+  --border: #e5e7eb;
+  --card: #ffffff;
+  --sidebar: #080b16;
+  --sidebar-muted: #94a3b8;
+  --primary: #6d28d9;
+  --primary-hover: #5b21b6;
+  --primary-bright: #7c3aed;
+  --primary-soft: #f3e8ff;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 4px 16px rgba(16, 24, 40, 0.06);
+  --ease: 180ms cubic-bezier(0.2, 0, 0, 1);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+.admin-shell :focus-visible { outline: 2px solid var(--primary-bright); outline-offset: 2px; border-radius: 6px; }
+.admin-shell .os-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); transition: box-shadow var(--ease), transform var(--ease); }
+.admin-shell .os-card-hover:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+@keyframes os-shimmer { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
+.admin-shell .os-skeleton { background: linear-gradient(90deg, #eef2f6 0%, #f8fafc 50%, #eef2f6 100%); background-size: 200px 100%; animation: os-shimmer 1.2s infinite linear; border-radius: 8px; }
+@keyframes os-draw { from { stroke-dashoffset: var(--len, 600); } to { stroke-dashoffset: 0; } }
+.admin-shell .os-draw { stroke-dasharray: var(--len, 600); animation: os-draw 900ms ease-out both; }
+@keyframes os-slide-in { from { transform: translateX(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+.admin-shell .os-drawer { animation: os-slide-in 200ms ease-out both; }
+@keyframes os-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+.admin-shell .os-pulse { animation: os-pulse 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell .os-draw, .admin-shell .os-drawer, .admin-shell .os-pulse, .admin-shell .os-skeleton { animation: none; }
+  .admin-shell .os-card { transition: none; }
+}

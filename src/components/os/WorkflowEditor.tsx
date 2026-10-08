@@ -27,7 +27,7 @@ export default function WorkflowEditor({ sample, agentKeys }: { sample: string; 
       <p className="text-xs text-gray-500">Node types: AGENT, CONDITION, DELAY, APPROVAL, NOTIFICATION, HTTP, CRM_STAGE, HUMAN_HANDOFF, END. Agents: {agentKeys.slice(0, 12).join(", ")}…</p>
       <textarea value={text} onChange={(e) => setText(e.target.value)} rows={18} spellCheck={false} className="w-full rounded-lg border border-gray-300 p-3 font-mono text-xs" />
       <div className="flex items-center gap-3">
-        <button onClick={save} disabled={busy} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">{busy ? "Validating…" : "Validate & save"}</button>
+        <button onClick={save} disabled={busy} className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50">{busy ? "Validating…" : "Validate & save"}</button>
         {msg && <span className={msg.ok ? "text-xs text-emerald-700" : "text-xs text-red-700"}>{msg.text}</span>}
       </div>
     </div>
