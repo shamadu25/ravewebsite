@@ -55,7 +55,7 @@ export default function ApiForm({ url, method = "POST", fields, submitLabel, ext
     }
   }
 
-  const input = "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none";
+  const input = "w-full rounded-[10px] border border-[var(--border)] bg-white px-3 py-2 text-[14px] focus:border-[var(--primary-bright)] focus:outline-none";
   return (
     <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
       {fields.map((f) => (
