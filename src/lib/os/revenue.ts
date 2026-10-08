@@ -4,6 +4,7 @@ import { audit } from "./audit";
 import { logActivity, setStage, type Actor } from "./crm";
 import { enqueueTask } from "./queue";
 import { emit } from "./events";
+import { mrrCentsAt } from "./mrr";
 
 export interface PaymentInput {
   opportunityId?: number;
@@ -17,6 +18,10 @@ export interface PaymentInput {
   source: string;
   /** Provider payment id — makes webhook retries idempotent. */
   externalRef: string;
+  /** Months of service the payment covers (annual plan = 12). MRR is amount / periodMonths. */
+  periodMonths?: number;
+  /** When the paid period ends; after this the entry stops counting toward MRR. Omit only for open-ended manual entries. */
+  recurringEndsAt?: Date | null;
   occurredAt?: Date;
   isDemo?: boolean;
 }
@@ -52,17 +57,21 @@ export async function recordPayment(p: PaymentInput, a: Actor) {
       },
     });
     newCustomer = true;
-  } else if (p.recurring) {
-    customer = await prisma.osCustomer.update({ where: { id: customer.id }, data: { mrrCents: { increment: p.amountCents } } });
   }
 
   const entry = await prisma.osRevenueEntry.create({
     data: {
       orgId: ORG_ID, customerId: customer.id, businessUnit: customer.businessUnit, revenueEngine: customer.revenueEngine,
       kind: p.recurring ? "RECURRING" : "ONE_TIME", amountCents: p.amountCents, description: p.description ?? null, source: p.source,
-      externalRef: p.externalRef, occurredAt: p.occurredAt ?? new Date(), isDemo: p.isDemo ?? customer.isDemo,
+      externalRef: p.externalRef, periodMonths: Math.max(1, Math.min(60, p.periodMonths ?? 1)), recurringEndsAt: p.recurring ? (p.recurringEndsAt ?? null) : null, occurredAt: p.occurredAt ?? new Date(), isDemo: p.isDemo ?? customer.isDemo,
     },
   });
+
+  // Customer MRR is always recomputed from live ledger entries — never incremented — so renewals and plan changes cannot drift.
+  if (p.recurring) {
+    const all = await prisma.osRevenueEntry.findMany({ where: { orgId: ORG_ID, customerId: customer.id, kind: "RECURRING" }, select: { kind: true, amountCents: true, periodMonths: true, occurredAt: true, recurringEndsAt: true } });
+    customer = await prisma.osCustomer.update({ where: { id: customer.id }, data: { mrrCents: mrrCentsAt(all, new Date()) } });
+  }
 
   if (opp) {
     await setStage(opp.id, "WON", a, `payment ${p.externalRef}`);

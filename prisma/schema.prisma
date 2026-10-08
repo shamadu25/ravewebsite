@@ -658,6 +658,7 @@ model OsRevenueEntry {
   source        String
   externalRef   String?     @map("external_ref")
   recurringEndsAt DateTime? @map("recurring_ends_at")
+  periodMonths  Int         @default(1) @map("period_months")
   occurredAt    DateTime    @map("occurred_at")
   isDemo        Boolean     @default(false) @map("is_demo")
   createdAt     DateTime    @default(now()) @map("created_at")

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ORG_ID, PIPELINE_STAGES } from "./constants";
 import { computeGoalState, defaultGoal, type GoalConfig, type GoalState } from "./goals";
+import { isLiveAt, monthlyCents, mrrCentsAt } from "./mrr";
 
 const GOAL_KEY = `os:${ORG_ID}:goal`;
 
@@ -35,19 +36,17 @@ export async function getRevenueMetrics(now = new Date()): Promise<RevenueMetric
   const lastMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
   const thirtyAgo = new Date(now.getTime() - 30 * 86400_000);
 
-  const recurringAt = (at: Date) =>
-    entries.filter((e) => e.kind === "RECURRING" && e.occurredAt <= at && (!e.recurringEndsAt || e.recurringEndsAt > at));
-  const sum = (xs: typeof entries) => xs.reduce((n, e) => n + e.amountCents, 0);
-
+  const recurringAt = (at: Date) => entries.filter((e) => isLiveAt(e, at));
+  const sum = (xs: typeof entries) => xs.reduce((n, e) => n + e.amountCents, 0); // cash received
   const activeNow = recurringAt(now);
-  const mrrCents = sum(activeNow);
+  const mrrCents = mrrCentsAt(entries, now);
   const hasHistory = entries.some((e) => e.kind === "RECURRING" && e.occurredAt <= thirtyAgo);
 
   const byEngine: Record<string, number> = {};
   const byBusinessUnit: Record<string, number> = {};
   for (const e of activeNow) {
-    byEngine[e.revenueEngine] = (byEngine[e.revenueEngine] ?? 0) + e.amountCents * 12;
-    byBusinessUnit[e.businessUnit] = (byBusinessUnit[e.businessUnit] ?? 0) + e.amountCents * 12;
+    byEngine[e.revenueEngine] = (byEngine[e.revenueEngine] ?? 0) + monthlyCents(e) * 12;
+    byBusinessUnit[e.businessUnit] = (byBusinessUnit[e.businessUnit] ?? 0) + monthlyCents(e) * 12;
   }
   for (const k of Object.keys(byEngine)) byEngine[k] = cents(byEngine[k]);
   for (const k of Object.keys(byBusinessUnit)) byBusinessUnit[k] = cents(byBusinessUnit[k]);
@@ -59,7 +58,7 @@ export async function getRevenueMetrics(now = new Date()): Promise<RevenueMetric
   return {
     mrrUsd: cents(mrrCents),
     arrUsd: cents(mrrCents * 12),
-    mrrThirtyDaysAgoUsd: hasHistory ? cents(sum(recurringAt(thirtyAgo))) : null,
+    mrrThirtyDaysAgoUsd: hasHistory ? cents(mrrCentsAt(entries, thirtyAgo)) : null,
     revenueThisMonthUsd: cents(sum(monthEntries)),
     revenueLastMonthUsd: cents(sum(lastMonthEntries)),
     activeCustomers: new Set(activeNow.map((e) => e.customerId).filter((x) => x != null)).size,

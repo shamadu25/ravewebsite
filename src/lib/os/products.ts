@@ -15,6 +15,10 @@ export const ProductEvent = z.object({
   name: z.string().max(200).optional(),
   amountCents: z.number().int().positive().optional(),
   recurring: z.boolean().optional(),
+  /** Months of service this payment covers (monthly=1, annual=12). */
+  periodMonths: z.number().int().min(1).max(60).optional(),
+  /** End of the paid period (ISO). Required for correct MRR on renewals. */
+  periodEndsAt: z.string().datetime().optional(),
   count: z.number().int().nonnegative().optional(),
   payload: z.record(z.string(), z.unknown()).optional(),
   occurredAt: z.string().datetime().optional(),
@@ -33,13 +37,18 @@ export async function ingestProductEvent(e: ProductEventInput) {
   // Link / create the customer record the first time a user pays or subscribes.
   if (e.type === "PAYMENT" && e.amountCents) {
     const existing = await prisma.osCustomer.findFirst({ where: { orgId: ORG_ID, businessUnit: e.businessUnit, externalRef: e.userRef } });
-    const r = await recordPayment({ customerId: existing?.id, customerName: e.name ?? e.email ?? `${e.businessUnit} user ${e.userRef}`, businessUnit: e.businessUnit, amountCents: e.amountCents, recurring: e.recurring ?? true, source: `product:${e.businessUnit}`, externalRef: e.externalId, occurredAt }, { actor: `product:${e.businessUnit}`, actorType: "WEBHOOK" });
+    const r = await recordPayment({ customerId: existing?.id, customerName: e.name ?? e.email ?? `${e.businessUnit} user ${e.userRef}`, businessUnit: e.businessUnit, amountCents: e.amountCents, recurring: e.recurring ?? true, periodMonths: e.periodMonths, recurringEndsAt: e.periodEndsAt ? new Date(e.periodEndsAt) : null, source: `product:${e.businessUnit}`, externalRef: e.externalId, occurredAt }, { actor: `product:${e.businessUnit}`, actorType: "WEBHOOK" });
     if (!existing && r.customerId) await prisma.osCustomer.update({ where: { id: r.customerId }, data: { externalRef: e.userRef } });
   }
   if (e.type === "USAGE" || e.type === "ACTIVATED") {
     await prisma.osCustomer.updateMany({ where: { orgId: ORG_ID, businessUnit: e.businessUnit, externalRef: e.userRef }, data: { lastActiveAt: occurredAt } });
   }
-  if (e.type === "CHURNED") await prisma.osCustomer.updateMany({ where: { orgId: ORG_ID, businessUnit: e.businessUnit, externalRef: e.userRef }, data: { status: "CHURNED", mrrCents: 0 } });
+  if (e.type === "CHURNED") {
+    const gone = await prisma.osCustomer.findMany({ where: { orgId: ORG_ID, businessUnit: e.businessUnit, externalRef: e.userRef }, select: { id: true } });
+    // Close any still-open recurring windows so churned customers stop counting toward MRR/ARR immediately.
+    await prisma.osRevenueEntry.updateMany({ where: { orgId: ORG_ID, customerId: { in: gone.map((g) => g.id) }, kind: "RECURRING", OR: [{ recurringEndsAt: null }, { recurringEndsAt: { gt: occurredAt } }] }, data: { recurringEndsAt: occurredAt } });
+    await prisma.osCustomer.updateMany({ where: { id: { in: gone.map((g) => g.id) } }, data: { status: "CHURNED", mrrCents: 0 } });
+  }
   if (e.type in EVENT_NAME) await emit(EVENT_NAME[e.type as keyof typeof EVENT_NAME], { id: e.externalId, businessUnit: e.businessUnit, userRef: e.userRef });
   await audit({ actor: `product:${e.businessUnit}`, actorType: "WEBHOOK", action: "product.event", resource: "product_event", resourceId: e.externalId, input: { type: e.type } });
   return { duplicate: false };
