@@ -18,7 +18,7 @@ export default async function AppShell({ children }: { children: React.ReactNode
     isEnvAdmin ? null : prisma.osUser.findUnique({ where: { email: email.toLowerCase() } }).catch(() => null),
     prisma.osApproval.count({ where: { orgId: ORG_ID, status: { in: ["PENDING", "INFO_REQUESTED"] } } }).catch(() => 0),
   ]);
-  const name = member?.name ?? titleCase(email.split("@")[0] || "Admin");
+  const name = member?.name ?? (isEnvAdmin ? process.env.ADMIN_NAME : undefined) ?? titleCase(email.split("@")[0] || "Admin");
   const role = isEnvAdmin ? "CEO / Founder" : titleCase(member?.role ?? "Viewer");
 
   return (

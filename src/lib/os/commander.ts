@@ -151,7 +151,8 @@ async function runOperatingLoopInner() {
 
   const workflows = await tickWorkflows();
   const learnings = await proposeLearnings();
-  await audit({ actor: "commander", actorType: "SYSTEM", action: "commander.loop", resource: "commander", output: { ingested, scheduled, workflows, learnings, topPriority: priorities[0]?.title ?? null } });
+  // Only record loops that did something, so the 15-minute scheduler does not flood the activity feed.
+  if (ingested || scheduled.length || workflows.started || workflows.advanced || learnings) await audit({ actor: "commander", actorType: "SYSTEM", action: "commander.loop", resource: "commander", output: { ingested, scheduled, workflows, learnings, topPriority: priorities[0]?.title ?? null } });
   return { ingested, scheduled, workflows, learnings, topPriorities: priorities.slice(0, 5) };
 }
 
