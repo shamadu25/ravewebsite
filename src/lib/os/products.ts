@@ -17,7 +17,7 @@ export const ProductEvent = z.object({
   amountCents: z.number().int().positive().optional(),
   recurring: z.boolean().optional(),
   /** Months of service this payment covers (monthly=1, annual=12). */
-  periodMonths: z.number().int().min(1).max(60).optional(),
+  periodMonths: z.number().int().min(1).max(1200).optional(),
   /** End of the paid period (ISO). Required for correct MRR on renewals. */
   periodEndsAt: z.string().datetime({ offset: true }).optional(),
   count: z.number().int().nonnegative().optional(),
@@ -92,7 +92,7 @@ async function ingestHeavy(e: ProductEventInput, occurredAt: Date) {
   if (e.type === "PAYMENT" && e.amountCents) {
     // Link / create the customer record the first time a user pays.
     const existing = await prisma.osCustomer.findFirst({ where: { orgId: ORG_ID, businessUnit: e.businessUnit, externalRef: e.userRef } });
-    const r = await recordPayment({ customerId: existing?.id, customerName: e.name ?? e.email ?? `${e.businessUnit} user ${e.userRef}`, businessUnit: e.businessUnit, amountCents: e.amountCents, recurring: e.recurring ?? true, periodMonths: e.periodMonths, recurringEndsAt: e.periodEndsAt ? new Date(e.periodEndsAt) : null, source: `product:${e.businessUnit}`, externalRef: e.externalId, occurredAt }, { actor: `product:${e.businessUnit}`, actorType: "WEBHOOK" });
+    const r = await recordPayment({ customerId: existing?.id, customerName: e.name ?? e.email ?? `${e.businessUnit} user ${e.userRef}`, businessUnit: e.businessUnit, amountCents: e.amountCents, recurring: (e.recurring ?? true) && (e.periodMonths ?? 1) <= 60, periodMonths: Math.min(60, e.periodMonths ?? 1), recurringEndsAt: e.periodEndsAt ? new Date(e.periodEndsAt) : null, source: `product:${e.businessUnit}`, externalRef: e.externalId, occurredAt }, { actor: `product:${e.businessUnit}`, actorType: "WEBHOOK" });
     if (!existing && r.customerId) await prisma.osCustomer.update({ where: { id: r.customerId }, data: { externalRef: e.userRef } });
   }
   if (e.type === "CHURNED") {
