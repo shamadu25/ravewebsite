@@ -9,7 +9,7 @@ export interface AgentReadiness { state: Readiness; issues: string[]; unlock: st
 const NEEDS: Record<string, { llm?: boolean; tools?: string[]; optionalTools?: string[] }> = {
   "prospecting.research": { optionalTools: ["places.search"] },
   "outreach.draft_send": { tools: ["outreach.send"] },
-  "closing.proposal": { tools: ["outreach.send"] },
+  "closing.proposal": { tools: ["outreach.send"], optionalTools: ["payment.link"] },
   "content.weekly": { llm: true },
   "marketing.weekly_plan": { llm: true },
 };
@@ -17,6 +17,7 @@ const NEEDS: Record<string, { llm?: boolean; tools?: string[]; optionalTools?: s
 const FRIENDLY: Record<string, string> = {
   "places.search": "Google Places API key (automatic prospect discovery)",
   "outreach.send": "an outbound channel (SMTP email is enough)",
+  "payment.link": "Paystack (PAYSTACK_SECRET_KEY) — pay-now links in proposals",
   "ads.manage": "an ads platform integration",
   "analytics.read": "Google Analytics",
   "search_console.read": "Google Search Console",

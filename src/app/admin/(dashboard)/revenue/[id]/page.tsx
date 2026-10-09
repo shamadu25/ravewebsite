@@ -12,6 +12,7 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const opp = await prisma.osOpportunity.findUnique({ where: { id: Number(id) }, include: { activities: { orderBy: { createdAt: "desc" }, take: 40 }, outreach: { orderBy: { id: "desc" } }, customer: true } });
   if (!opp) notFound();
+  const plans = await prisma.osPlan.findMany({ where: { orgId: "ravesoft", active: true }, orderBy: { id: "asc" } });
   const url = `/api/os/opportunities/${opp.id}`;
   const factors = ((opp.scoreBreakdown as { factors?: ScoreFactor[] } | null)?.factors ?? []).filter((f) => f.max > 0);
   const pains = (opp.painPoints as string[] | null) ?? [];
@@ -59,6 +60,13 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
               {PIPELINE_STAGES.filter((s) => s !== opp.stage).slice(0, 12).map((s) => <ApiButton key={s} label={s.replace(/_/g, " ")} url={url} body={{ action: "set_stage", stage: s }} />)}
             </div>
             <ApiButton label="Draft email outreach" variant="primary" url={url} body={{ action: "draft_outreach", channel: "EMAIL" }} result="draft" />
+          </div>
+          <div className="mt-5 border-t border-gray-100 pt-4">
+            <h3 className="mb-2 text-xs font-semibold uppercase text-gray-500">Create a pay-now link</h3>
+            {plans.length === 0 ? <p className="text-xs text-gray-500">No plans yet. Add one under Finance → Plans.</p> : (
+              <ApiForm url={url} extra={{ action: "payment_link" }} submitLabel="Create link" fields={[{ name: "planKey", label: "Plan", type: "select", options: plans.map((p) => p.key), defaultValue: plans.find((p) => (opp.recommendedEmployees as string[] | null)?.includes(p.name))?.key ?? plans[0].key }]} />
+            )}
+            <p className="mt-2 text-xs text-gray-500">Send it by email or WhatsApp. Payment marks the deal won and starts onboarding automatically.</p>
           </div>
           <div className="mt-5 border-t border-gray-100 pt-4">
             <h3 className="mb-2 text-xs font-semibold uppercase text-gray-500">Record a payment</h3>

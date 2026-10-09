@@ -83,7 +83,12 @@ const closingProposal: Handler = async (ctx) => {
   const opportunityId = num(ctx.input.opportunityId);
   const existing = await prisma.osOutreach.count({ where: { opportunityId, purpose: "PROPOSAL", status: { in: ["DRAFT", "PENDING_APPROVAL", "SENT"] } } });
   if (existing) return { skipped: true, reason: "A proposal already exists for this deal." };
-  const draft = (await ctx.tool("proposal.draft", { opportunityId })) as { outreachId: number; hasAddress: boolean; generatedBy: string };
+  // If Paystack is connected and a plan matches, put a secure pay-now link in the proposal; otherwise the proposal asks for a reply.
+  let payLink: string | undefined;
+  if (getTool("payment.link")?.status().enabled && ctx.agent.tools.includes("payment.link")) {
+    try { payLink = (await ctx.tool("payment.link", { opportunityId })).url as string; } catch (e) { await ctx.trace("note", `No pay link: ${e instanceof Error ? e.message : "unavailable"}`); }
+  }
+  const draft = (await ctx.tool("proposal.draft", { opportunityId, payLink })) as { outreachId: number; hasAddress: boolean; generatedBy: string };
   if (!draft.hasAddress) {
     await ctx.tool("crm.log_activity", { opportunityId, type: "NOTE", summary: "Proposal drafted but the prospect has no email address on file." });
     return { drafted: true, sent: false, reason: "No contact address on file", outreachId: draft.outreachId };
@@ -264,12 +269,12 @@ const contentWeekly: Handler = async (ctx) => {
   if (already) return { skipped: true, reason: `Content for ${week} already drafted.` };
   const knowledge = await brainContext(ctx, ["brand voice tone", "products features CliqPOS", "case study proof result", "customers industries", "claims policy"]);
   if (!knowledge.length) throw new Error("INSUFFICIENT DATA: the Company Brain is empty. Run 'Set up AI Employees' to load it.");
-  const text = await ctx.llm({ json: true, tier: "standard", system: `${ctx.agent.systemPrompt}\nWrite ONLY from the KNOWLEDGE provided. Never invent statistics, customers, quotes or prices. Return JSON {"posts":[{"title":string,"body":string}] (exactly 3 LinkedIn posts, each under 180 words, each ending with a clear call to action), "article":{"title":string,"outline":string[]}}.`, user: `KNOWLEDGE:\n${JSON.stringify(knowledge)}\n\nWeek: ${week}. Audience: owners and managers of businesses in Ghana, Nigeria and across Africa. Focus on the products and proof above.` });
-  const out = parseJsonLoose<{ posts?: Array<{ title: string; body: string }>; article?: { title: string; outline: string[] } }>(text);
+  const text = await ctx.llm({ json: true, tier: "standard", system: `${ctx.agent.systemPrompt}\nWrite ONLY from the KNOWLEDGE provided. Never invent statistics, customers, quotes or prices. Return JSON {"posts":[{"title":string,"body":string}] (exactly 3 LinkedIn posts, each under 180 words, each ending with a clear call to action), "article":{"title":string,"excerpt":string (max 160 chars),"metaDescription":string (max 160 chars, includes the main keyword),"body":string}}. The article body is Markdown, 600-900 words, with an introduction, 3-5 "## " sections, practical advice for business owners in Ghana/Nigeria/Africa, one natural mention of the relevant RaveSoft product from the knowledge, and a closing call to action to book a consultation. Choose a topic a business owner would actually search for (e.g. choosing a POS, stock control, automating customer enquiries) and use only facts in the knowledge.`, user: `KNOWLEDGE:\n${JSON.stringify(knowledge)}\n\nWeek: ${week}. Audience: owners and managers of businesses in Ghana, Nigeria and across Africa. Focus on the products and proof above.` });
+  const out = parseJsonLoose<{ posts?: Array<{ title: string; body: string }>; article?: { title: string; excerpt?: string; metaDescription?: string; body: string } }>(text);
   if (!out?.posts?.length) throw new Error("The model returned no usable posts.");
   let saved = 0;
   for (const p of out.posts.slice(0, 3)) { if (p.title && p.body) { await ctx.tool("content.create", { type: "LINKEDIN_POST", title: `[${week}] ${p.title}`, body: p.body }); saved++; } }
-  if (out.article?.title) { await ctx.tool("content.create", { type: "ARTICLE", title: `[${week}] ${out.article.title}`, body: `Outline:\n${(out.article.outline ?? []).map((x) => `- ${x}`).join("\n")}` }); saved++; }
+  if (out.article?.title && out.article.body && out.article.body.length > 400) { await ctx.tool("content.create", { type: "ARTICLE", title: `[${week}] ${out.article.title}`, body: out.article.body, excerpt: out.article.excerpt, metaDescription: out.article.metaDescription }); saved++; }
   return { week, drafted: saved, note: "Drafts are in Marketing → Content awaiting your review." };
 };
 

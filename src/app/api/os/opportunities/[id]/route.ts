@@ -9,6 +9,7 @@ import { processQueue } from "@/lib/os/runtime";
 import { draftOutreach, submitForApproval } from "@/lib/os/outreach";
 import { recordPayment } from "@/lib/os/revenue";
 import { audit } from "@/lib/os/audit";
+import { createPaymentLink } from "@/lib/os/payments";
 
 export const maxDuration = 60;
 type P = { id: string };
@@ -25,6 +26,7 @@ const Action = z.discriminatedUnion("action", [
   z.object({ action: z.literal("submit_outreach"), outreachId: z.number().int() }),
   z.object({ action: z.literal("record_response"), outreachId: z.number().int().optional(), text: z.string().min(1).max(5000) }),
   z.object({ action: z.literal("qualify"), signals: z.object({ need: z.number().min(0).max(5).optional(), budget: z.number().min(0).max(5).optional(), authority: z.number().min(0).max(5).optional(), urgency: z.number().min(0).max(5).optional(), fit: z.number().min(0).max(5).optional(), intent: z.number().min(0).max(5).optional() }) }),
+  z.object({ action: z.literal("payment_link"), planKey: z.string().min(3).max(60) }),
   z.object({ action: z.literal("record_payment"), amountUsd: z.number().positive(), recurring: z.boolean(), externalRef: z.string().min(1).max(120) }),
 ]);
 
@@ -70,6 +72,10 @@ export const POST = api<P>("opportunity.write", async ({ request, caller, params
       const r = await enqueueTask({ agentKey: "sales-agent", title: "Qualify prospect", input: { opportunityId: id, signals: b.signals }, createdBy: caller.name, priority: "HIGH", idempotencyKey: `qualify:${id}:${Date.now()}`, opportunityId: id });
       kick();
       return { taskId: r.task.id };
+    }
+    case "payment_link": {
+      const l = await createPaymentLink(id, b.planKey, human);
+      return { url: l.url, message: `Payment link for ${l.plan.name} ($${l.plan.amountUsd.toLocaleString()}/${l.plan.periodMonths === 1 ? "month" : `${l.plan.periodMonths} months`}): ${l.url}${l.paystackConnected ? " — copy it into an email or WhatsApp message." : " — NOTE: Paystack is not connected yet, so the link will show 'online payment unavailable' until PAYSTACK_SECRET_KEY is set."}` };
     }
     case "record_payment": {
       const r = await recordPayment({ opportunityId: id, amountCents: Math.round(b.amountUsd * 100), recurring: b.recurring, source: "manual", externalRef: b.externalRef }, human);

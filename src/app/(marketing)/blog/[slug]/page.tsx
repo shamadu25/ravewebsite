@@ -3,6 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Clock, Tag, User, Calendar } from "lucide-react";
 import { BLOG_POSTS } from "@/lib/data";
+import { getPublishedArticle } from "@/lib/os/blog";
+import { renderMarkdown } from "@/lib/os/markdown";
+
+// DB-published articles appear within 5 minutes (and instantly when published from the admin).
+export const revalidate = 300;
 import CTASection from "@/components/ui/CTASection";
 import ArticleSchema from "@/components/seo/ArticleSchema";
 import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
@@ -1215,7 +1220,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: BlogSlugParams): Promise<Metadata> {
   const { slug } = await params;
   const post = BLOG_POSTS.find((p) => p.slug === slug);
-  if (!post) return {};
+  if (!post) {
+    const db = await getPublishedArticle(slug);
+    if (!db) return {};
+    return { title: db.title, description: db.metaDescription, alternates: { canonical: `https://ravesoftsolutions.com/blog/${db.slug}` }, openGraph: { title: db.title, description: db.metaDescription, type: "article", publishedTime: db.publishedAt.toISOString(), authors: ["RaveSoft Team"] } };
+  }
 
   const seoMeta: Record<string, { title: string; description: string; keywords?: string[] }> = {
     "best-pos-system-ghana-2026": {
@@ -1277,10 +1286,16 @@ export async function generateMetadata({ params }: BlogSlugParams): Promise<Meta
 
 export default async function BlogPostPage({ params }: BlogSlugParams) {
   const { slug } = await params;
-  const post = BLOG_POSTS.find((p) => p.slug === slug);
-  if (!post) notFound();
+  let post: (typeof BLOG_POSTS)[number] | undefined = BLOG_POSTS.find((p) => p.slug === slug);
+  let content: React.ReactNode = BLOG_CONTENT[slug];
+  if (!post) {
+    // Not a built-in article: serve a published, human-approved article from the admin if one exists.
+    const db = await getPublishedArticle(slug);
+    if (!db) notFound();
+    post = { id: db.id, title: db.title, slug: db.slug, excerpt: db.excerpt, category: db.category, readTime: db.readTime, date: db.date, author: db.author };
+    content = renderMarkdown(db.body);
+  }
 
-  const content = BLOG_CONTENT[slug];
   const related = BLOG_POSTS.filter((p) => p.slug !== slug).slice(0, 3);
 
   return (

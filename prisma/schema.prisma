@@ -637,6 +637,7 @@ model OsCustomer {
   usage30d       Int?           @map("usage_30d")
   usagePrev30d   Int?           @map("usage_prev_30d")
   externalRef    String?        @map("external_ref")
+  billingRef     String?        @map("billing_ref")
   isDemo         Boolean        @default(false) @map("is_demo")
   revenue        OsRevenueEntry[]
   createdAt      DateTime       @default(now()) @map("created_at")
@@ -808,6 +809,10 @@ model OsCampaign {
 
 model OsContent {
   id         Int      @id @default(autoincrement())
+  slug       String?  @unique
+  excerpt    String?  @db.Text
+  metaDescription String? @map("meta_description")
+  publishedAt DateTime? @map("published_at")
   orgId      String   @default("ravesoft") @map("org_id")
   type       String
   title      String
@@ -917,4 +922,24 @@ model OsInboundEmail {
   @@unique([orgId, messageId])
   @@index([orgId, createdAt])
   @@map("os_inbound_emails")
+}
+
+model OsPlan {
+  id             Int      @id @default(autoincrement())
+  orgId          String   @default("ravesoft") @map("org_id")
+  key            String
+  name           String
+  description    String?  @db.Text
+  businessUnit   String   @default("KOVABOT") @map("business_unit")
+  revenueEngine  String   @default("SAAS") @map("revenue_engine")
+  amountCents    Int      @map("amount_cents")
+  periodMonths   Int      @default(1) @map("period_months")
+  paystackPlanCode String? @map("paystack_plan_code")
+  assumed        Boolean  @default(false)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([orgId, key])
+  @@map("os_plans")
 }

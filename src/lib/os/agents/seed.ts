@@ -51,6 +51,8 @@ export async function seedOperatingSystem() {
   void BRAIN_SECTIONS;
 
   const knowledgeCreated = await seedCompanyKnowledge();
+  const { seedPlans } = await import("../payments");
+  const plansCreated = await seedPlans();
 
   // Roster upgrade: agents that were seeded as placeholders and never edited by a human get their new capabilities.
   // An agent is "untouched" while it is still at version 1. Edited agents are never overwritten.
@@ -68,8 +70,8 @@ export async function seedOperatingSystem() {
     upgraded++;
   }
 
-  await audit({ actor: "seed", actorType: "SYSTEM", action: "os.seed", resource: "system", output: { agentsCreated, templatesCreated, brainCreated, knowledgeCreated, upgraded } });
-  return { agentsCreated, templatesCreated, brainCreated, knowledgeCreated, upgraded };
+  await audit({ actor: "seed", actorType: "SYSTEM", action: "os.seed", resource: "system", output: { agentsCreated, templatesCreated, brainCreated, knowledgeCreated, plansCreated, upgraded } });
+  return { agentsCreated, templatesCreated, brainCreated, knowledgeCreated, plansCreated, upgraded };
 }
 
 /**

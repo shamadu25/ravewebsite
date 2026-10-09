@@ -4,6 +4,9 @@ import { ArrowRight, Clock, Tag } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CTASection from "@/components/ui/CTASection";
 import { BLOG_POSTS } from "@/lib/data";
+import { getPublishedArticles } from "@/lib/os/blog";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Software Blog Ghana | POS, ERP, Custom Software & Tech Guides | RaveSoft",
@@ -23,7 +26,9 @@ export const metadata: Metadata = {
   ],
 };
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const dbPosts = await getPublishedArticles();
+  const posts = [...dbPosts.map(({ id, title, slug, excerpt, category, readTime, date, author }) => ({ id, title, slug, excerpt, category, readTime, date, author })), ...BLOG_POSTS];
   return (
     <>
       {/* HERO */}
@@ -60,7 +65,7 @@ export default function BlogPage() {
             className="mb-14"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {BLOG_POSTS.map((post, i) => (
+            {posts.map((post, i) => (
               <article
                 key={post.id}
                 className="bg-white rounded-2xl border border-gray-100/80 overflow-hidden hover:border-blue-200/80 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 group hover:-translate-y-1 flex flex-col"

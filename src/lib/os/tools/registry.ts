@@ -10,6 +10,7 @@ import { enqueueTask } from "../queue";
 import { channelStatuses } from "../channels";
 import { ORG_ID } from "../constants";
 import { qualify } from "../scoring";
+import { createPaymentLink, planForOpportunity } from "../payments";
 import { raiseAlert } from "../alerts";
 import { ToolBlockedError } from "../errors";
 
@@ -179,17 +180,32 @@ const TOOLS: ToolDefinition[] = [
   },
   {
     name: "proposal.draft", description: "Draft a proposal email for a qualified prospect (does not send).", provider: "internal", permissions: ["outreach.draft"],
-    inputSchema: { opportunityId: "number" }, riskLevel: "MEDIUM", status: always,
+    inputSchema: { opportunityId: "number", payLink: "string?" }, riskLevel: "MEDIUM", status: always,
     async run(ctx, input) {
-      const row = await outreach.draftOutreach(num(input.opportunityId), ctx.actor, "EMAIL", { purpose: "PROPOSAL" });
+      const row = await outreach.draftOutreach(num(input.opportunityId), ctx.actor, "EMAIL", { purpose: "PROPOSAL", payLink: typeof input.payLink === "string" ? input.payLink : undefined });
       return { outreachId: row.id, generatedBy: row.generatedBy, hasAddress: !!row.toAddress };
     },
   },
   {
-    name: "content.create", description: "Save a marketing content draft (always DRAFT; a human approves publishing).", provider: "internal", permissions: ["campaign.create"],
-    inputSchema: { type: "string", title: "string", body: "string" }, riskLevel: "LOW", status: always,
+    name: "payment.link", description: "Create a secure pay-now link (Paystack subscription) for a prospect's recommended plan.", provider: "paystack", permissions: ["payment.link"],
+    inputSchema: { opportunityId: "number", planKey: "string?" }, riskLevel: "MEDIUM", status: needsEnv("PAYSTACK_SECRET_KEY"),
     async run(ctx, input) {
-      const row = await prisma.osContent.create({ data: { orgId: ORG_ID, type: str(input.type, "type").toUpperCase(), title: str(input.title, "title").slice(0, 200), body: str(input.body, "body").slice(0, 20000), generatedBy: `agent:${ctx.agent.key}` } });
+      const id = num(input.opportunityId);
+      let planKey = typeof input.planKey === "string" ? input.planKey : "";
+      if (!planKey) {
+        const opp = await prisma.osOpportunity.findUniqueOrThrow({ where: { id } });
+        planKey = (await planForOpportunity(opp))?.key ?? "";
+      }
+      if (!planKey) throw new Error("No sellable plan matches this prospect. Add one under Finance → Plans.");
+      const l = await createPaymentLink(id, planKey, ctx.actor);
+      return { url: l.url, plan: l.plan.name, amountUsd: l.plan.amountUsd };
+    },
+  },
+  {
+    name: "content.create", description: "Save a marketing content draft (always DRAFT; a human approves publishing).", provider: "internal", permissions: ["campaign.create"],
+    inputSchema: { type: "string", title: "string", body: "string", excerpt: "string?", metaDescription: "string?" }, riskLevel: "LOW", status: always,
+    async run(ctx, input) {
+      const row = await prisma.osContent.create({ data: { orgId: ORG_ID, type: str(input.type, "type").toUpperCase(), title: str(input.title, "title").slice(0, 200), body: str(input.body, "body").slice(0, 20000), excerpt: typeof input.excerpt === "string" ? input.excerpt.slice(0, 300) : null, metaDescription: typeof input.metaDescription === "string" ? input.metaDescription.slice(0, 170) : null, generatedBy: `agent:${ctx.agent.key}` } });
       return { contentId: row.id };
     },
   },

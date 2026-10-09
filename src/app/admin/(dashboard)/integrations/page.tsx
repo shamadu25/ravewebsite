@@ -7,6 +7,7 @@ import { imapConfig } from "@/lib/os/inbox";
 import { emailDnsReport } from "@/lib/os/email-dns";
 import { emailDailyCap, emailsSentToday } from "@/lib/os/outreach";
 import { prisma } from "@/lib/prisma";
+import { chargeCurrency, fxRate, paystackConfigured } from "@/lib/os/paystack";
 import { ORG_ID } from "@/lib/os/constants";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +55,15 @@ export default async function IntegrationsPage() {
           <div className="mt-4 border-t border-gray-100 pt-3"><p className="mb-2 text-[12px] font-semibold uppercase text-gray-500">Recent inbound handled</p>
             <ul className="space-y-1 text-[13px]">{recentIn.map((r) => <li key={r.id}><Badge>{r.action === "REPLY" ? "COMPLETED" : r.action === "BOUNCE" ? "FAILED" : "PENDING"}</Badge> {r.fromAddress} <span className="text-gray-500">— {r.action.replace(/_/g, " ").toLowerCase()} · {ago(r.receivedAt)}</span></li>)}</ul></div>
         )}
+      </Card>
+      <Card>
+        <h2 className="mb-3 text-sm font-semibold text-gray-900">Payments (Paystack)</h2>
+        <ul className="space-y-1.5 text-[13px]">
+          <li className="flex justify-between gap-3"><span>Secret key</span><span>{paystackConfigured() ? "Connected" : "NOT CONNECTED — set PAYSTACK_SECRET_KEY in Vercel"}</span></li>
+          <li className="flex justify-between gap-3"><span>Charge currency</span><span>{chargeCurrency()} (USD prices × {fxRate()})</span></li>
+          <li className="flex justify-between gap-3"><span>Webhook URL</span><span className="break-all font-mono text-[12px]">https://ravesoftsolutions.com/api/os/webhooks/paystack</span></li>
+        </ul>
+        <p className="mt-3 text-[12px] text-gray-500">In Paystack: Settings → API Keys &amp; Webhooks → paste the webhook URL. Payments, renewals, cancellations and failed charges then update revenue automatically. Make sure your Paystack account can charge in {chargeCurrency()}; if it only supports GHS, set PAYSTACK_CURRENCY=GHS and PAYSTACK_FX_RATE to the current USD→GHS rate.</p>
       </Card>
       <Card>
         <h2 className="mb-3 text-sm font-semibold text-gray-900">Model providers</h2>

@@ -1,7 +1,9 @@
 import type { MetadataRoute } from "next";
 import { BLOG_POSTS, CASE_STUDIES, INDUSTRIES } from "@/lib/data";
+import { getPublishedArticles } from "@/lib/os/blog";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const dbArticles = await getPublishedArticles();
   const base = "https://ravesoftsolutions.com";
 
   const blogRoutes = BLOG_POSTS.map((p) => ({
@@ -10,6 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
+
+  const dbBlogRoutes = dbArticles.map((p) => ({ url: `${base}/blog/${p.slug}`, lastModified: p.publishedAt, changeFrequency: "monthly" as const, priority: 0.6 }));
 
   const caseStudyRoutes = CASE_STUDIES.map((c) => ({
     url: `${base}/case-studies/${c.slug}`,
@@ -50,6 +54,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/privacy`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
     { url: `${base}/terms`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
     ...blogRoutes,
+    ...dbBlogRoutes,
     ...caseStudyRoutes,
     ...industryRoutes,
   ];

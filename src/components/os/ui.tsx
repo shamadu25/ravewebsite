@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
-export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <section className={cn("os-card p-6", className)}>{children}</section>;
+export function Card({ children, className, id }: { children: React.ReactNode; className?: string; id?: string }) {
+  return <section id={id} className={cn("os-card p-6", className)}>{children}</section>;
 }
 
 export function Stat({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: "bad" | "good" }) {

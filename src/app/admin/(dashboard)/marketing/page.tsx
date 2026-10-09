@@ -58,7 +58,16 @@ export default async function MarketingPage() {
               <div className="flex items-center justify-between gap-2"><b>{c.title}</b><Badge>{c.status === "PUBLISHED" ? "COMPLETED" : "DRAFT"}</Badge></div>
               <p className="text-xs text-gray-400">{c.type} · {c.status} · {c.generatedBy}</p>
               <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-gray-600">{c.body}</p>
-              {NEXT[c.status] && <div className="mt-2"><ApiButton label={`Move to ${NEXT[c.status]}`} url={`/api/os/content/${c.id}`} method="PATCH" body={{ status: NEXT[c.status] }} /></div>}
+              {c.status === "PUBLISHED" && c.slug && <p className="mt-2 text-xs"><a className="text-[var(--primary)] underline" href={`/blog/${c.slug}`} target="_blank" rel="noopener noreferrer">View live on the website →</a></p>}
+              {NEXT[c.status] && <div className="mt-2 flex flex-wrap gap-2"><ApiButton label={NEXT[c.status] === "PUBLISHED" && c.type === "ARTICLE" ? "Publish to website blog" : `Move to ${NEXT[c.status]}`} variant={NEXT[c.status] === "PUBLISHED" ? "primary" : "secondary"} url={`/api/os/content/${c.id}`} method="PATCH" body={{ status: NEXT[c.status] }} confirm={NEXT[c.status] === "PUBLISHED" && c.type === "ARTICLE" ? "This puts the article live on ravesoftsolutions.com/blog and in the sitemap. Have you checked every fact in it?" : undefined} /></div>}
+              {c.type === "ARTICLE" && (
+                <details className="mt-3"><summary className="cursor-pointer text-xs font-medium text-[var(--primary)]">Edit article &amp; SEO</summary>
+                  <div className="mt-3"><ApiForm url={`/api/os/content/${c.id}`} submitLabel="Save changes" fields={[
+                    { name: "title", label: "Title", required: true, defaultValue: c.title.replace(/^\[[^\]]+\]\s*/, "") }, { name: "slug", label: "URL slug (e.g. best-pos-ghana)", defaultValue: c.slug ?? "" },
+                    { name: "metaDescription", label: "Meta description (max 160 chars)", defaultValue: c.metaDescription ?? "" }, { name: "excerpt", label: "Excerpt", defaultValue: c.excerpt ?? "" },
+                    { name: "body", label: "Article (Markdown)", type: "textarea", required: true, defaultValue: c.body },
+                  ]} /></div></details>
+              )}
             </li>
           ))}
         </ul>

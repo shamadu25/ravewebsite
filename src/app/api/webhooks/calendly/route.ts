@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { handleDemoBooking } from "@/lib/os/booking";
 import {
   sendConsultationBookedNotification,
   sendConsultationCanceledNotification,
@@ -168,6 +169,13 @@ export async function POST(request: NextRequest) {
       contactEmail: email,
       eventName: null,
     });
+  }
+
+  // Feed the AI OS pipeline. A failure here must never make Calendly retry the (already processed) booking.
+  try {
+    await handleDemoBooking({ email, name: payload.name, canceled: eventType === "invitee.canceled", rescheduled: Boolean(payload.rescheduled) });
+  } catch (error) {
+    console.error("[calendly webhook] OS pipeline update failed:", error);
   }
 
   return NextResponse.json({ ok: true });
