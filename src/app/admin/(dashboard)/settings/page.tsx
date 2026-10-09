@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/os/ui";
 
 const ITEMS = [
   ["Revenue goal", "Target, deadline, customers and pipeline targets.", "/admin/goals"], ["Team & roles", "Add people with their own role-based access.", "/admin/users"],
-  ["Integrations", "Channels, payments and webhooks.", "/admin/integrations"], ["Model lab", "Test and compare OpenAI, Gemini and Claude on our tasks.", "/admin/models"], ["Audit log", "Tamper-evident record of every action.", "/admin/audit"],
+  ["Integrations", "Channels, payments and webhooks.", "/admin/integrations"], ["WhatsApp setup", "Official Cloud API checklist and safety rules.", "/admin/whatsapp"], ["Model lab", "Test and compare OpenAI, Gemini and Claude on our tasks.", "/admin/models"], ["Audit log", "Tamper-evident record of every action.", "/admin/audit"],
   ["Knowledge", "What your AI Employees know.", "/admin/brain"], ["AI employee factory", "Create industry employee templates.", "/admin/factory"],
 ] as const;
 

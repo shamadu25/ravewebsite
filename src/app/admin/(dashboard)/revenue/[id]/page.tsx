@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { PIPELINE_STAGES } from "@/lib/os/constants";
 import ApiButton from "@/components/os/ApiButton";
 import ApiForm from "@/components/os/ApiForm";
+import MediaNote from "@/components/os/MediaNote";
+import { waLink, whatsappText } from "@/lib/os/whatsapp-link";
+import { hasWhatsappConsent } from "@/lib/os/outreach";
 import { Badge, Card, PageHeader, ago, centsToUsd } from "@/components/os/ui";
 import type { ScoreFactor } from "@/lib/os/scoring";
 
@@ -14,6 +17,9 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
   if (!opp) notFound();
   const plans = await prisma.osPlan.findMany({ where: { orgId: "ravesoft", active: true }, orderBy: { id: "asc" } });
   const url = `/api/os/opportunities/${opp.id}`;
+  const waText = whatsappText(opp);
+  const wa = waLink(opp.contactPhone, waText, opp.country);
+  const waConsent = await hasWhatsappConsent(opp.id);
   const factors = ((opp.scoreBreakdown as { factors?: ScoreFactor[] } | null)?.factors ?? []).filter((f) => f.max > 0);
   const pains = (opp.painPoints as string[] | null) ?? [];
   const employees = (opp.recommendedEmployees as string[] | null) ?? [];
@@ -60,6 +66,25 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
               {PIPELINE_STAGES.filter((s) => s !== opp.stage).slice(0, 12).map((s) => <ApiButton key={s} label={s.replace(/_/g, " ")} url={url} body={{ action: "set_stage", stage: s }} />)}
             </div>
             <ApiButton label="Draft email outreach" variant="primary" url={url} body={{ action: "draft_outreach", channel: "EMAIL" }} result="draft" />
+          </div>
+          <div className="mt-5 border-t border-gray-100 pt-4">
+            <h3 className="mb-2 text-xs font-semibold uppercase text-gray-500">WhatsApp (you send it yourself)</h3>
+            {wa ? (
+              <div className="space-y-2">
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                <a href={wa} target="_blank" rel="noopener noreferrer" className="inline-block rounded-lg bg-[#16a34a] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#15803d]">Open in WhatsApp</a>
+                <p className="text-xs text-gray-500">Opens your own WhatsApp with this message ready — you tap send. Nothing is automated.</p>
+                <p className="rounded-lg bg-gray-50 p-2 text-xs text-gray-600">{waText}</p>
+                <ApiForm url={url} extra={{ action: "whatsapp_log", text: waText }} submitLabel="I sent it — log it" fields={[]} />
+              </div>
+            ) : <p className="text-xs text-gray-500">No usable phone number on this prospect (use international format, e.g. +233 24 123 4567, or set the country).</p>}
+            <p className="mt-2 text-xs text-amber-700">Only message people who expect to hear from you. Unsolicited WhatsApp messages get reported and can get your number blocked — use email for first contact.</p>
+            <div className="mt-2 flex items-center gap-2 text-xs text-gray-600"><span>Consent to WhatsApp: <b>{waConsent ? "yes" : "no"}</b></span>
+              <ApiButton label={waConsent ? "Remove opt-in" : "Record that they opted in"} url={url} body={{ action: "whatsapp_optin", optedIn: !waConsent }} /></div>
+          </div>
+          <div className="mt-5 border-t border-gray-100 pt-4">
+            <h3 className="mb-2 text-xs font-semibold uppercase text-gray-500">Read a voice note or photo</h3>
+            <MediaNote opportunityId={opp.id} />
           </div>
           <div className="mt-5 border-t border-gray-100 pt-4">
             <h3 className="mb-2 text-xs font-semibold uppercase text-gray-500">Create a pay-now link</h3>

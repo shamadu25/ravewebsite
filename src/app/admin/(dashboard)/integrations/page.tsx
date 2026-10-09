@@ -70,7 +70,7 @@ export default async function IntegrationsPage() {
         <ul className="space-y-1 text-sm">{llm.providers.map((p) => <li key={p.name} className="flex items-center justify-between"><span>{p.name}</span><span className="text-xs">{p.available ? "Connected" : "NOT CONNECTED"}</span></li>)}</ul>
       </Card>
       <Card>
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Outbound channels</h2>
+        <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold text-gray-900">Outbound channels</h2><a className="text-[12px] font-medium text-[var(--primary)]" href="/admin/whatsapp">WhatsApp setup guide →</a></div>
         <ul className="space-y-1 text-sm">{channels.map((c) => <li key={c.channel} className="flex items-center justify-between gap-3"><span>{c.channel} <span className="text-xs text-gray-400">({c.provider})</span></span><span className="text-xs text-gray-600">{c.connected ? "Connected" : `NOT CONNECTED — ${c.reason}`}</span></li>)}</ul>
       </Card>
       <Card>

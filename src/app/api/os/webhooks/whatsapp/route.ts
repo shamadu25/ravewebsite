@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { handleInboundReply } from "@/lib/os/inbound";
+import { whatsappMediaToText } from "@/lib/os/whatsapp-media";
 import { after } from "next/server";
 import { processQueue } from "@/lib/os/runtime";
 
@@ -20,11 +21,15 @@ export async function POST(request: NextRequest) {
   const given = request.headers.get("x-hub-signature-256") ?? "";
   if (given.length !== expected.length || !timingSafeEqual(Buffer.from(given), Buffer.from(expected))) return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
 
-  const body = JSON.parse(raw || "{}") as { entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ from: string; type: string; text?: { body: string } }> } }> }> };
+  const body = JSON.parse(raw || "{}") as { entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ from: string; type: string; text?: { body: string }; audio?: { id: string }; image?: { id: string; caption?: string } }> } }> }> };
   let handled = 0;
   for (const e of body.entry ?? []) for (const c of e.changes ?? []) for (const m of c.value?.messages ?? []) {
-    if (m.type !== "text" || !m.text?.body) continue;
-    await handleInboundReply({ channel: "WHATSAPP", from: m.from, text: m.text.body, actor: "webhook:whatsapp" });
+    let text = "";
+    if (m.type === "text" && m.text?.body) text = m.text.body;
+    else if (m.type === "audio" && m.audio?.id) text = await whatsappMediaToText("audio", m.audio.id);
+    else if (m.type === "image" && m.image?.id) text = await whatsappMediaToText("image", m.image.id, m.image.caption);
+    if (!text) continue;
+    await handleInboundReply({ channel: "WHATSAPP", from: m.from, text, actor: "webhook:whatsapp" });
     handled++;
   }
   if (handled) after(() => processQueue({ maxTasks: 5, budgetMs: 40_000 }).catch(() => undefined));

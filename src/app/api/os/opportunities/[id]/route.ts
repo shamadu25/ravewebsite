@@ -26,6 +26,8 @@ const Action = z.discriminatedUnion("action", [
   z.object({ action: z.literal("submit_outreach"), outreachId: z.number().int() }),
   z.object({ action: z.literal("record_response"), outreachId: z.number().int().optional(), text: z.string().min(1).max(5000) }),
   z.object({ action: z.literal("qualify"), signals: z.object({ need: z.number().min(0).max(5).optional(), budget: z.number().min(0).max(5).optional(), authority: z.number().min(0).max(5).optional(), urgency: z.number().min(0).max(5).optional(), fit: z.number().min(0).max(5).optional(), intent: z.number().min(0).max(5).optional() }) }),
+  z.object({ action: z.literal("whatsapp_log"), text: z.string().min(2).max(1500) }),
+  z.object({ action: z.literal("whatsapp_optin"), optedIn: z.boolean() }),
   z.object({ action: z.literal("payment_link"), planKey: z.string().min(3).max(60) }),
   z.object({ action: z.literal("record_payment"), amountUsd: z.number().positive(), recurring: z.boolean(), externalRef: z.string().min(1).max(120) }),
 ]);
@@ -72,6 +74,20 @@ export const POST = api<P>("opportunity.write", async ({ request, caller, params
       const r = await enqueueTask({ agentKey: "sales-agent", title: "Qualify prospect", input: { opportunityId: id, signals: b.signals }, createdBy: caller.name, priority: "HIGH", idempotencyKey: `qualify:${id}:${Date.now()}`, opportunityId: id });
       kick();
       return { taskId: r.task.id };
+    }
+    case "whatsapp_log": {
+      // The human sent it from their own phone; we only record it so follow-ups and reporting stay accurate.
+      await logActivity(id, human, "WHATSAPP_SENT", `Sent manually on WhatsApp: ${b.text}`.slice(0, 1500), "WHATSAPP");
+      const o = await prisma.osOpportunity.findUniqueOrThrow({ where: { id } });
+      await prisma.osOpportunity.update({ where: { id }, data: { lastContactAt: new Date(), nextFollowUpAt: new Date(Date.now() + 3 * 86400_000), nextAction: "Follow up on WhatsApp reply" } });
+      if (["NEW", "RESEARCHED"].includes(o.stage)) await setStage(id, "CONTACTED", human, "WhatsApp message sent");
+      return { message: "Logged. A follow-up is scheduled in 3 days." };
+    }
+    case "whatsapp_optin": {
+      const o = await prisma.osOpportunity.findUniqueOrThrow({ where: { id } });
+      await prisma.osOpportunity.update({ where: { id }, data: { customFields: { ...((o.customFields as object | null) ?? {}), whatsappOptIn: b.optedIn } as never } });
+      await audit({ ...human, action: "opportunity.whatsapp_optin", resource: "opportunity", resourceId: id, output: { optedIn: b.optedIn }, ip: caller.ip });
+      return { message: b.optedIn ? "Recorded: this contact agreed to be messaged on WhatsApp." : "Opt-in removed." };
     }
     case "payment_link": {
       const l = await createPaymentLink(id, b.planKey, human);

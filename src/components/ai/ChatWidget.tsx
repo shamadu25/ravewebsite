@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import MediaButtons from "@/components/ai/MediaButtons";
 import Image from "next/image";
 import { X, Send, Loader2 } from "lucide-react";
 import { COMPANY } from "@/lib/data";
@@ -471,7 +472,8 @@ export default function ChatWidget() {
             )}
           </div>
 
-          <form onSubmit={handleSubmit} className="flex items-center gap-2 p-3 border-t border-gray-200 shrink-0">
+          <form onSubmit={handleSubmit} className="relative flex items-center gap-2 p-3 border-t border-gray-200 shrink-0">
+            <MediaButtons conversationId={conversationId} disabled={isLoading || unavailable || isSending} onText={(t) => void submitMessage(t)} />
             <input
               type="text"
               value={inputValue}

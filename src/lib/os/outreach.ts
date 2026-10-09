@@ -104,6 +104,9 @@ export async function sendOutreach(outreachId: number, a: Actor, approvalId?: nu
   const optedOut = await prisma.osOptOut.findFirst({ where: { orgId: ORG_ID, channel: msg.channel, address: { in: [raw, raw.replace(/[\s()+-]/g, "")] } } });
   if (optedOut) return block("Recipient has opted out.");
 
+  if (msg.channel === "WHATSAPP" && !(await hasWhatsappConsent(msg.opportunityId))) {
+    return block("WhatsApp is reserved for contacts who messaged you or opted in. Use email for first contact, or record that they opted in.");
+  }
   const adapter = getChannelAdapter(msg.channel as Channel);
   const outbound: Parameters<typeof adapter.send>[0] = { to: msg.toAddress, subject: msg.subject, body: msg.body };
   if (msg.channel === "EMAIL") {
@@ -154,6 +157,16 @@ export async function emailsSentToday(): Promise<number> {
   const d = new Date(); d.setUTCHours(0, 0, 0, 0);
   return prisma.osOutreach.count({ where: { orgId: ORG_ID, channel: "EMAIL", status: "SENT", sentAt: { gte: d } } });
 }
+/**
+ * WhatsApp is for people who contacted us or opted in — never cold. A prospect has consent if they messaged us on WhatsApp
+ * or a human recorded that they opted in. This protects the number from reports and bans.
+ */
+export async function hasWhatsappConsent(opportunityId: number): Promise<boolean> {
+  const opp = await prisma.osOpportunity.findUnique({ where: { id: opportunityId }, select: { customFields: true } });
+  if ((opp?.customFields as { whatsappOptIn?: boolean } | null)?.whatsappOptIn === true) return true;
+  return (await prisma.osActivity.count({ where: { opportunityId, channel: "WHATSAPP", type: "RESPONSE" } })) > 0;
+}
+
 export const emailDailyCap = () => Math.max(1, Number(process.env.OS_EMAIL_DAILY_CAP ?? 40));
 
 const AUTO_FOLLOWUPS_KEY = `os:${ORG_ID}:auto_followups`;
