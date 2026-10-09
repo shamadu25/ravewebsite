@@ -23,7 +23,7 @@ export const NAV: NavItem[] = [
   { href: "/admin/integrations", label: "Integrations", icon: Plug },
   { href: "/admin/reports", label: "Reports", icon: FileBarChart, also: ["/admin/audit"] },
   { href: "/admin/approvals", label: "Approvals", icon: ClipboardCheck, badge: "approvals" },
-  { href: "/admin/settings", label: "Settings", icon: Settings, also: ["/admin/goals", "/admin/users"] },
+  { href: "/admin/settings", label: "Settings", icon: Settings, also: ["/admin/goals", "/admin/users", "/admin/models"] },
 ];
 
 export function isActive(item: NavItem, pathname: string): boolean {

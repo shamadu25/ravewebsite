@@ -66,7 +66,7 @@ export default async function IntegrationsPage() {
         <p className="mt-3 text-[12px] text-gray-500">In Paystack: Settings → API Keys &amp; Webhooks → paste the webhook URL. Payments, renewals, cancellations and failed charges then update revenue automatically. Make sure your Paystack account can charge in {chargeCurrency()}; if it only supports GHS, set PAYSTACK_CURRENCY=GHS and PAYSTACK_FX_RATE to the current USD→GHS rate.</p>
       </Card>
       <Card>
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Model providers</h2>
+        <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold text-gray-900">Model providers</h2><a className="text-[12px] font-medium text-[var(--primary)]" href="/admin/models">Open Model lab →</a></div>
         <ul className="space-y-1 text-sm">{llm.providers.map((p) => <li key={p.name} className="flex items-center justify-between"><span>{p.name}</span><span className="text-xs">{p.available ? "Connected" : "NOT CONNECTED"}</span></li>)}</ul>
       </Card>
       <Card>

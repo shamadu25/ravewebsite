@@ -3,6 +3,7 @@ import { ORG_ID, type Channel } from "./constants";
 import { audit } from "./audit";
 import { logActivity, setStage } from "./crm";
 import { enqueueTask } from "./queue";
+import { classifyReplyIntent, type ReplyIntent } from "./reply-intent";
 
 const STOP = /^\s*(stop|unsubscribe|cancel|opt[- ]?out|remove me)\b/i;
 export const normalisePhone = (p: string) => p.replace(/[\s()+-]/g, "");
@@ -22,20 +23,36 @@ export async function handleInboundReply(opts: { channel: Channel; from: string;
   if (!opp) { await audit({ actor: opts.actor, actorType: "WEBHOOK", action: "inbound.unmatched", resource: "inbound", resourceId: from }); return { matched: false as const }; }
 
   const human = { actor: opts.actor, actorType: "WEBHOOK" as const };
-  if (STOP.test(opts.text)) {
+  const optOut = async (why: string) => {
     for (const address of new Set([from, (opts.channel === "EMAIL" ? opp.contactEmail : opp.contactPhone)?.toLowerCase() ?? from])) {
-      await prisma.osOptOut.upsert({ where: { orgId_channel_address: { orgId: ORG_ID, channel: opts.channel, address } }, create: { orgId: ORG_ID, channel: opts.channel, address, reason: "inbound opt-out" }, update: {} });
+      await prisma.osOptOut.upsert({ where: { orgId_channel_address: { orgId: ORG_ID, channel: opts.channel, address } }, create: { orgId: ORG_ID, channel: opts.channel, address, reason: why }, update: {} });
     }
     await setStage(opp.id, "NURTURE", human, "opted out");
     await logActivity(opp.id, human, "OPT_OUT", "Prospect opted out; no further outreach on this channel.", opts.channel);
-    return { matched: true as const, optOut: true, opportunityId: opp.id };
+    return { matched: true as const, optOut: true, opportunityId: opp.id, intent: "UNSUBSCRIBE" as ReplyIntent };
+  };
+  // Fast path: the unambiguous keywords never wait on a model.
+  if (STOP.test(opts.text)) return optOut("inbound opt-out");
+
+  // Everything else is understood by the cheap model (any wording/language). If no model is available this is null and we behave as before.
+  const intent = await classifyReplyIntent(opts.text);
+  if (intent === "UNSUBSCRIBE") return optOut("inbound opt-out (understood from text)");
+  if (intent === "OUT_OF_OFFICE") {
+    await logActivity(opp.id, human, "AUTO_REPLY", "Out-of-office reply received (ignored; sequence continues).", opts.channel);
+    return { matched: true as const, optOut: false, opportunityId: opp.id, intent };
   }
 
   const last = await prisma.osOutreach.findFirst({ where: { opportunityId: opp.id, channel: opts.channel, status: "SENT" }, orderBy: { id: "desc" } });
   if (last) await prisma.osOutreach.update({ where: { id: last.id }, data: { responseText: opts.text.slice(0, 5000), respondedAt: new Date() } });
   await logActivity(opp.id, human, "RESPONSE", opts.text.slice(0, 500), opts.channel);
   await prisma.osOpportunity.update({ where: { id: opp.id }, data: { lastContactAt: new Date(), nextFollowUpAt: null } });
+  if (intent === "NOT_INTERESTED") {
+    // Politely stop: park the deal in nurture and do not bother the Sales Agent.
+    if (!["WON", "LOST", "NURTURE"].includes(opp.stage)) await setStage(opp.id, "NURTURE", human, "prospect declined");
+    await prisma.osOpportunity.update({ where: { id: opp.id }, data: { nextAction: "Declined — revisit later" } });
+    return { matched: true as const, optOut: false, opportunityId: opp.id, intent };
+  }
   if (["NEW", "RESEARCHED", "CONTACTED"].includes(opp.stage)) await setStage(opp.id, "ENGAGED", human, "prospect replied");
   await enqueueTask({ agentKey: "sales-agent", title: `Qualify ${opp.companyName}`, input: { opportunityId: opp.id, signals: (opp.qualification as { input?: Record<string, number> } | null)?.input ?? {} }, createdBy: opts.actor, priority: "HIGH", idempotencyKey: `qualify:${opp.id}:${Date.now()}`, opportunityId: opp.id });
-  return { matched: true as const, optOut: false, opportunityId: opp.id };
+  return { matched: true as const, optOut: false, opportunityId: opp.id, intent };
 }

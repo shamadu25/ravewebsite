@@ -44,6 +44,10 @@ const PRICES: Record<string, [number, number]> = {
   "claude-haiku-5-5": [1, 5],
   "claude-sonnet-5-5": [3, 15],
   "claude-opus-5-5": [15, 75],
+  // Gemini (approximate public pricing; override with OS_PRICE_<MODEL>=in,out if Google's rates differ)
+  "gemini-2.5-flash-lite": [0.1, 0.4],
+  "gemini-2.5-flash": [0.3, 2.5],
+  "gemini-2.5-pro": [1.25, 10],
 };
 
 export function estimateCostUsd(model: string, inTok: number, outTok: number): number {
@@ -107,31 +111,74 @@ const anthropic: Provider = {
   },
 };
 
-const PROVIDERS: Provider[] = [openai, anthropic];
+const gemini: Provider = {
+  name: "google",
+  available: () => !!process.env.GEMINI_API_KEY,
+  // Defaults are the 2.5 family; set OS_GEMINI_MODEL_FAST/STANDARD/STRONG to newer IDs from Google's model list. "Test models" on /admin/models verifies them live.
+  modelFor: (tier) =>
+    tier === "strong" ? (process.env.OS_GEMINI_MODEL_STRONG ?? "gemini-2.5-pro") : tier === "standard" ? (process.env.OS_GEMINI_MODEL_STANDARD ?? "gemini-2.5-flash") : (process.env.OS_GEMINI_MODEL_FAST ?? "gemini-2.5-flash-lite"),
+  async complete(model, o) {
+    const base = process.env.GEMINI_BASE_URL ?? "https://generativelanguage.googleapis.com/v1beta";
+    const res = await fetch(`${base}/models/${encodeURIComponent(model)}:generateContent`, {
+      method: "POST",
+      headers: { "x-goog-api-key": process.env.GEMINI_API_KEY ?? "", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: o.system }] },
+        contents: [{ role: "user", parts: [{ text: o.user }] }],
+        generationConfig: { temperature: o.temperature ?? 0.3, ...(o.json ? { responseMimeType: "application/json" } : {}) },
+      }),
+      signal: AbortSignal.timeout(o.timeoutMs ?? 45_000),
+    });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(`google ${res.status}: ${String(d?.error?.message ?? "request failed").slice(0, 160)}`);
+    const text = (d?.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text ?? "").join("");
+    if (!text) throw new Error(`google returned no text (finish: ${d?.candidates?.[0]?.finishReason ?? "unknown"})`);
+    return { text, model: d?.modelVersion ?? model, inputTokens: d?.usageMetadata?.promptTokenCount ?? 0, outputTokens: (d?.usageMetadata?.candidatesTokenCount ?? 0) + (d?.usageMetadata?.thoughtsTokenCount ?? 0) };
+  },
+};
+
+const PROVIDERS: Provider[] = [openai, anthropic, gemini];
 
 export function llmStatus(): { configured: boolean; providers: Array<{ name: string; available: boolean }> } {
   const providers = PROVIDERS.map((p) => ({ name: p.name, available: p.available() }));
   return { configured: providers.some((p) => p.available), providers };
 }
 
-/** Preferred provider order: OS_LLM_PROVIDER first, then the rest. Falls through on provider failure. */
-export async function complete(o: CompleteOptions): Promise<Completion> {
-  const preferred = process.env.OS_LLM_PROVIDER;
-  const ordered = [...PROVIDERS].sort((a, b) => (a.name === preferred ? -1 : b.name === preferred ? 1 : 0)).filter((p) => p.available());
-  if (!ordered.length) throw new LlmUnavailableError("No LLM provider is configured (set OPENAI_API_KEY or ANTHROPIC_API_KEY).");
+export type ProviderName = "openai" | "anthropic" | "google";
 
+/** Provider order for a tier: OS_PROVIDER_<TIER> (e.g. OS_PROVIDER_FAST=google) first, then OS_LLM_PROVIDER, then the rest. */
+export function providerOrder(tier: ModelTier): Provider[] {
+  const want = [process.env[`OS_PROVIDER_${tier.toUpperCase()}`], process.env.OS_LLM_PROVIDER].filter(Boolean);
+  const rank = (p: Provider) => { const i = want.indexOf(p.name); return i === -1 ? 99 : i; };
+  return [...PROVIDERS].sort((a, b) => rank(a) - rank(b)).filter((p) => p.available());
+}
+
+async function run(p: Provider, o: CompleteOptions): Promise<Completion> {
+  const started = Date.now();
+  const r = await p.complete(p.modelFor(o.tier), o);
+  return { ...r, provider: p.name, latencyMs: Date.now() - started, costUsd: estimateCostUsd(r.model, r.inputTokens, r.outputTokens) };
+}
+
+/** Routes by tier and falls through to the next provider if one fails, so one outage never stops the workforce. */
+export async function complete(o: CompleteOptions): Promise<Completion> {
+  const ordered = providerOrder(o.tier);
+  if (!ordered.length) throw new LlmUnavailableError("No LLM provider is configured (set OPENAI_API_KEY, ANTHROPIC_API_KEY or GEMINI_API_KEY).");
   let lastError: unknown;
   for (const p of ordered) {
-    const started = Date.now();
-    try {
-      const r = await p.complete(p.modelFor(o.tier), o);
-      return { ...r, provider: p.name, latencyMs: Date.now() - started, costUsd: estimateCostUsd(r.model, r.inputTokens, r.outputTokens) };
-    } catch (e) {
-      lastError = e;
-    }
+    try { return await run(p, o); } catch (e) { lastError = e; }
   }
   throw new LlmUnavailableError(`All LLM providers failed: ${lastError instanceof Error ? lastError.message : "unknown"}`);
 }
+
+/** Run on one specific provider with NO fallback — used by model tests and comparisons so results are attributed correctly. */
+export async function completeWith(provider: ProviderName, o: CompleteOptions): Promise<Completion> {
+  const p = PROVIDERS.find((x) => x.name === provider);
+  if (!p || !p.available()) throw new LlmUnavailableError(`${provider} is not configured.`);
+  return run(p, o);
+}
+
+export const configuredProviders = (): ProviderName[] => PROVIDERS.filter((p) => p.available()).map((p) => p.name as ProviderName);
+export const modelNameFor = (provider: ProviderName, tier: ModelTier) => PROVIDERS.find((p) => p.name === provider)?.modelFor(tier) ?? "";
 
 /** Parse model JSON defensively — models sometimes wrap it in prose or fences. */
 export function parseJsonLoose<T = unknown>(text: string): T | null {
