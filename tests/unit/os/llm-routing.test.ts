@@ -44,6 +44,18 @@ describe("Gemini provider", () => {
   });
 });
 
+describe("cost estimation handles dated model IDs (regression: 20x overstatement)", () => {
+  it("prices gpt-4o-mini snapshots at the mini rate, not the default", () => {
+    expect(estimateCostUsd("gpt-4o-mini-2024-07-18", 1_000_000, 1_000_000)).toBeCloseTo(0.75, 3);   // $0.15 in + $0.60 out
+    expect(estimateCostUsd("gpt-4o-2024-08-06", 1_000_000, 1_000_000)).toBeCloseTo(12.5, 3);        // $2.50 + $10
+    expect(estimateCostUsd("gemini-2.5-flash-lite-preview-06-17", 1_000_000, 0)).toBeCloseTo(0.1, 3);
+  });
+  it("uses the longest matching key and a conservative default for unknown models", () => {
+    expect(estimateCostUsd("gpt-4o-mini", 1_000_000, 0)).toBeCloseTo(0.15, 3);   // not gpt-4o's $2.50
+    expect(estimateCostUsd("some-new-model", 1_000_000, 0)).toBeCloseTo(3, 3);
+  });
+});
+
 describe("provider routing and fallback", () => {
   beforeEach(() => { process.env.OPENAI_API_KEY = "o"; process.env.GEMINI_API_KEY = "g"; });
   it("defaults to OpenAI first when several are connected, and lists them", () => {

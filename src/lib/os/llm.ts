@@ -50,9 +50,15 @@ const PRICES: Record<string, [number, number]> = {
   "gemini-2.5-pro": [1.25, 10],
 };
 
+/** Providers return dated IDs (gpt-4o-mini-2024-07-18); match the longest known price key that prefixes the model name. */
+export function priceKeyFor(model: string): string | null {
+  return Object.keys(PRICES).filter((k) => model.toLowerCase().startsWith(k)).sort((a, b) => b.length - a.length)[0] ?? null;
+}
+
 export function estimateCostUsd(model: string, inTok: number, outTok: number): number {
-  const override = process.env[`OS_PRICE_${model.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`];
-  const [pi, po] = override ? (override.split(",").map(Number) as [number, number]) : (PRICES[model] ?? [3, 15]);
+  const key = priceKeyFor(model) ?? model;
+  const override = process.env[`OS_PRICE_${key.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`];
+  const [pi, po] = override ? (override.split(",").map(Number) as [number, number]) : (PRICES[key] ?? [3, 15]); // unknown models: conservative default
   return Math.round(((inTok * pi + outTok * po) / 1_000_000) * 1e6) / 1e6;
 }
 
