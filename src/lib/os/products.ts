@@ -15,6 +15,8 @@ export const ProductEvent = z.object({
   email: z.string().email().max(190).optional().catch(undefined),
   name: z.string().transform((v) => v.slice(0, 200)).optional().catch(undefined),
   amountCents: z.number().int().positive().optional(),
+  /** Currency of amountCents. GHS is converted to USD at the rate set in Settings; default USD. */
+  currency: z.enum(["USD", "GHS"]).optional(),
   recurring: z.boolean().optional(),
   /** Months of service this payment covers (monthly=1, annual=12). */
   periodMonths: z.number().int().min(1).max(1200).optional(),
@@ -26,6 +28,7 @@ export const ProductEvent = z.object({
 });
 export type ProductEventInput = z.infer<typeof ProductEvent>;
 
+import { getGhsPerUsd, ghsToUsdCents } from "./fx";
 const EVENT_NAME = { REGISTERED: "product.registered", ACTIVATED: "product.activated", SUBSCRIBED: "product.subscribed", CHURNED: "product.churned" } as const;
 
 const SIMPLE = new Set(["REGISTERED", "ACTIVATED", "USAGE", "SUBSCRIBED", "SUPPORT_TICKET"]);
@@ -92,7 +95,7 @@ async function ingestHeavy(e: ProductEventInput, occurredAt: Date) {
   if (e.type === "PAYMENT" && e.amountCents) {
     // Link / create the customer record the first time a user pays.
     const existing = await prisma.osCustomer.findFirst({ where: { orgId: ORG_ID, businessUnit: e.businessUnit, externalRef: e.userRef } });
-    const r = await recordPayment({ customerId: existing?.id, customerName: e.name ?? e.email ?? `${e.businessUnit} user ${e.userRef}`, businessUnit: e.businessUnit, amountCents: e.amountCents, recurring: (e.recurring ?? true) && (e.periodMonths ?? 1) <= 60, periodMonths: Math.min(60, e.periodMonths ?? 1), recurringEndsAt: e.periodEndsAt ? new Date(e.periodEndsAt) : null, source: `product:${e.businessUnit}`, externalRef: e.externalId, occurredAt }, { actor: `product:${e.businessUnit}`, actorType: "WEBHOOK" });
+    const r = await recordPayment({ customerId: existing?.id, customerName: e.name ?? e.email ?? `${e.businessUnit} user ${e.userRef}`, businessUnit: e.businessUnit, amountCents: e.currency === "GHS" ? ghsToUsdCents(e.amountCents, (await getGhsPerUsd()).ghsPerUsd) : e.amountCents, recurring: (e.recurring ?? true) && (e.periodMonths ?? 1) <= 60, periodMonths: Math.min(60, e.periodMonths ?? 1), recurringEndsAt: e.periodEndsAt ? new Date(e.periodEndsAt) : null, source: `product:${e.businessUnit}`, externalRef: e.externalId, occurredAt }, { actor: `product:${e.businessUnit}`, actorType: "WEBHOOK" });
     if (!existing && r.customerId) await prisma.osCustomer.update({ where: { id: r.customerId }, data: { externalRef: e.userRef } });
   }
   if (e.type === "CHURNED") {
