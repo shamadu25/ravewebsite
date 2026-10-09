@@ -1,20 +1,41 @@
 import { prisma } from "@/lib/prisma";
 import { ORG_ID } from "@/lib/os/constants";
 import ApprovalActions from "@/components/os/ApprovalActions";
+import OutreachApproval from "@/components/os/OutreachApproval";
+import ApiButton from "@/components/os/ApiButton";
+import { autoFollowupsEnabled } from "@/lib/os/outreach";
 import AutoRefresh from "@/components/os/AutoRefresh";
 import { Badge, Card, PageHeader, ago } from "@/components/os/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function ApprovalsPage() {
+  const autoFollow = await autoFollowupsEnabled();
   const [pending, recent] = await Promise.all([
     prisma.osApproval.findMany({ where: { orgId: ORG_ID, status: { in: ["PENDING", "INFO_REQUESTED"] } }, orderBy: { createdAt: "desc" } }),
     prisma.osApproval.findMany({ where: { orgId: ORG_ID, status: { notIn: ["PENDING", "INFO_REQUESTED"] } }, orderBy: { decidedAt: "desc" }, take: 15 }),
   ]);
+  // Load the actual email behind each outreach approval so you review the real text, not a JSON blob.
+  const outreachId = (a: (typeof pending)[number]) => {
+    const act = a.action as { type?: string; outreachId?: number; input?: { outreachId?: number } } | null;
+    return act?.type === "outreach.send" ? act.outreachId : act?.type === "tool.run" ? act.input?.outreachId : undefined;
+  };
+  const msgs = await prisma.osOutreach.findMany({ where: { id: { in: pending.map(outreachId).filter((x): x is number => typeof x === "number") } } });
+  const bulkIds = pending.filter((a) => a.kind === "OUTREACH" && a.status === "PENDING" && a.requiredRole !== "CEO" && msgs.some((m) => m.id === outreachId(a) && m.toAddress)).map((a) => a.id);
   return (
     <div className="space-y-6">
       <AutoRefresh seconds={15} />
       <PageHeader title="Approvals" subtitle="Consequential actions wait here. Approving executes the action immediately; the result is shown honestly and recorded in the audit log." />
+      <Card className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0"><p className="text-[14px] font-medium">Auto-send follow-ups (touches 2–4)</p><p className="text-[12px] text-[var(--muted)]">{autoFollow ? "ON — follow-ups to prospects you already approved a first email for go out automatically. First emails and proposals still need you." : "OFF — every email waits here. Turn on once you trust the first-touch copy."}</p></div>
+        <ApiButton label={autoFollow ? "Turn off" : "Turn on"} variant={autoFollow ? "secondary" : "primary"} url="/api/os/settings" body={{ autoFollowups: !autoFollow }} confirm={autoFollow ? undefined : "Follow-up emails (touch 2–4) will be sent automatically without approval. First emails and proposals will still need approval. Continue?"} />
+      </Card>
+      {bulkIds.length > 1 && (
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[14px]"><b>{bulkIds.length}</b> outreach emails are waiting.</p>
+          <ApiButton label={`Approve & send all ${Math.min(25, bulkIds.length)}`} variant="primary" url="/api/os/approvals/bulk" body={{ ids: bulkIds.slice(0, 25) }} result="bulk" confirm={`Send ${Math.min(25, bulkIds.length)} emails now? Each is audited individually. Review them below first if you haven't.`} />
+        </Card>
+      )}
       {pending.length === 0 && <Card><p className="text-sm text-gray-500">Nothing is waiting for a decision.</p></Card>}
       {pending.map((a) => (
         <Card key={a.id}>
@@ -22,13 +43,13 @@ export default async function ApprovalsPage() {
           <p className="mt-1 text-xs text-gray-500">Requested by {a.requestedBy} · {ago(a.createdAt)} · requires {a.requiredRole}{a.isDemo ? " · DEMO" : ""}</p>
           <dl className="mt-3 space-y-2 text-sm">
             <div><dt className="text-xs font-semibold uppercase text-gray-500">Objective</dt><dd className="text-gray-800">{a.objective}</dd></div>
-            {a.context && <div><dt className="text-xs font-semibold uppercase text-gray-500">Context</dt><dd className="whitespace-pre-wrap text-gray-700">{a.context}</dd></div>}
+            {a.context && a.kind !== "OUTREACH" && <div><dt className="text-xs font-semibold uppercase text-gray-500">Context</dt><dd className="whitespace-pre-wrap text-gray-700">{a.context}</dd></div>}
             <div><dt className="text-xs font-semibold uppercase text-gray-500">Recommendation</dt><dd className="text-gray-800">{a.recommendation}</dd></div>
             {a.expectedImpact && <div><dt className="text-xs font-semibold uppercase text-gray-500">Expected impact</dt><dd className="text-gray-800">{a.expectedImpact}</dd></div>}
             {a.confidence != null && <div><dt className="text-xs font-semibold uppercase text-gray-500">Confidence</dt><dd className="text-gray-800">{Math.round(a.confidence * 100)}%</dd></div>}
             {a.risks && <div><dt className="text-xs font-semibold uppercase text-gray-500">Risks</dt><dd className="text-gray-800">{a.risks}</dd></div>}
           </dl>
-          <ApprovalActions id={a.id} />
+          {(() => { const m = msgs.find((x) => x.id === outreachId(a)); return m ? <OutreachApproval approvalId={a.id} msg={{ id: m.id, to: m.toAddress, subject: m.subject, body: m.body, touch: m.touch, purpose: m.purpose, channel: m.channel }} /> : <ApprovalActions id={a.id} />; })()}
         </Card>
       ))}
       {recent.length > 0 && (

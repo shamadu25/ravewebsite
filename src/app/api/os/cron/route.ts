@@ -3,6 +3,7 @@ import { timingSafeEqual } from "crypto";
 import { runHeartbeats, runOperatingLoop } from "@/lib/os/commander";
 import { processQueue } from "@/lib/os/runtime";
 import { audit } from "@/lib/os/audit";
+import { pollInbox } from "@/lib/os/inbox";
 
 export const maxDuration = 60;
 
@@ -20,8 +21,9 @@ export async function GET(request: NextRequest) {
   try {
     const loop = await runOperatingLoop();
     const heartbeats = await runHeartbeats();
+    const inbox = await pollInbox().catch((e) => ({ error: e instanceof Error ? e.message : "inbox failed" }));
     const queue = await processQueue({ budgetMs: 45_000 });
-    return NextResponse.json({ ok: true, loop, heartbeats, queue });
+    return NextResponse.json({ ok: true, loop, heartbeats, inbox, queue });
   } catch (e) {
     await audit({ actor: "cron", actorType: "SYSTEM", action: "cron.tick", resource: "scheduler", result: "FAILURE", output: { error: e instanceof Error ? e.message : String(e) } });
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : "tick failed" }, { status: 500 });

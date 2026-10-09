@@ -16,7 +16,7 @@ interface Props {
   result?: ResultFormat;
 }
 
-export type ResultFormat = "seed" | "loop" | "queue" | "taskQueued" | "draft" | "submitted" | "execution";
+export type ResultFormat = "seed" | "loop" | "queue" | "taskQueued" | "draft" | "submitted" | "execution" | "inbox" | "emailTest" | "bulk";
 
 type Data = Record<string, unknown> | null | undefined;
 const FORMATTERS: Record<ResultFormat, (d: Data) => string | null> = {
@@ -26,6 +26,9 @@ const FORMATTERS: Record<ResultFormat, (d: Data) => string | null> = {
   taskQueued: (d) => `Task #${d?.taskId} queued.`,
   draft: (d) => (d?.hasAddress ? "Draft created." : "Draft created, but this prospect has no email address."),
   submitted: () => "Sent to the approvals inbox. Nothing has been sent.",
+  inbox: (d) => (d?.configured === false ? "Inbox is not configured." : d?.error ? `Inbox check failed: ${d.error}` : `Scanned ${d?.scanned ?? 0} recent message(s): ${d?.replies ?? 0} repl${d?.replies === 1 ? "y" : "ies"}, ${d?.optOuts ?? 0} opt-out(s), ${d?.bounces ?? 0} bounce(s), ${d?.autoReplies ?? 0} auto-repl${d?.autoReplies === 1 ? "y" : "ies"}.`),
+  emailTest: (d) => `Sent to ${d?.to}. Check that inbox (and spam) — message id ${String(d?.messageId ?? "").slice(0, 40)}.`,
+  bulk: (d) => `${d?.approved ?? 0} approved and sent, ${d?.failed ?? 0} failed${(d?.failed as number) > 0 ? " — see the Recent decisions list for reasons" : ""}.`,
   execution: (d) => ((d?.executionResult as { ok?: boolean } | undefined)?.ok === false ? "Approved, but execution failed." : "Executed."),
 };
 

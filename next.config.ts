@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   compress: true,
+  // Native-socket mail libraries must not be bundled.
+  serverExternalPackages: ["imapflow", "mailparser", "nodemailer"],
   experimental: {
     optimizePackageImports: ["framer-motion", "lucide-react"],
   },

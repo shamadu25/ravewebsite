@@ -1,6 +1,6 @@
 /** @jest-environment node */
 const mockPrisma: any = {
-  osOutreach: { findUniqueOrThrow: jest.fn(), update: jest.fn().mockResolvedValue({}) },
+  osOutreach: { findUniqueOrThrow: jest.fn(), update: jest.fn().mockResolvedValue({}), findFirst: jest.fn().mockResolvedValue(null) },
   osOpportunity: { update: jest.fn(), findUnique: jest.fn().mockResolvedValue({ id: 5, stage: "RESEARCHED" }) },
   osActivity: { create: jest.fn() },
   osOptOut: { findFirst: jest.fn() },
@@ -59,5 +59,23 @@ describe("sendOutreach", () => {
     mockPrisma.osOutreach.findUniqueOrThrow.mockResolvedValue(msg({ status: "SENT" }));
     await sendOutreach(1, actor);
     expect(send).not.toHaveBeenCalled();
+  });
+});
+
+describe("email compliance headers", () => {
+  it("adds a one-click unsubscribe link, our own Message-ID and a footer on every email", async () => {
+    process.env.ADMIN_SESSION_SECRET = "s"; process.env.SMTP_USER = "info@ravesoftsolutions.com";
+    send.mockResolvedValue({ ok: true, providerRef: "x" });
+    await sendOutreach(1, actor);
+    const m = send.mock.calls.at(-1)[0];
+    expect(m.unsubscribeUrl).toMatch(/\/api\/os\/unsubscribe\?o=5&/);
+    expect(m.messageId).toMatch(/^<os-1-[a-z0-9]+@ravesoftsolutions\.com>$/);
+    expect(m.body).toMatch(/Unsubscribe: https?:\/\//);
+  });
+  it("threads a follow-up onto the previous sent email", async () => {
+    mockPrisma.osOutreach.findFirst.mockResolvedValueOnce({ providerRef: "<os-0-abc@ravesoftsolutions.com>" });
+    send.mockResolvedValue({ ok: true, providerRef: "y" });
+    await sendOutreach(1, actor);
+    expect(send.mock.calls.at(-1)[0].inReplyTo).toBe("<os-0-abc@ravesoftsolutions.com>");
   });
 });

@@ -5,6 +5,11 @@ export interface OutboundMessage {
   to: string;
   subject?: string | null;
   body: string;
+  /** Email only: threading + compliance headers. */
+  messageId?: string;
+  inReplyTo?: string;
+  references?: string;
+  unsubscribeUrl?: string;
 }
 
 export type SendResult = { ok: true; providerRef: string } | { ok: false; error: string; notConnected?: boolean };
@@ -28,13 +33,18 @@ const emailAdapter: ChannelAdapter = {
     if (!this.status().connected) return { ok: false, notConnected: true, error: "Email (SMTP) is not connected." };
     if (/[\r\n]/.test(m.to) || /[\r\n]/.test(m.subject ?? "")) return { ok: false, error: "Header injection attempt blocked." };
     try {
+      const from = process.env.SMTP_FROM ?? process.env.SMTP_USER;
+      const headers: Record<string, string> = {};
+      if (m.unsubscribeUrl) {
+        // One-click unsubscribe (RFC 8058) — required by Gmail/Yahoo for bulk senders and a major deliverability signal.
+        headers["List-Unsubscribe"] = `<${m.unsubscribeUrl}>, <mailto:${process.env.REPLY_TO ?? from}?subject=unsubscribe>`;
+        headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
+      }
       const info = await getMailTransporter().sendMail({
-        from: process.env.SMTP_FROM ?? process.env.SMTP_USER,
-        to: m.to,
-        subject: m.subject ?? "(no subject)",
-        text: m.body,
+        from, to: m.to, replyTo: process.env.REPLY_TO ?? from, subject: m.subject ?? "(no subject)", text: m.body,
+        messageId: m.messageId, inReplyTo: m.inReplyTo, references: m.references, headers,
       });
-      return { ok: true, providerRef: String(info.messageId ?? "smtp") };
+      return { ok: true, providerRef: String(m.messageId ?? info.messageId ?? "smtp") };
     } catch (e) {
       return { ok: false, error: e instanceof Error ? e.message : "SMTP send failed" };
     }

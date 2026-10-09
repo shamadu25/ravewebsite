@@ -5,6 +5,7 @@ import { getChannelAdapter } from "./channels";
 import { logActivity, setStage, type Actor } from "./crm";
 import { complete, LlmUnavailableError, parseJsonLoose } from "./llm";
 import { requestApproval } from "./approvals";
+import { makeMessageId, unsubscribeUrl } from "./email-utils";
 
 const OUTBOUND_PAUSED_KEY = `os:${ORG_ID}:outbound_paused`;
 
@@ -103,7 +104,18 @@ export async function sendOutreach(outreachId: number, a: Actor, approvalId?: nu
   if (optedOut) return block("Recipient has opted out.");
 
   const adapter = getChannelAdapter(msg.channel as Channel);
-  const res = await adapter.send({ to: msg.toAddress, subject: msg.subject, body: msg.body });
+  const outbound: Parameters<typeof adapter.send>[0] = { to: msg.toAddress, subject: msg.subject, body: msg.body };
+  if (msg.channel === "EMAIL") {
+    // Compliance + threading: signed one-click unsubscribe, our own Message-ID, and a reply chain for follow-ups.
+    const link = unsubscribeUrl(msg.opportunityId, msg.toAddress);
+    const fromAddr = process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "noreply@ravesoftsolutions.com";
+    const prev = await prisma.osOutreach.findFirst({ where: { opportunityId: msg.opportunityId, channel: "EMAIL", status: "SENT", id: { not: outreachId } }, orderBy: { id: "desc" }, select: { providerRef: true } });
+    outbound.messageId = makeMessageId(outreachId, fromAddr);
+    outbound.unsubscribeUrl = link;
+    if (prev?.providerRef?.startsWith("<")) { outbound.inReplyTo = prev.providerRef; outbound.references = prev.providerRef; }
+    outbound.body = `${msg.body}\n\n—\nUnsubscribe: ${link}`;
+  }
+  const res = await adapter.send(outbound);
   if (!res.ok) return block(res.error, res.notConnected ? "notConnected" : "error");
 
   // Cadence: day 3 → day 7 → day 14, then stop. Proposals get a 3-day check-in.
@@ -134,4 +146,19 @@ export async function submitForApproval(outreachId: number, requestedBy: string,
   });
   await prisma.osOutreach.update({ where: { id: outreachId }, data: { status: "PENDING_APPROVAL", approvalId: approval.id } });
   return approval;
+}
+
+/** Emails already sent today by the automated sequence (deliverability guard for a mailbox that is still warming up). */
+export async function emailsSentToday(): Promise<number> {
+  const d = new Date(); d.setUTCHours(0, 0, 0, 0);
+  return prisma.osOutreach.count({ where: { orgId: ORG_ID, channel: "EMAIL", status: "SENT", sentAt: { gte: d } } });
+}
+export const emailDailyCap = () => Math.max(1, Number(process.env.OS_EMAIL_DAILY_CAP ?? 40));
+
+const AUTO_FOLLOWUPS_KEY = `os:${ORG_ID}:auto_followups`;
+export async function autoFollowupsEnabled(): Promise<boolean> {
+  return (await prisma.systemSetting.findUnique({ where: { key: AUTO_FOLLOWUPS_KEY } }))?.value === true;
+}
+export async function setAutoFollowups(on: boolean): Promise<void> {
+  await prisma.systemSetting.upsert({ where: { key: AUTO_FOLLOWUPS_KEY }, create: { key: AUTO_FOLLOWUPS_KEY, value: on }, update: { value: on } });
 }

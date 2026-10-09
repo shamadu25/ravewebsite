@@ -11,13 +11,14 @@ export const normalisePhone = (p: string) => p.replace(/[\s()+-]/g, "");
  * Inbound reply handling shared by every channel: honours opt-outs immediately, otherwise records the response,
  * advances the deal and asks the Sales Agent to qualify. Returns what actually happened.
  */
-export async function handleInboundReply(opts: { channel: Channel; from: string; text: string; actor: string }) {
+export async function handleInboundReply(opts: { channel: Channel; from: string; text: string; actor: string; /** Skip address matching when the thread already identified the deal. */ opportunityId?: number }) {
   const from = opts.channel === "EMAIL" ? opts.from.toLowerCase() : normalisePhone(opts.from);
-  const candidates = await prisma.osOpportunity.findMany({
+  const direct = opts.opportunityId ? await prisma.osOpportunity.findFirst({ where: { id: opts.opportunityId, orgId: ORG_ID } }) : null;
+  const candidates = direct ? [direct] : await prisma.osOpportunity.findMany({
     where: { orgId: ORG_ID, ...(opts.channel === "EMAIL" ? { contactEmail: { equals: from } } : { contactPhone: { not: null } }) },
     orderBy: { updatedAt: "desc" }, take: 500,
   });
-  const opp = opts.channel === "EMAIL" ? candidates[0] : candidates.find((o) => o.contactPhone && normalisePhone(o.contactPhone).endsWith(from.slice(-9)));
+  const opp = direct ?? (opts.channel === "EMAIL" ? candidates[0] : candidates.find((o) => o.contactPhone && normalisePhone(o.contactPhone).endsWith(from.slice(-9))));
   if (!opp) { await audit({ actor: opts.actor, actorType: "WEBHOOK", action: "inbound.unmatched", resource: "inbound", resourceId: from }); return { matched: false as const }; }
 
   const human = { actor: opts.actor, actorType: "WEBHOOK" as const };

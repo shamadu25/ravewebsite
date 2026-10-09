@@ -1,7 +1,13 @@
 import { listTools } from "@/lib/os/tools/registry";
 import { channelStatuses } from "@/lib/os/channels";
 import { llmStatus } from "@/lib/os/llm";
-import { Badge, Card, PageHeader } from "@/components/os/ui";
+import { Badge, Card, PageHeader, ago } from "@/components/os/ui";
+import ApiButton from "@/components/os/ApiButton";
+import { imapConfig } from "@/lib/os/inbox";
+import { emailDnsReport } from "@/lib/os/email-dns";
+import { emailDailyCap, emailsSentToday } from "@/lib/os/outreach";
+import { prisma } from "@/lib/prisma";
+import { ORG_ID } from "@/lib/os/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -10,14 +16,45 @@ const ENV_CHECKS: Array<[string, string, string]> = [
   ["Google Places", "GOOGLE_PLACES_API_KEY", "Prospect discovery"],
 ];
 
-export default function IntegrationsPage() {
+export default async function IntegrationsPage() {
   const tools = listTools();
   const channels = channelStatuses();
   const llm = llmStatus();
+  const from = process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "";
+  const domain = from.replace(/^.*@/, "").replace(/>.*$/, "");
+  const imap = imapConfig();
+  const [dns, sentToday, lastPollRow, recentIn] = await Promise.all([
+    domain ? emailDnsReport(domain, process.env.SMTP_HOST) : Promise.resolve([]),
+    emailsSentToday().catch(() => 0),
+    prisma.systemSetting.findUnique({ where: { key: `os:${ORG_ID}:inbox_last_poll` } }).catch(() => null),
+    prisma.osInboundEmail.findMany({ where: { orgId: ORG_ID }, orderBy: { id: "desc" }, take: 5 }).catch(() => []),
+  ]);
   const row = (ok: boolean) => <Badge>{ok ? "ACTIVE" : "DRAFT"}</Badge>;
   return (
     <div className="space-y-6">
       <PageHeader title="Integrations" subtitle="Status is computed from server configuration. Secrets are never sent to the browser." />
+      <Card>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-gray-900">Email</h2>
+          <div className="flex flex-wrap gap-2"><ApiButton label="Send test email to me" url="/api/os/email/test" result="emailTest" /><ApiButton label="Check inbox now" url="/api/os/inbox/check" result="inbox" /></div>
+        </div>
+        <ul className="space-y-1.5 text-[13px]">
+          <li className="flex justify-between gap-3"><span>Outbound (SMTP)</span><span>{channels.find((c) => c.channel === "EMAIL")?.connected ? `Connected — sending as ${from}` : "NOT CONNECTED"}</span></li>
+          <li className="flex justify-between gap-3"><span>Inbound (IMAP, read-only)</span><span>{imap ? `Connected — reading ${imap.user} (never modifies the mailbox)` : "NOT CONNECTED — set IMAP_HOST / IMAP_USER / IMAP_PASS (defaults to the SMTP login)"}</span></li>
+          <li className="flex justify-between gap-3"><span>Last inbox check</span><span>{typeof lastPollRow?.value === "string" ? ago(new Date(lastPollRow.value)) : "Never"}</span></li>
+          <li className="flex justify-between gap-3"><span>Sent today (automated)</span><span>{sentToday} / {emailDailyCap()} daily cap</span></li>
+        </ul>
+        {dns.length > 0 && (
+          <div className="mt-4 border-t border-gray-100 pt-3">
+            <p className="mb-2 text-[12px] font-semibold uppercase text-gray-500">Deliverability for {domain}</p>
+            <ul className="space-y-1.5 text-[13px]">{dns.map((d) => <li key={d.label} className="flex gap-3"><span className="w-14 shrink-0 font-medium">{d.label}</span><span className={d.ok === false ? "text-red-700" : d.ok ? "text-emerald-700" : "text-amber-700"}>{d.ok === false ? "✗ " : d.ok ? "✓ " : "? "}{d.detail}</span></li>)}</ul>
+          </div>
+        )}
+        {recentIn.length > 0 && (
+          <div className="mt-4 border-t border-gray-100 pt-3"><p className="mb-2 text-[12px] font-semibold uppercase text-gray-500">Recent inbound handled</p>
+            <ul className="space-y-1 text-[13px]">{recentIn.map((r) => <li key={r.id}><Badge>{r.action === "REPLY" ? "COMPLETED" : r.action === "BOUNCE" ? "FAILED" : "PENDING"}</Badge> {r.fromAddress} <span className="text-gray-500">— {r.action.replace(/_/g, " ").toLowerCase()} · {ago(r.receivedAt)}</span></li>)}</ul></div>
+        )}
+      </Card>
       <Card>
         <h2 className="mb-3 text-sm font-semibold text-gray-900">Model providers</h2>
         <ul className="space-y-1 text-sm">{llm.providers.map((p) => <li key={p.name} className="flex items-center justify-between"><span>{p.name}</span><span className="text-xs">{p.available ? "Connected" : "NOT CONNECTED"}</span></li>)}</ul>

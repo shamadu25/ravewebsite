@@ -901,3 +901,20 @@ model OsLearning {
   @@index([orgId, status])
   @@map("os_learnings")
 }
+
+model OsInboundEmail {
+  id                  Int      @id @default(autoincrement())
+  orgId               String   @default("ravesoft") @map("org_id")
+  messageId           String   @map("message_id")
+  fromAddress         String   @map("from_address")
+  subject             String?
+  receivedAt          DateTime @map("received_at")
+  matchedOpportunityId Int?    @map("matched_opportunity_id")
+  action              String
+  snippet             String?  @db.Text
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@unique([orgId, messageId])
+  @@index([orgId, createdAt])
+  @@map("os_inbound_emails")
+}

@@ -6,6 +6,7 @@ import { complete, LlmUnavailableError, parseJsonLoose, type ModelTier } from ".
 import { getTool, needsApproval, NotConnectedError, raiseAlert, toolFailure, type ToolContext } from "./tools/registry";
 import { registerApprovalAction, requestApproval } from "./approvals";
 import { retrieveForAgent } from "./brain";
+import { autoFollowupsEnabled } from "./outreach";
 import { HANDLERS } from "./agents/handlers";
 import { ApprovalPendingError, ToolBlockedError, ToolDeniedError } from "./errors";
 import type { Actor } from "./crm";
@@ -65,19 +66,34 @@ function buildContext(agent: AgentRecord, taskId: number, input: Record<string, 
     }
     // 3. Risk gate.
     if (needsApproval(def, agent.autonomy, agent.approvalRules)) {
-      const approval = await requestApproval({
-        kind: name.startsWith("outreach") ? "OUTREACH" : "OTHER",
-        title: `${agent.name} wants to run ${name}`,
-        objective: def.description,
-        context: JSON.stringify(toolInput, null, 2).slice(0, 3000),
-        recommendation: "Approve to let the agent proceed.",
-        risks: `Tool risk level: ${def.riskLevel}. Agent autonomy: ${agent.autonomy}.`,
-        requiredRole: def.riskLevel === "CRITICAL" ? "CEO" : "MANAGER",
-        action: { type: "tool.run", agentKey: agent.key, tool: name, input: toolInput, taskId },
-        taskId, requestedBy: actor.actor, isDemo,
-      });
-      await trace("approval_requested", `${name} requires approval #${approval.id}`, { approvalId: approval.id });
-      throw new ApprovalPendingError(approval.id);
+      let context = JSON.stringify(toolInput, null, 2).slice(0, 3000);
+      let title = `${agent.name} wants to run ${name}`;
+      let bypass = false;
+      if (name === "outreach.send") {
+        const row = await prisma.osOutreach.findUnique({ where: { id: Number(toolInput.outreachId) }, include: { opportunity: { select: { companyName: true } } } });
+        if (row) {
+          title = `${row.purpose === "PROPOSAL" ? "Send proposal" : `Send email (touch ${row.touch})`} to ${row.opportunity.companyName}`;
+          context = `To: ${row.toAddress ?? "—"}\nSubject: ${row.subject ?? "—"}\n\n${row.body}`;
+          // Opt-in graduated autonomy: follow-ups 2–4 may go out without a click once the first touch has been approved.
+          bypass = row.purpose === "OUTREACH" && row.touch > 1 && (await autoFollowupsEnabled());
+        }
+      }
+      if (!bypass) {
+        const approval = await requestApproval({
+          kind: name.startsWith("outreach") ? "OUTREACH" : "OTHER",
+          title,
+          objective: def.description,
+          context,
+          recommendation: "Approve to let the agent proceed.",
+          risks: `Tool risk level: ${def.riskLevel}. Agent autonomy: ${agent.autonomy}.`,
+          requiredRole: def.riskLevel === "CRITICAL" ? "CEO" : "MANAGER",
+          action: { type: "tool.run", agentKey: agent.key, tool: name, input: toolInput, taskId },
+          taskId, requestedBy: actor.actor, isDemo,
+        });
+        await trace("approval_requested", `${name} requires approval #${approval.id}`, { approvalId: approval.id });
+        throw new ApprovalPendingError(approval.id);
+      }
+      await trace("auto_approved", `${name} auto-approved (follow-up, opt-in setting)`);
     }
     // 4. Execute.
     const toolCtx: ToolContext = { agent: { ...agent, knowledgeSources: agent.knowledgeSources }, taskId, actor };

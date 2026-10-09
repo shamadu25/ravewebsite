@@ -8,7 +8,7 @@ import { loadTemplates, recommendEmployees } from "../recommend";
 import { raiseAlert } from "../alerts";
 import { emit } from "../events";
 import { generateBrief, runOperatingLoop } from "../commander";
-import { MAX_TOUCHES } from "../outreach";
+import { MAX_TOUCHES, emailDailyCap, emailsSentToday } from "../outreach";
 import { getFunnels } from "../products";
 import { getGoalState } from "../metrics";
 import { forecast } from "../forecast";
@@ -67,6 +67,8 @@ const outreach: Handler = async (ctx) => {
     }
   } else if (sent > 0) return { skipped: true, reason: "Already contacted; follow-ups are handled by the cadence." };
 
+  // Warm-up guard: stop before drafting once today's cap is reached; tomorrow's plan picks the prospect up again.
+  if ((ctx.input.channel ?? "EMAIL") === "EMAIL" && (await emailsSentToday()) >= emailDailyCap()) return { skipped: true, reason: `Daily email cap (${emailDailyCap()}) reached; will continue tomorrow.` };
   const draft = (await ctx.tool("outreach.draft", { opportunityId, channel: ctx.input.channel ?? "EMAIL" })) as { outreachId: number; hasAddress: boolean; generatedBy: string };
   if (!draft.hasAddress) {
     await ctx.tool("crm.log_activity", { opportunityId, type: "NOTE", summary: "Outreach drafted but prospect has no contact address; needs enrichment." });
