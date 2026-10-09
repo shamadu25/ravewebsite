@@ -4,6 +4,7 @@ import { audit } from "../audit";
 import { DEFAULT_TEMPLATES } from "../recommend";
 import { AGENT_ROSTER, buildSystemPrompt } from "./roster";
 import { BRAIN_SECTIONS } from "../brain";
+import { seedCompanyKnowledge } from "./knowledge";
 
 export function agentDataFromSeed(a: (typeof AGENT_ROSTER)[number]) {
   return {
@@ -49,8 +50,26 @@ export async function seedOperatingSystem() {
   }
   void BRAIN_SECTIONS;
 
-  await audit({ actor: "seed", actorType: "SYSTEM", action: "os.seed", resource: "system", output: { agentsCreated, templatesCreated, brainCreated } });
-  return { agentsCreated, templatesCreated, brainCreated };
+  const knowledgeCreated = await seedCompanyKnowledge();
+
+  // Roster upgrade: agents that were seeded as placeholders and never edited by a human get their new capabilities.
+  // An agent is "untouched" while it is still at version 1. Edited agents are never overwritten.
+  let upgraded = 0;
+  for (const a of AGENT_ROSTER) {
+    const row = await prisma.osAgent.findUnique({ where: { key: a.key } });
+    if (!row || row.version !== 1) continue;
+    const wanted = agentDataFromSeed(a);
+    // Never override a human decision: only never-activated placeholders (DRAFT) are switched on; PAUSED stays paused.
+    const status = row.status === "DRAFT" ? wanted.status : row.status;
+    const changed = row.handler !== wanted.handler || status !== row.status || JSON.stringify(row.tools) !== JSON.stringify(wanted.tools);
+    if (!changed) continue;
+    const u = await prisma.osAgent.update({ where: { id: row.id }, data: { handler: wanted.handler, status, tools: wanted.tools, knowledgeSources: wanted.knowledgeSources, description: wanted.description, autonomy: wanted.autonomy, modelTier: wanted.modelTier, systemPrompt: wanted.systemPrompt, triggerTypes: wanted.triggerTypes, version: 2 } });
+    await prisma.osAgentVersion.create({ data: { agentId: row.id, version: 2, snapshot: u as never, changedBy: "seed", note: "Roster upgrade: new capabilities" } });
+    upgraded++;
+  }
+
+  await audit({ actor: "seed", actorType: "SYSTEM", action: "os.seed", resource: "system", output: { agentsCreated, templatesCreated, brainCreated, knowledgeCreated, upgraded } });
+  return { agentsCreated, templatesCreated, brainCreated, knowledgeCreated, upgraded };
 }
 
 /**

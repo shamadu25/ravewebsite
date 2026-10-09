@@ -69,6 +69,11 @@ export default async function RevenuePage() {
           ]}
         />
       </Card>
+      <details className="os-card p-6">
+        <summary className="cursor-pointer text-[15px] font-semibold">Import a prospect list (CSV)</summary>
+        <p className="mb-4 mt-1 text-[13px] text-[var(--muted)]">Paste up to 300 rows: company, industry, website, email, phone, contact, country (header row optional). Each new prospect is researched and scored automatically.</p>
+        <ApiForm url="/api/os/opportunities/import" submitLabel="Import and research" fields={[{ name: "csv", label: "CSV", type: "textarea", required: true, placeholder: "Accra Dental Clinic, Dental, https://example.com, info@example.com, +233 24 000 0000, Dr Mensah, Ghana" }]} />
+      </details>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {COLUMNS.map((col) => {
           const items = opps.filter((o) => col.stages.includes(o.stage));

@@ -45,7 +45,7 @@ export default function ApiForm({ url, method = "POST", fields, submitLabel, ext
       const json = await res.json().catch(() => null);
       if (!res.ok || json?.ok === false) setMsg({ ok: false, text: json?.error ?? `Request failed (${res.status}).` });
       else {
-        setMsg({ ok: true, text: "Saved." });
+        setMsg({ ok: true, text: typeof json?.data?.message === "string" ? json.data.message : "Saved." });
         startTransition(() => router.refresh());
       }
     } catch {

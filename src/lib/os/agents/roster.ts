@@ -37,17 +37,17 @@ export const AGENT_ROSTER: AgentSeed[] = [
   A("prospecting-agent", "Prospecting Agent", "REVENUE", "revenue-director", "Prospecting", "Discover businesses, research them, analyse websites, score and recommend an AI employee.", { handler: "prospecting.research", active: true, autonomy: "AUTONOMOUS", tools: ["places.search", "crm.create_opportunity", "crm.research_opportunity", "web.read_website", "tasks.delegate", "brain.search"], sections: ["Products", "Pricing", "Prospects", "Sales"] }),
   A("research-agent", "Research Agent", "REVENUE", "revenue-director", "Research", "Deep company research for high-value prospects.", { tools: ["web.read_website", "brain.search", "brain.write"] }),
   A("opportunity-analyst", "Opportunity Analyst", "REVENUE", "revenue-director", "Analysis", "Explain and refine opportunity scores.", { tools: ["crm.research_opportunity", "brain.search"] }),
-  A("outreach-agent", "Outreach Agent", "REVENUE", "revenue-director", "Outreach", "Draft personalised outreach and send through approved channels with opt-out handling.", { handler: "outreach.draft_send", active: true, tools: ["outreach.draft", "outreach.send", "crm.log_activity", "brain.search"], sections: ["Brand", "Products", "Pricing", "Sales"] }),
+  A("outreach-agent", "Outreach Agent", "REVENUE", "revenue-director", "Outreach", "Draft personalised outreach and send through approved channels with opt-out handling.", { handler: "outreach.draft_send", active: true, tools: ["outreach.draft", "outreach.send", "crm.log_activity", "crm.set_stage", "brain.search"], sections: ["Brand", "Products", "Pricing", "Sales"] }),
   A("sales-agent", "Sales Agent", "REVENUE", "revenue-director", "Sales", "Qualify leads (need, budget, authority, urgency, fit, intent), handle objections and escalate to humans.", { handler: "sales.qualify", active: true, tools: ["crm.qualify", "crm.set_stage", "crm.log_activity", "approvals.request", "brain.search"], sections: ["Products", "Pricing", "Sales", "Competitors"], tier: "standard" }),
   A("demo-agent", "Demo Agent", "REVENUE", "revenue-director", "Demo", "Prepare and run product demos.", { tools: ["calendar.schedule", "brain.search"] }),
-  A("closing-agent", "Closing Agent", "REVENUE", "revenue-director", "Closing", "Generate proposals and track negotiation.", { tools: ["crm.set_stage", "crm.log_activity", "approvals.request", "brain.search"], autonomy: "ASSISTED" }),
+  A("closing-agent", "Closing Agent", "REVENUE", "revenue-director", "Closing", "Draft proposals for qualified prospects and send them through the approval inbox; track the deal to a decision.", { handler: "closing.proposal", active: true, tier: "standard", tools: ["proposal.draft", "outreach.send", "crm.log_activity", "brain.search"], sections: ["Products", "Pricing", "Sales", "Policies", "Brand"] }),
   A("onboarding-agent", "Onboarding Agent", "REVENUE", "revenue-director", "Onboarding", "Run the onboarding checklist for paying customers and chase what is missing.", { handler: "onboarding.run", active: true, autonomy: "AUTONOMOUS", tools: ["tasks.delegate", "alerts.raise"] }),
   A("expansion-agent", "Expansion Agent", "REVENUE", "revenue-director", "Expansion", "Find upsell and cross-sell revenue in existing customers.", { handler: "expansion.scan", active: true, autonomy: "AUTONOMOUS", tools: ["crm.create_opportunity"] }),
   A("retention-agent", "Retention Agent", "REVENUE", "revenue-director", "Retention", "Protect renewals.", { tools: ["crm.log_activity", "brain.search"] }),
 
   // Marketing
-  D("marketing-director", "AI Marketing Director", "MARKETING", "Judge marketing by revenue, not content volume."),
-  A("content-agent", "Content Agent", "MARKETING", "marketing-director", "Content", "Draft LinkedIn posts, articles, case studies and landing copy in brand voice.", { tools: ["brain.search", "brain.write"], sections: ["Brand", "Products", "Marketing"] }),
+  D("marketing-director", "AI Marketing Director", "MARKETING", "Judge marketing by revenue, not content volume: every week propose the campaigns most likely to produce paying customers, using real pipeline and funnel data.", { handler: "marketing.weekly_plan", active: true, tier: "standard", tools: ["campaign.plan", "brief.write", "brain.search", "metrics.revenue"], sections: ["Products", "Prospects", "Marketing", "Revenue Goals", "Policies"] }),
+  A("content-agent", "Content Agent", "MARKETING", "marketing-director", "Content", "Every week draft LinkedIn posts and an article outline from RaveSoft's real products, proof and brand voice. Drafts only — a human approves.", { handler: "content.weekly", active: true, tier: "standard", tools: ["content.create", "brain.search"], sections: ["Brand", "Products", "Marketing", "Policies"] }),
   A("seo-agent", "SEO Agent", "MARKETING", "marketing-director", "SEO", "Keyword opportunities, briefs and technical SEO tasks.", { tools: ["search_console.read", "analytics.read", "brain.search"] }),
   A("social-media-agent", "Social Media Agent", "MARKETING", "marketing-director", "Social", "Plan social content.", { tools: ["brain.search"] }),
   A("campaign-agent", "Campaign Agent", "MARKETING", "marketing-director", "Campaigns", "Plan campaigns with goal, audience, offer, budget, expected revenue.", { tools: ["brain.search"], autonomy: "ASSISTED" }),
@@ -67,7 +67,7 @@ export const AGENT_ROSTER: AgentSeed[] = [
   A("product-research-agent", "Product Research Agent", "PRODUCT", "product-director", "Research", "Market and user research.", { tools: ["web.read_website", "brain.search"] }),
   A("feature-analyst", "Feature Analyst", "PRODUCT", "product-director", "Analysis", "Feature usage and demand.", { tools: ["brain.search"] }),
   A("ux-analyst", "UX Analyst", "PRODUCT", "product-director", "UX", "Find UX friction.", { tools: ["brain.search"] }),
-  A("activation-agent", "Activation Agent", "PRODUCT", "product-director", "Activation", "Registration → activation → payment funnel.", { tools: ["metrics.revenue", "brain.search"] }),
+  A("activation-agent", "Activation Agent", "PRODUCT", "product-director", "Activation", "Review the registration → activation → payment funnel for every product and flag the biggest drop-off.", { handler: "product.funnel_review", active: true, autonomy: "AUTONOMOUS", tools: ["brief.write", "alerts.raise"] }),
   A("product-analytics-agent", "Product Analytics Agent", "PRODUCT", "product-director", "Analytics", "Product usage analytics.", { tools: ["analytics.read"] }),
 
   // Engineering
@@ -81,7 +81,7 @@ export const AGENT_ROSTER: AgentSeed[] = [
   A("devops-agent", "DevOps Agent", "ENGINEERING", "engineering-director", "DevOps", "Deployments (always human-approved).", { tools: ["github.read", "alerts.raise"], autonomy: "ASSISTED" }),
 
   // Finance
-  D("finance-director", "AI Finance Director", "FINANCE", "Protect cash and report truthfully.", { autonomy: "ASSISTED" }),
+  D("finance-director", "AI Finance Director", "FINANCE", "Protect cash and report truthfully: every week compare revenue, MRR, customers and AI spend against the $500K goal.", { handler: "finance.weekly_review", active: true, autonomy: "AUTONOMOUS", tools: ["brief.write", "alerts.raise", "metrics.revenue"] }),
   A("revenue-analyst", "Revenue Analyst", "FINANCE", "finance-director", "Analysis", "Revenue analysis.", { tools: ["metrics.revenue"] }),
   A("cashflow-agent", "Cashflow Agent", "FINANCE", "finance-director", "Cashflow", "Cash forecasting.", { tools: ["metrics.revenue"] }),
   A("invoice-agent", "Invoice Agent", "FINANCE", "finance-director", "Invoicing", "Invoice preparation.", { tools: ["payments.read"], autonomy: "ASSISTED" }),

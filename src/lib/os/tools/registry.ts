@@ -8,6 +8,7 @@ import { analyseWebsite } from "../website";
 import { requestApproval } from "../approvals";
 import { enqueueTask } from "../queue";
 import { channelStatuses } from "../channels";
+import { ORG_ID } from "../constants";
 import { qualify } from "../scoring";
 import { raiseAlert } from "../alerts";
 import { ToolBlockedError } from "../errors";
@@ -154,9 +155,9 @@ const TOOLS: ToolDefinition[] = [
   },
   {
     name: "outreach.draft", description: "Draft a personalised outreach message for a prospect (does not send).", provider: "internal", permissions: ["outreach.draft"],
-    inputSchema: { opportunityId: "number", channel: "string?" }, riskLevel: "LOW", status: always,
+    inputSchema: { opportunityId: "number", channel: "string?", touch: "number?" }, riskLevel: "LOW", status: always,
     async run(ctx, input) {
-      const row = await outreach.draftOutreach(num(input.opportunityId), ctx.actor, (input.channel as never) ?? "EMAIL");
+      const row = await outreach.draftOutreach(num(input.opportunityId), ctx.actor, (input.channel as never) ?? "EMAIL", { touch: input.touch ? num(input.touch) : undefined });
       return { outreachId: row.id, generatedBy: row.generatedBy, hasAddress: !!row.toAddress };
     },
   },
@@ -174,6 +175,42 @@ const TOOLS: ToolDefinition[] = [
     async run(ctx, input) {
       const a = await requestApproval({ kind: "ESCALATION", title: str(input.title, "title"), objective: str(input.objective, "objective"), recommendation: str(input.recommendation, "recommendation"), context: input.context as string | undefined, confidence: input.confidence as number | undefined, requestedBy: `agent:${ctx.agent.key}`, taskId: ctx.taskId });
       return { approvalId: a.id };
+    },
+  },
+  {
+    name: "proposal.draft", description: "Draft a proposal email for a qualified prospect (does not send).", provider: "internal", permissions: ["outreach.draft"],
+    inputSchema: { opportunityId: "number" }, riskLevel: "MEDIUM", status: always,
+    async run(ctx, input) {
+      const row = await outreach.draftOutreach(num(input.opportunityId), ctx.actor, "EMAIL", { purpose: "PROPOSAL" });
+      return { outreachId: row.id, generatedBy: row.generatedBy, hasAddress: !!row.toAddress };
+    },
+  },
+  {
+    name: "content.create", description: "Save a marketing content draft (always DRAFT; a human approves publishing).", provider: "internal", permissions: ["campaign.create"],
+    inputSchema: { type: "string", title: "string", body: "string" }, riskLevel: "LOW", status: always,
+    async run(ctx, input) {
+      const row = await prisma.osContent.create({ data: { orgId: ORG_ID, type: str(input.type, "type").toUpperCase(), title: str(input.title, "title").slice(0, 200), body: str(input.body, "body").slice(0, 20000), generatedBy: `agent:${ctx.agent.key}` } });
+      return { contentId: row.id };
+    },
+  },
+  {
+    name: "campaign.plan", description: "Propose a campaign (status PLANNED, zero spend; a human activates it).", provider: "internal", permissions: ["campaign.create"],
+    inputSchema: { name: "string", channel: "string", goal: "string", audience: "string", offer: "string", businessUnit: "string?" }, riskLevel: "LOW", status: always,
+    async run(ctx, input) {
+      const channel = str(input.channel, "channel").toUpperCase();
+      const row = await prisma.osCampaign.create({ data: { orgId: ORG_ID, name: str(input.name, "name").slice(0, 160), channel: ["EMAIL", "WHATSAPP", "SMS", "LINKEDIN", "WEB_CHAT", "VOICE"].includes(channel) ? channel : "EMAIL", goal: str(input.goal, "goal").slice(0, 300), audience: str(input.audience, "audience").slice(0, 300), offer: str(input.offer, "offer").slice(0, 300), businessUnit: ["RAVESOFT", "CLIQPOS", "KOVABOT", "HMS", "RESTOVAX"].includes(String(input.businessUnit)) ? String(input.businessUnit) : "KOVABOT" } });
+      void ctx;
+      return { campaignId: row.id };
+    },
+  },
+  {
+    name: "brief.write", description: "Store a generated report/brief for the CEO.", provider: "internal", permissions: ["report.write"],
+    inputSchema: { kind: "string", content: "object" }, riskLevel: "LOW", status: always,
+    async run(_c, input) {
+      const forDate = typeof input.forDate === "string" ? input.forDate : new Date().toISOString().slice(0, 10);
+      const kind = str(input.kind, "kind").toUpperCase().slice(0, 30);
+      await prisma.osBrief.upsert({ where: { orgId_kind_forDate: { orgId: ORG_ID, kind, forDate } }, create: { orgId: ORG_ID, kind, forDate, content: input.content as never }, update: { content: input.content as never } });
+      return { kind, forDate };
     },
   },
   {

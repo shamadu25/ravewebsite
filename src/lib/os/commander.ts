@@ -19,6 +19,7 @@ import { refreshUsageFromEvents } from "./products";
 import { tickWorkflows } from "./workflows";
 import { proposeLearnings } from "./learning";
 import { setLoopLock } from "./loop-lock";
+import { isoWeek } from "./week";
 
 const WEIGHTS_KEY = `os:${ORG_ID}:priority_weights`;
 const day = () => new Date().toISOString().slice(0, 10);
@@ -137,6 +138,11 @@ async function runOperatingLoopInner() {
     ["customer-health-agent", `Customer health scan ${d}`, `health:${d}`, "MEDIUM"],
     ["expansion-agent", `Expansion scan ${d}`, `expansion:${d}`, "MEDIUM"],
     ["reporting-agent", `Daily executive brief ${d}`, `brief:${d}`, "MEDIUM"],
+    ["activation-agent", `Product funnel review ${d}`, `funnel:${d}`, "MEDIUM"],
+    // Weekly cadences run once per ISO week (the first loop of the week starts them).
+    ["marketing-director", `Weekly marketing plan ${isoWeek()}`, `mktplan:${isoWeek()}`, "MEDIUM"],
+    ["content-agent", `Weekly content drafts ${isoWeek()}`, `content:${isoWeek()}`, "MEDIUM"],
+    ["finance-director", `Weekly finance review ${isoWeek()}`, `finance:${isoWeek()}`, "MEDIUM"],
   ];
   for (const [agentKey, title, key, priority] of jobs) {
     const r = await enqueueTask({ agentKey, title, priority, createdBy: "commander", idempotencyKey: key });

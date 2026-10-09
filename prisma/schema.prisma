@@ -590,6 +590,8 @@ model OsOutreach {
   subject       String?
   body          String        @db.Text
   generatedBy   String        @map("generated_by")
+  purpose       String        @default("OUTREACH")
+  touch         Int           @default(1)
   status        String        @default("DRAFT")
   approvalId    Int?          @map("approval_id")
   providerRef   String?       @map("provider_ref")
