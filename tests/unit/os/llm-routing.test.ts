@@ -8,7 +8,7 @@ const fetchMock = jest.fn();
 beforeEach(() => { process.env = { ...OLD }; delete process.env.OPENAI_API_KEY; delete process.env.ANTHROPIC_API_KEY; delete process.env.GEMINI_API_KEY; delete process.env.OS_PROVIDER_FAST; delete process.env.OS_LLM_PROVIDER; global.fetch = fetchMock as never; fetchMock.mockReset(); });
 afterAll(() => { process.env = OLD; });
 
-const geminiOk = (text: string) => ({ ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text }] }, finishReason: "STOP" }], usageMetadata: { promptTokenCount: 120, candidatesTokenCount: 8 }, modelVersion: "gemini-2.5-flash-lite" }) });
+const geminiOk = (text: string) => ({ ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text }] }, finishReason: "STOP" }], usageMetadata: { promptTokenCount: 120, candidatesTokenCount: 8 }, modelVersion: "gemini-3.5-flash-lite" }) });
 const openaiOk = (text: string) => ({ ok: true, status: 200, json: async () => ({ choices: [{ message: { content: text } }], model: "gpt-4o-mini", usage: { prompt_tokens: 100, completion_tokens: 10 } }) });
 
 describe("Gemini provider", () => {
@@ -17,7 +17,7 @@ describe("Gemini provider", () => {
     fetchMock.mockResolvedValue(geminiOk('{"intent":"INTERESTED"}'));
     const r = await complete({ tier: "fast", json: true, system: "SYS", user: "USER", temperature: 0 });
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toContain("/models/gemini-2.5-flash-lite:generateContent");
+    expect(url).toContain("/models/gemini-3.5-flash-lite:generateContent");
     expect(url).not.toContain("g-key");                       // never leak the key into URLs/logs
     expect(init.headers["x-goog-api-key"]).toBe("g-key");
     const body = JSON.parse(init.body);
@@ -38,9 +38,10 @@ describe("Gemini provider", () => {
     await expect(completeWith("google", { tier: "fast", system: "s", user: "u" })).rejects.toThrow(/no text.*SAFETY/);
   });
   it("prices Gemini models and honours price overrides", () => {
-    expect(estimateCostUsd("gemini-2.5-flash-lite", 1_000_000, 1_000_000)).toBeCloseTo(0.5, 3);
-    process.env.OS_PRICE_GEMINI_2_5_FLASH_LITE = "1,2";
-    expect(estimateCostUsd("gemini-2.5-flash-lite", 1_000_000, 1_000_000)).toBeCloseTo(3, 3);
+    expect(estimateCostUsd("gemini-3.5-flash-lite", 1_000_000, 1_000_000)).toBeCloseTo(2.8, 3);   // $0.30 + $2.50
+    expect(estimateCostUsd("gemini-3.1-pro-preview", 1_000_000, 1_000_000)).toBeCloseTo(14, 3);   // $2 + $12
+    process.env.OS_PRICE_GEMINI_3_5_FLASH_LITE = "1,2";
+    expect(estimateCostUsd("gemini-3.5-flash-lite", 1_000_000, 1_000_000)).toBeCloseTo(3, 3);
   });
 });
 
@@ -48,11 +49,21 @@ describe("cost estimation handles dated model IDs (regression: 20x overstatement
   it("prices gpt-4o-mini snapshots at the mini rate, not the default", () => {
     expect(estimateCostUsd("gpt-4o-mini-2024-07-18", 1_000_000, 1_000_000)).toBeCloseTo(0.75, 3);   // $0.15 in + $0.60 out
     expect(estimateCostUsd("gpt-4o-2024-08-06", 1_000_000, 1_000_000)).toBeCloseTo(12.5, 3);        // $2.50 + $10
-    expect(estimateCostUsd("gemini-2.5-flash-lite-preview-06-17", 1_000_000, 0)).toBeCloseTo(0.1, 3);
+    expect(estimateCostUsd("gemini-3.5-flash-lite-preview-06-17", 1_000_000, 0)).toBeCloseTo(0.3, 3);
   });
   it("uses the longest matching key and a conservative default for unknown models", () => {
     expect(estimateCostUsd("gpt-4o-mini", 1_000_000, 0)).toBeCloseTo(0.15, 3);   // not gpt-4o's $2.50
     expect(estimateCostUsd("some-new-model", 1_000_000, 0)).toBeCloseTo(3, 3);
+  });
+});
+
+describe("Gemini 3.8 Flash promo price steps up on 2027-01-01", () => {
+  afterEach(() => jest.useRealTimers());
+  it("charges the promo rate in 2026 and the full rate afterwards", () => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-10-09T00:00:00Z"));
+    expect(estimateCostUsd("gemini-3.8-flash", 1_000_000, 1_000_000)).toBeCloseTo(4.5, 3);        // 0.75 + 3.75
+    jest.setSystemTime(new Date("2027-01-02T00:00:00Z"));
+    expect(estimateCostUsd("gemini-3.8-flash", 1_000_000, 1_000_000)).toBeCloseTo(9, 3);          // 1.50 + 7.50
   });
 });
 

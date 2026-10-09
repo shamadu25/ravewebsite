@@ -37,14 +37,18 @@ interface Provider {
   complete(model: string, o: CompleteOptions): Promise<Omit<Completion, "costUsd" | "provider" | "latencyMs">>;
 }
 
-/** USD per 1M tokens [input, output]. Estimates for cost control — override with OS_PRICE_<MODEL>=in,out. */
-const PRICES: Record<string, [number, number]> = {
+/** USD per 1M tokens [input, output]. Estimates for cost control — override with OS_PRICE_<MODEL>=in,out. A function lets a price change on a known date. */
+type Price = [number, number] | (() => [number, number]);
+const PRICES: Record<string, Price> = {
   "gpt-4o-mini": [0.15, 0.6],
   "gpt-4o": [2.5, 10],
   "claude-haiku-5-5": [1, 5],
   "claude-sonnet-5-5": [3, 15],
   "claude-opus-5-5": [15, 75],
-  // Gemini (approximate public pricing; override with OS_PRICE_<MODEL>=in,out if Google's rates differ)
+  // Gemini — from Google's published paid-tier pricing (output includes thinking tokens). 3.8 Flash is promotional until 2026-12-31.
+  "gemini-3.5-flash-lite": [0.3, 2.5],
+  "gemini-3.8-flash": () => (Date.now() >= Date.UTC(2027, 0, 1) ? [1.5, 7.5] : [0.75, 3.75]),
+  "gemini-3.1-pro": [2, 12],
   "gemini-2.5-flash-lite": [0.1, 0.4],
   "gemini-2.5-flash": [0.3, 2.5],
   "gemini-2.5-pro": [1.25, 10],
@@ -58,7 +62,7 @@ export function priceKeyFor(model: string): string | null {
 export function estimateCostUsd(model: string, inTok: number, outTok: number): number {
   const key = priceKeyFor(model) ?? model;
   const override = process.env[`OS_PRICE_${key.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`];
-  const [pi, po] = override ? (override.split(",").map(Number) as [number, number]) : (PRICES[key] ?? [3, 15]); // unknown models: conservative default
+  const [pi, po] = override ? (override.split(",").map(Number) as [number, number]) : (typeof PRICES[key] === "function" ? (PRICES[key] as () => [number, number])() : (PRICES[key] as [number, number] | undefined)) ?? [3, 15]; // unknown models: conservative default
   return Math.round(((inTok * pi + outTok * po) / 1_000_000) * 1e6) / 1e6;
 }
 
@@ -120,9 +124,9 @@ const anthropic: Provider = {
 const gemini: Provider = {
   name: "google",
   available: () => !!process.env.GEMINI_API_KEY,
-  // Defaults are the 2.5 family; set OS_GEMINI_MODEL_FAST/STANDARD/STRONG to newer IDs from Google's model list. "Test models" on /admin/models verifies them live.
+  // Defaults are the current 3.x family (verified live against Google's API); set OS_GEMINI_MODEL_FAST/STANDARD/STRONG to newer IDs from Google's model list. "Test models" on /admin/models verifies them live.
   modelFor: (tier) =>
-    tier === "strong" ? (process.env.OS_GEMINI_MODEL_STRONG ?? "gemini-2.5-pro") : tier === "standard" ? (process.env.OS_GEMINI_MODEL_STANDARD ?? "gemini-2.5-flash") : (process.env.OS_GEMINI_MODEL_FAST ?? "gemini-2.5-flash-lite"),
+    tier === "strong" ? (process.env.OS_GEMINI_MODEL_STRONG ?? "gemini-3.1-pro-preview") : tier === "standard" ? (process.env.OS_GEMINI_MODEL_STANDARD ?? "gemini-3.8-flash") : (process.env.OS_GEMINI_MODEL_FAST ?? "gemini-3.5-flash-lite"),
   async complete(model, o) {
     const base = process.env.GEMINI_BASE_URL ?? "https://generativelanguage.googleapis.com/v1beta";
     const res = await fetch(`${base}/models/${encodeURIComponent(model)}:generateContent`, {
