@@ -31,7 +31,9 @@ const cents = (n: number) => Math.round(n) / 100;
 
 /** MRR = sum of recurring entries active "now" (started, not ended). All figures come from the ledger — nothing is estimated. */
 export async function getRevenueMetrics(now = new Date()): Promise<RevenueMetrics> {
-  const entries = await prisma.osRevenueEntry.findMany({ where: { orgId: ORG_ID }, include: { customer: { select: { status: true } } } });
+  const allEntries = await prisma.osRevenueEntry.findMany({ where: { orgId: ORG_ID }, include: { customer: { select: { status: true } } } });
+  // Demo accounts (e.g. our own showcase hotel) never count as revenue.
+  const entries = allEntries.filter((e) => !e.isDemo);
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const lastMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
   const thirtyAgo = new Date(now.getTime() - 30 * 86400_000);
@@ -64,7 +66,7 @@ export async function getRevenueMetrics(now = new Date()): Promise<RevenueMetric
     activeCustomers: new Set(activeNow.map((e) => e.customerId).filter((x) => x != null)).size,
     byEngine,
     byBusinessUnit,
-    hasDemoData: entries.some((e) => e.isDemo),
+    hasDemoData: allEntries.some((e) => e.isDemo),
     entryCount: entries.length,
   };
 }

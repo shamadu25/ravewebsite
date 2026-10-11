@@ -15,7 +15,7 @@ export interface ArrPoint { month: number; label: string; arrUsd: number | null 
 
 /** ARR at the end of each month of `year`, from the revenue ledger. Future months are null (never extrapolated here). */
 export const arrSeries = cache(async (year: number, now = new Date()): Promise<ArrPoint[]> => {
-  const entries = await prisma.osRevenueEntry.findMany({ where: { orgId: ORG_ID, kind: "RECURRING" }, select: { kind: true, amountCents: true, periodMonths: true, occurredAt: true, recurringEndsAt: true } });
+  const entries = await prisma.osRevenueEntry.findMany({ where: { orgId: ORG_ID, isDemo: false, kind: "RECURRING" }, select: { kind: true, amountCents: true, periodMonths: true, occurredAt: true, recurringEndsAt: true } });
   const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return labels.map((label, i) => {
     const end = new Date(Date.UTC(year, i + 1, 0, 23, 59, 59));
@@ -31,7 +31,7 @@ export const SEGMENT_LABEL: Record<string, string> = { KOVABOT: "KOVABOT", CLIQP
 /** Current ARR per segment. Services revenue is its own segment (partition, so shares always sum to 100%). */
 export const revenueSegments = cache(async () => {
   const now = new Date();
-  const entries = await prisma.osRevenueEntry.findMany({ where: { orgId: ORG_ID, kind: "RECURRING", occurredAt: { lte: now } }, select: { amountCents: true, periodMonths: true, businessUnit: true, revenueEngine: true, recurringEndsAt: true } });
+  const entries = await prisma.osRevenueEntry.findMany({ where: { orgId: ORG_ID, isDemo: false, kind: "RECURRING", occurredAt: { lte: now } }, select: { amountCents: true, periodMonths: true, businessUnit: true, revenueEngine: true, recurringEndsAt: true } });
   const live = entries.filter((e) => !e.recurringEndsAt || e.recurringEndsAt > now);
   const totals: Record<string, number> = {};
   for (const e of live) {
