@@ -943,3 +943,217 @@ model OsPlan {
   @@unique([orgId, key])
   @@map("os_plans")
 }
+
+// ── Growth Engine (additive; prefix gr_) ──────────────────────────────────────────────────
+model GrIcpProfile {
+  id        Int      @id @default(autoincrement())
+  orgId     String   @default("ravesoft") @map("org_id")
+  key       String
+  name      String
+  industry  String
+  country   String   @default("US")
+  weights   Json
+  config    Json?
+  active    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([orgId, key])
+  @@map("gr_icp_profiles")
+}
+
+model GrCompany {
+  id               Int       @id @default(autoincrement())
+  orgId            String    @default("ravesoft") @map("org_id")
+  profileKey       String    @map("profile_key")
+  name             String
+  domain           String
+  website          String?
+  category         String?
+  country          String?
+  serviceArea      String?   @map("service_area")
+  phone            String?
+  status           String    @default("DISCOVERED")
+  fitScore         Int?      @map("fit_score")
+  readinessScore   Int?      @map("readiness_score")
+  scoreBreakdown   Json?     @map("score_breakdown")
+  confidence       Float?
+  useCase          String?   @map("use_case")
+  decisionReason   String?   @db.Text @map("decision_reason")
+  needsReview      Boolean   @default(false) @map("needs_review")
+  outreachDisabled Boolean   @default(false) @map("outreach_disabled")
+  researchedAt     DateTime? @map("researched_at")
+  opportunityId    Int?      @map("opportunity_id")
+  evidence         GrEvidence[]
+  people           GrPerson[]
+  contacts         GrContact[]
+  drafts           GrDraft[]
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@unique([orgId, domain])
+  @@index([orgId, status])
+  @@map("gr_companies")
+}
+
+model GrEvidence {
+  id         Int        @id @default(autoincrement())
+  companyId  Int        @map("company_id")
+  company    GrCompany  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  personId   Int?       @map("person_id")
+  signal     String
+  claim      String     @db.Text
+  sourceUrl  String     @db.Text @map("source_url")
+  verified   Boolean    @default(false)
+  capturedAt DateTime   @default(now()) @map("captured_at")
+
+  @@index([companyId])
+  @@map("gr_evidence")
+}
+
+model GrPerson {
+  id         Int       @id @default(autoincrement())
+  companyId  Int       @map("company_id")
+  company    GrCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name       String
+  role       String
+  sourceUrl  String    @db.Text @map("source_url")
+  verified   Boolean   @default(false)
+  confidence Float?
+  contacts   GrContact[]
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([companyId])
+  @@map("gr_people")
+}
+
+model GrContact {
+  id          Int       @id @default(autoincrement())
+  orgId       String    @default("ravesoft") @map("org_id")
+  companyId   Int       @map("company_id")
+  company     GrCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  personId    Int?      @map("person_id")
+  person      GrPerson? @relation(fields: [personId], references: [id], onDelete: SetNull)
+  email       String
+  status      String    @default("FOUND_UNVERIFIED")
+  provider    String
+  providerRaw Json?     @map("provider_raw")
+  checkedAt   DateTime? @map("checked_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([orgId, email])
+  @@index([companyId])
+  @@map("gr_contacts")
+}
+
+model GrDraft {
+  id            Int       @id @default(autoincrement())
+  companyId     Int       @map("company_id")
+  company       GrCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contactId     Int       @map("contact_id")
+  sequenceKey   String    @map("sequence_key")
+  touch         Int       @default(1)
+  version       Int       @default(1)
+  toEmail       String    @map("to_email")
+  senderIdentity String   @map("sender_identity")
+  subject       String
+  body          String    @db.Text
+  contentHash   String    @map("content_hash")
+  evidenceIds   Json      @map("evidence_ids")
+  rationale     String?   @db.Text
+  model         String
+  promptVersion String    @map("prompt_version")
+  policyResult  Json      @map("policy_result")
+  status        String    @default("PENDING_APPROVAL")
+  approvals     GrApproval[]
+  outbox        GrOutbox[]
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@unique([companyId, sequenceKey, touch, version])
+  @@index([status])
+  @@map("gr_drafts")
+}
+
+model GrApproval {
+  id          Int       @id @default(autoincrement())
+  draftId     Int       @map("draft_id")
+  draft       GrDraft   @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  contentHash String    @map("content_hash")
+  toEmail     String    @map("to_email")
+  channel     String    @default("EMAIL")
+  sender      String
+  approvedBy  String    @map("approved_by")
+  approvedAt  DateTime  @default(now()) @map("approved_at")
+  expiresAt   DateTime  @map("expires_at")
+  status      String    @default("ACTIVE")
+  invalidReason String? @map("invalid_reason")
+
+  @@index([draftId, status])
+  @@map("gr_approvals")
+}
+
+model GrOutbox {
+  id             Int       @id @default(autoincrement())
+  draftId        Int       @map("draft_id")
+  draft          GrDraft   @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  approvalId     Int       @map("approval_id")
+  companyId      Int       @map("company_id")
+  toEmail        String    @map("to_email")
+  idempotencyKey String    @unique @map("idempotency_key")
+  status         String    @default("SCHEDULED")
+  scheduledAt    DateTime  @map("scheduled_at")
+  attempts       Int       @default(0)
+  providerRef    String?   @map("provider_ref")
+  error          String?   @db.Text
+  cancelReason   String?   @map("cancel_reason")
+  sentAt         DateTime? @map("sent_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([status, scheduledAt])
+  @@index([companyId])
+  @@map("gr_outbox")
+}
+
+model GrSuppression {
+  id        Int      @id @default(autoincrement())
+  orgId     String   @default("ravesoft") @map("org_id")
+  kind      String
+  value     String
+  reason    String
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([orgId, kind, value])
+  @@map("gr_suppressions")
+}
+
+model GrReply {
+  id            Int      @id @default(autoincrement())
+  companyId     Int?     @map("company_id")
+  outboxId      Int?     @map("outbox_id")
+  fromEmail     String   @map("from_email")
+  messageId     String   @map("message_id")
+  body          String   @db.Text
+  category      String
+  confidence    Float
+  nextAction    String   @map("next_action")
+  reviewStatus  String   @default("NEEDS_REVIEW") @map("review_status")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([messageId])
+  @@map("gr_replies")
+}
+
+model GrProviderUsage {
+  id        Int      @id @default(autoincrement())
+  provider  String
+  operation String
+  credits   Float    @default(0)
+  ok        Boolean
+  detail    String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([provider, createdAt])
+  @@map("gr_provider_usage")
+}

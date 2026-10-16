@@ -1,4 +1,4 @@
-import { Bot, BookOpen, Boxes, ClipboardCheck, Cog, FileBarChart, House, Megaphone, Plug, Settings, Target, Users, Wallet, Workflow, type LucideIcon } from "lucide-react";
+import { Bot, BookOpen, Boxes, ClipboardCheck, Cog, FileBarChart, House, Rocket, Megaphone, Plug, Settings, Target, Users, Wallet, Workflow, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -13,6 +13,7 @@ export const NAV: NavItem[] = [
   { href: "/admin", label: "Home", icon: House, also: ["/admin/ask", "/admin/brief", "/admin/search"] },
   { href: "/admin/agents", label: "AI Employees", icon: Bot, also: ["/admin/performance", "/admin/factory"] },
   { href: "/admin/revenue", label: "Leads & Sales", icon: Target, also: ["/admin/leads", "/admin/conversations", "/admin/forecast"] },
+  { href: "/admin/growth", label: "Growth Engine", icon: Rocket },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/marketing", label: "Marketing", icon: Megaphone },
   { href: "/admin/products", label: "Products", icon: Boxes },

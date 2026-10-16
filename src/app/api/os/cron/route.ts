@@ -4,6 +4,9 @@ import { runHeartbeats, runOperatingLoop } from "@/lib/os/commander";
 import { processQueue } from "@/lib/os/runtime";
 import { audit } from "@/lib/os/audit";
 import { pollInbox } from "@/lib/os/inbox";
+import { growthEnabled } from "@/lib/growth/config";
+import { processGrowthReplies } from "@/lib/growth/replies";
+import { dispatchDue } from "@/lib/growth/outbox";
 
 export const maxDuration = 60;
 
@@ -23,7 +26,9 @@ export async function GET(request: NextRequest) {
     const heartbeats = await runHeartbeats();
     const inbox = await pollInbox().catch((e) => ({ error: e instanceof Error ? e.message : "inbox failed" }));
     const queue = await processQueue({ budgetMs: 45_000 });
-    return NextResponse.json({ ok: true, loop, heartbeats, inbox, queue });
+    // Growth Engine (feature-flagged): classify replies first, so no follow-up ever goes out ahead of an unprocessed reply.
+    const growth = growthEnabled() ? await (async () => ({ replies: await processGrowthReplies(), dispatch: await dispatchDue(3) }))().catch((e) => ({ error: e instanceof Error ? e.message : "growth failed" })) : undefined;
+    return NextResponse.json({ ok: true, loop, heartbeats, inbox, queue, growth });
   } catch (e) {
     await audit({ actor: "cron", actorType: "SYSTEM", action: "cron.tick", resource: "scheduler", result: "FAILURE", output: { error: e instanceof Error ? e.message : String(e) } });
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : "tick failed" }, { status: 500 });
