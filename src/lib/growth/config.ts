@@ -38,6 +38,22 @@ export const HVAC_PROFILE: IcpProfile = {
   minConfidence: 0.4,
 };
 
+const tradeProfile = (key: string, name: string, industry: string, queries: string[]): IcpProfile => ({ key, name, industry, country: "US", weights: DEFAULT_WEIGHTS, queries, qualifyAt: 60, minConfidence: 0.4 });
+
+export const ROOFING_PROFILE = tradeProfile("us-roofing", "US roofing contractors", "Roofing", ["roofing contractor {area}", "roof repair and replacement {area}", "storm damage roofing company {area}"]);
+export const PLUMBING_PROFILE = tradeProfile("us-plumbing", "US plumbing contractors", "Plumbing", ["plumber {area}", "emergency plumbing service {area}", "plumbing and drain company {area}"]);
+export const REMODELING_PROFILE = tradeProfile("us-remodeling", "US remodeling contractors", "Remodeling", ["home remodeling contractor {area}", "kitchen and bath remodeling {area}", "general contractor home renovation {area}"]);
+
+/** Built-in profiles; a GrIcpProfile row with the same key overrides the shipped one. */
+export const BUILTIN_PROFILES: Record<string, IcpProfile> = Object.fromEntries([HVAC_PROFILE, ROOFING_PROFILE, PLUMBING_PROFILE, REMODELING_PROFILE].map((p) => [p.key, p]));
+
+/** Facts the agents may state. Anything not here (discounts, dates, results, integrations) must go to the founder. */
+export const PRICING = {
+  coreImplementationUsd: 7500,
+  premiumFromUsd: 12500,
+  recurringNote: "Recurring management and usage fees are quoted separately and disclosed before signing.",
+};
+
 export const OFFER = {
   name: "AI Sales and Lead Recovery Employee",
   /** Only capabilities listed here may be mentioned in outreach. Extend only once the workflow is confirmed live. */

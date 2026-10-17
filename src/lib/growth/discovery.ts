@@ -1,14 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { audit } from "@/lib/os/audit";
 import { analyseWebsite, type WebsiteAnalysis } from "@/lib/os/website";
-import { GROWTH_ORG, HVAC_PROFILE, type IcpProfile } from "./config";
+import { BUILTIN_PROFILES, GROWTH_ORG, HVAC_PROFILE, type IcpProfile } from "./config";
 import { normaliseDomain, scoreCompany, type SignalEvidence } from "./icp";
 import { suppressionReason } from "./suppression";
 
 export async function getProfile(key = HVAC_PROFILE.key): Promise<IcpProfile> {
   const row = await prisma.grIcpProfile.findUnique({ where: { orgId_key: { orgId: GROWTH_ORG, key } } });
   if (!row) {
-    if (key === HVAC_PROFILE.key) return HVAC_PROFILE;
+    if (BUILTIN_PROFILES[key]) return BUILTIN_PROFILES[key];
     throw new Error(`Unknown industry profile "${key}".`);
   }
   const cfg = (row.config ?? {}) as Partial<IcpProfile>;

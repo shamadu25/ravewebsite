@@ -23,7 +23,7 @@ export default async function GrowthPage() {
   const empty = f.researched === 0 && companies.length === 0;
   return (
     <div className="space-y-6">
-      <PageHeader title="Growth Engine" subtitle="Last 30 days. Every figure is counted from stored records; “N/A” means the denominator is zero or the provider gives no signal." actions={<Link href="/admin/growth/approvals" className="rounded-lg bg-[var(--primary)] px-3 py-2 text-sm font-medium text-white">Approval queue ({pendingDrafts})</Link>} />
+      <PageHeader title="Growth Engine" subtitle="Last 30 days. Every figure is counted from stored records; “N/A” means the denominator is zero or the provider gives no signal." actions={<span className="flex gap-2"><Link href="/admin/growth/replies" className="rounded-lg border border-[var(--primary)] px-3 py-2 text-sm font-medium text-[var(--primary)]">Replies &amp; conversion</Link><Link href="/admin/growth/approvals" className="rounded-lg bg-[var(--primary)] px-3 py-2 text-sm font-medium text-white">Approval queue ({pendingDrafts})</Link></span>} />
       {!snov.configured && <Card><p className="text-sm text-amber-800">Snov.io: {snov.reason} Contact enrichment is unavailable until then.</p></Card>}
       {empty && <Card><p className="text-sm text-gray-600">No data yet. Run discovery below (needs GOOGLE_PLACES_API_KEY) or add businesses manually.</p></Card>}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

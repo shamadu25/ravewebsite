@@ -10,79 +10,79 @@ datasource db {
 // ── Identity ────────────────────────────────────────────────────────────
 
 model Company {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   name        String
   industry    String?
-  companySize String?  @map("company_size")
+  companySize String?   @map("company_size")
   website     String?
   country     String?
   contacts    Contact[]
   leads       Lead[]
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("companies")
 }
 
 model Contact {
-  id              Int      @id @default(autoincrement())
-  companyId       Int?     @map("company_id")
-  company         Company? @relation(fields: [companyId], references: [id])
-  firstName       String?  @map("first_name")
-  lastName        String?  @map("last_name")
-  jobTitle        String?  @map("job_title")
-  email           String?
-  phone           String?
-  whatsapp        String?
-  country         String?
-  city            String?
-  consentWhatsapp Boolean  @default(false) @map("consent_whatsapp")
-  consentEmail    Boolean  @default(false) @map("consent_email")
-  visitors        Visitor[]
-  conversations   Conversation[]
-  leads           Lead[]
+  id               Int               @id @default(autoincrement())
+  companyId        Int?              @map("company_id")
+  company          Company?          @relation(fields: [companyId], references: [id])
+  firstName        String?           @map("first_name")
+  lastName         String?           @map("last_name")
+  jobTitle         String?           @map("job_title")
+  email            String?
+  phone            String?
+  whatsapp         String?
+  country          String?
+  city             String?
+  consentWhatsapp  Boolean           @default(false) @map("consent_whatsapp")
+  consentEmail     Boolean           @default(false) @map("consent_email")
+  visitors         Visitor[]
+  conversations    Conversation[]
+  leads            Lead[]
   conversionEvents ConversionEvent[]
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
 
   @@map("contacts")
 }
 
 model Visitor {
-  id            Int       @id @default(autoincrement())
-  externalId    String    @unique @map("external_id")
-  contactId     Int?      @map("contact_id")
-  contact       Contact?  @relation(fields: [contactId], references: [id])
-  firstSeenAt   DateTime? @map("first_seen_at")
-  lastSeenAt    DateTime? @map("last_seen_at")
-  sessionsCount Int       @default(0) @map("sessions_count")
-  sessions      VisitorSession[]
-  conversations Conversation[]
+  id               Int               @id @default(autoincrement())
+  externalId       String            @unique @map("external_id")
+  contactId        Int?              @map("contact_id")
+  contact          Contact?          @relation(fields: [contactId], references: [id])
+  firstSeenAt      DateTime?         @map("first_seen_at")
+  lastSeenAt       DateTime?         @map("last_seen_at")
+  sessionsCount    Int               @default(0) @map("sessions_count")
+  sessions         VisitorSession[]
+  conversations    Conversation[]
   conversionEvents ConversionEvent[]
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
 
   @@map("visitors")
 }
 
 model VisitorSession {
-  id          Int      @id @default(autoincrement())
-  visitorId   Int      @map("visitor_id")
-  visitor     Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-  landingPage String?  @map("landing_page")
-  currentPage String?  @map("current_page")
+  id          Int       @id @default(autoincrement())
+  visitorId   Int       @map("visitor_id")
+  visitor     Visitor   @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  landingPage String?   @map("landing_page")
+  currentPage String?   @map("current_page")
   referrer    String?
-  utmSource   String?  @map("utm_source")
-  utmMedium   String?  @map("utm_medium")
-  utmCampaign String?  @map("utm_campaign")
-  utmContent  String?  @map("utm_content")
-  utmTerm     String?  @map("utm_term")
+  utmSource   String?   @map("utm_source")
+  utmMedium   String?   @map("utm_medium")
+  utmCampaign String?   @map("utm_campaign")
+  utmContent  String?   @map("utm_content")
+  utmTerm     String?   @map("utm_term")
   device      String?
   browser     String?
   language    String?
   startedAt   DateTime? @map("started_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("visitor_sessions")
 }
@@ -90,44 +90,44 @@ model VisitorSession {
 // ── Conversations ───────────────────────────────────────────────────────
 
 model Conversation {
-  id              Int       @id @default(autoincrement())
-  externalId      String    @unique @map("external_id")
-  visitorId       Int?      @map("visitor_id")
-  visitor         Visitor?  @relation(fields: [visitorId], references: [id])
-  contactId       Int?      @map("contact_id")
-  contact         Contact?  @relation(fields: [contactId], references: [id])
-  channel         String    @default("website")
-  stage           String    @default("new")
-  status          String    @default("open")
-  landingPage     String?   @map("landing_page")
-  currentPage     String?   @map("current_page")
-  lastMessageAt   DateTime? @map("last_message_at")
-  messages        Message[]
-  summaries       ConversationSummary[]
-  leads           Lead[]
+  id               Int                   @id @default(autoincrement())
+  externalId       String                @unique @map("external_id")
+  visitorId        Int?                  @map("visitor_id")
+  visitor          Visitor?              @relation(fields: [visitorId], references: [id])
+  contactId        Int?                  @map("contact_id")
+  contact          Contact?              @relation(fields: [contactId], references: [id])
+  channel          String                @default("website")
+  stage            String                @default("new")
+  status           String                @default("open")
+  landingPage      String?               @map("landing_page")
+  currentPage      String?               @map("current_page")
+  lastMessageAt    DateTime?             @map("last_message_at")
+  messages         Message[]
+  summaries        ConversationSummary[]
+  leads            Lead[]
   intentDetections IntentDetection[]
-  agentRuns       AgentRun[]
+  agentRuns        AgentRun[]
   conversionEvents ConversionEvent[]
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
 
   @@map("conversations")
 }
 
 model Message {
-  id                Int          @id @default(autoincrement())
-  conversationId    Int          @map("conversation_id")
-  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  role              String
-  content           String       @db.Text
-  structuredOutput  Json?        @map("structured_output")
-  promptVersionId   Int?         @map("prompt_version_id")
-  model             String?
-  inputTokens       Int?         @map("input_tokens")
-  outputTokens      Int?         @map("output_tokens")
-  latencyMs         Int?         @map("latency_ms")
-  createdAt         DateTime     @default(now()) @map("created_at")
-  updatedAt         DateTime     @updatedAt @map("updated_at")
+  id               Int          @id @default(autoincrement())
+  conversationId   Int          @map("conversation_id")
+  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role             String
+  content          String       @db.Text
+  structuredOutput Json?        @map("structured_output")
+  promptVersionId  Int?         @map("prompt_version_id")
+  model            String?
+  inputTokens      Int?         @map("input_tokens")
+  outputTokens     Int?         @map("output_tokens")
+  latencyMs        Int?         @map("latency_ms")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
 
   @@map("messages")
 }
@@ -147,14 +147,14 @@ model ConversationSummary {
 // ── Intent ──────────────────────────────────────────────────────────────
 
 model Intent {
-  id                 Int               @id @default(autoincrement())
-  key                String            @unique
-  label              String
-  category           String?
-  primaryDetections  IntentDetection[] @relation("PrimaryIntent")
+  id                  Int               @id @default(autoincrement())
+  key                 String            @unique
+  label               String
+  category            String?
+  primaryDetections   IntentDetection[] @relation("PrimaryIntent")
   secondaryDetections IntentDetection[] @relation("SecondaryIntent")
-  createdAt          DateTime          @default(now()) @map("created_at")
-  updatedAt          DateTime          @updatedAt @map("updated_at")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
 
   @@map("intents")
 }
@@ -180,22 +180,22 @@ model IntentDetection {
 // ── Leads ───────────────────────────────────────────────────────────────
 
 model Lead {
-  id              Int           @id @default(autoincrement())
-  contactId       Int           @map("contact_id")
-  contact         Contact       @relation(fields: [contactId], references: [id])
-  companyId       Int?          @map("company_id")
-  company         Company?      @relation(fields: [companyId], references: [id])
-  conversationId  Int?          @unique @map("conversation_id")
-  conversation    Conversation? @relation(fields: [conversationId], references: [id])
-  source          String?
-  serviceInterest String?       @map("service_interest")
-  stage           String        @default("new")
-  priority        String?
-  owner           String?
-  scores          LeadScore[]
+  id               Int               @id @default(autoincrement())
+  contactId        Int               @map("contact_id")
+  contact          Contact           @relation(fields: [contactId], references: [id])
+  companyId        Int?              @map("company_id")
+  company          Company?          @relation(fields: [companyId], references: [id])
+  conversationId   Int?              @unique @map("conversation_id")
+  conversation     Conversation?     @relation(fields: [conversationId], references: [id])
+  source           String?
+  serviceInterest  String?           @map("service_interest")
+  stage            String            @default("new")
+  priority         String?
+  owner            String?
+  scores           LeadScore[]
   conversionEvents ConversionEvent[]
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
 
   @@map("leads")
 }
@@ -230,13 +230,13 @@ model LeadScoreComponent {
 // ── Prompt versioning ───────────────────────────────────────────────────
 
 model AiPrompt {
-  id          Int             @id @default(autoincrement())
-  agentKey    String          @unique @map("agent_key")
+  id          Int               @id @default(autoincrement())
+  agentKey    String            @unique @map("agent_key")
   name        String
-  description String?         @db.Text
+  description String?           @db.Text
   versions    AiPromptVersion[]
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
 
   @@map("ai_prompts")
 }
@@ -262,20 +262,20 @@ model AiPromptVersion {
 // ── Knowledge base ──────────────────────────────────────────────────────
 
 model KnowledgeDocument {
-  id            Int       @id @default(autoincrement())
+  id            Int              @id @default(autoincrement())
   title         String
-  slug          String    @unique
+  slug          String           @unique
   category      String
-  content       String    @db.Text
+  content       String           @db.Text
   source        String?
-  version       Int       @default(1)
-  status        String    @default("draft")
-  effectiveDate DateTime? @map("effective_date")
-  expiresAt     DateTime? @map("expires_at")
-  approvedBy    String?   @map("approved_by")
+  version       Int              @default(1)
+  status        String           @default("draft")
+  effectiveDate DateTime?        @map("effective_date")
+  expiresAt     DateTime?        @map("expires_at")
+  approvedBy    String?          @map("approved_by")
   chunks        KnowledgeChunk[]
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
 
   @@index([category])
   @@map("knowledge_documents")
@@ -296,22 +296,22 @@ model KnowledgeChunk {
 // ── Observability ───────────────────────────────────────────────────────
 
 model AgentRun {
-  id              Int          @id @default(autoincrement())
-  conversationId  Int          @map("conversation_id")
-  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  messageId       Int?         @map("message_id")
-  agentKey        String       @map("agent_key")
-  promptVersionId Int?         @map("prompt_version_id")
+  id              Int           @id @default(autoincrement())
+  conversationId  Int           @map("conversation_id")
+  conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  messageId       Int?          @map("message_id")
+  agentKey        String        @map("agent_key")
+  promptVersionId Int?          @map("prompt_version_id")
   model           String?
-  inputTokens     Int?         @map("input_tokens")
-  outputTokens    Int?         @map("output_tokens")
-  latencyMs       Int?         @map("latency_ms")
-  status          String       @default("success")
-  error           String?      @db.Text
+  inputTokens     Int?          @map("input_tokens")
+  outputTokens    Int?          @map("output_tokens")
+  latencyMs       Int?          @map("latency_ms")
+  status          String        @default("success")
+  error           String?       @db.Text
   actions         AgentAction[]
   toolCalls       ToolCall[]
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
 
   @@map("agent_runs")
 }
@@ -381,39 +381,39 @@ model SystemSetting {
 // ═══════════════════════════════════════════════════════════════════════
 
 model OsAgent {
-  id               Int      @id @default(autoincrement())
-  orgId            String   @default("ravesoft") @map("org_id")
-  key              String   @unique
+  id               Int              @id @default(autoincrement())
+  orgId            String           @default("ravesoft") @map("org_id")
+  key              String           @unique
   name             String
-  description      String?  @db.Text
+  description      String?          @db.Text
   department       String
   role             String
-  parentKey        String?  @map("parent_key")
-  isDirector       Boolean  @default(false) @map("is_director")
+  parentKey        String?          @map("parent_key")
+  isDirector       Boolean          @default(false) @map("is_director")
   handler          String?
-  systemPrompt     String   @db.Text @map("system_prompt")
-  status           String   @default("DRAFT")
-  autonomy         String   @default("ASSISTED")
-  version          Int      @default(1)
-  modelTier        String   @default("fast") @map("model_tier")
-  temperature      Float    @default(0.3)
+  systemPrompt     String           @map("system_prompt") @db.Text
+  status           String           @default("DRAFT")
+  autonomy         String           @default("ASSISTED")
+  version          Int              @default(1)
+  modelTier        String           @default("fast") @map("model_tier")
+  temperature      Float            @default(0.3)
   tools            Json
-  knowledgeSources Json     @map("knowledge_sources")
-  triggerTypes     Json     @map("trigger_types")
-  approvalRules    Json     @map("approval_rules")
-  inputSchema      Json?    @map("input_schema")
-  outputSchema     Json?    @map("output_schema")
-  budgetLimitUsd   Float    @default(25) @map("budget_limit_usd")
-  maxExecutionSec  Int      @default(60) @map("max_execution_sec")
-  maxRetries       Int      @default(3) @map("max_retries")
-  heartbeatMinutes Int?     @map("heartbeat_minutes")
-  lastHeartbeatAt  DateTime? @map("last_heartbeat_at")
+  knowledgeSources Json             @map("knowledge_sources")
+  triggerTypes     Json             @map("trigger_types")
+  approvalRules    Json             @map("approval_rules")
+  inputSchema      Json?            @map("input_schema")
+  outputSchema     Json?            @map("output_schema")
+  budgetLimitUsd   Float            @default(25) @map("budget_limit_usd")
+  maxExecutionSec  Int              @default(60) @map("max_execution_sec")
+  maxRetries       Int              @default(3) @map("max_retries")
+  heartbeatMinutes Int?             @map("heartbeat_minutes")
+  lastHeartbeatAt  DateTime?        @map("last_heartbeat_at")
   owner            String?
-  isDemo           Boolean  @default(false) @map("is_demo")
+  isDemo           Boolean          @default(false) @map("is_demo")
   versions         OsAgentVersion[]
   tasks            OsTask[]
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
 
   @@index([orgId, department])
   @@index([orgId, status])
@@ -435,39 +435,39 @@ model OsAgentVersion {
 }
 
 model OsTask {
-  id               Int       @id @default(autoincrement())
-  orgId            String    @default("ravesoft") @map("org_id")
-  agentId          Int       @map("agent_id")
-  agent            OsAgent   @relation(fields: [agentId], references: [id])
+  id               Int          @id @default(autoincrement())
+  orgId            String       @default("ravesoft") @map("org_id")
+  agentId          Int          @map("agent_id")
+  agent            OsAgent      @relation(fields: [agentId], references: [id])
   department       String
   title            String
-  priority         String    @default("MEDIUM")
-  priorityScore    Float     @default(0) @map("priority_score")
-  status           String    @default("QUEUED")
+  priority         String       @default("MEDIUM")
+  priorityScore    Float        @default(0) @map("priority_score")
+  status           String       @default("QUEUED")
   input            Json?
   output           Json?
-  error            String?   @db.Text
-  retryCount       Int       @default(0) @map("retry_count")
-  costUsd          Float     @default(0) @map("cost_usd")
-  inputTokens      Int       @default(0) @map("input_tokens")
-  outputTokens     Int       @default(0) @map("output_tokens")
-  approvalRequired Boolean   @default(false) @map("approval_required")
-  approvedBy       String?   @map("approved_by")
-  deadLetter       Boolean   @default(false) @map("dead_letter")
-  idempotencyKey   String?   @unique @map("idempotency_key")
-  runAfter         DateTime  @default(now()) @map("run_after")
-  lockedAt         DateTime? @map("locked_at")
-  parentTaskId     Int?      @map("parent_task_id")
-  createdBy        String    @map("created_by")
-  opportunityId    Int?      @map("opportunity_id")
-  customerId       Int?      @map("customer_id")
-  isDemo           Boolean   @default(false) @map("is_demo")
-  startedAt        DateTime? @map("started_at")
-  completedAt      DateTime? @map("completed_at")
+  error            String?      @db.Text
+  retryCount       Int          @default(0) @map("retry_count")
+  costUsd          Float        @default(0) @map("cost_usd")
+  inputTokens      Int          @default(0) @map("input_tokens")
+  outputTokens     Int          @default(0) @map("output_tokens")
+  approvalRequired Boolean      @default(false) @map("approval_required")
+  approvedBy       String?      @map("approved_by")
+  deadLetter       Boolean      @default(false) @map("dead_letter")
+  idempotencyKey   String?      @unique @map("idempotency_key")
+  runAfter         DateTime     @default(now()) @map("run_after")
+  lockedAt         DateTime?    @map("locked_at")
+  parentTaskId     Int?         @map("parent_task_id")
+  createdBy        String       @map("created_by")
+  opportunityId    Int?         @map("opportunity_id")
+  customerId       Int?         @map("customer_id")
+  isDemo           Boolean      @default(false) @map("is_demo")
+  startedAt        DateTime?    @map("started_at")
+  completedAt      DateTime?    @map("completed_at")
   traces           OsTrace[]
   approvals        OsApproval[]
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
 
   @@index([orgId, status, runAfter])
   @@index([agentId, createdAt])
@@ -490,75 +490,75 @@ model OsTrace {
 }
 
 model OsApproval {
-  id               Int       @id @default(autoincrement())
-  orgId            String    @default("ravesoft") @map("org_id")
-  taskId           Int?      @map("task_id")
-  task             OsTask?   @relation(fields: [taskId], references: [id])
-  kind             String
-  title            String
-  objective        String    @db.Text
-  context          String?   @db.Text
-  options          Json?
-  recommendation   String    @db.Text
-  expectedImpact   String?   @db.Text @map("expected_impact")
-  confidence       Float?
-  risks            String?   @db.Text
-  requiredRole     String    @default("CEO") @map("required_role")
-  status           String    @default("PENDING")
-  action           Json?
-  requestedBy      String    @map("requested_by")
-  decidedBy        String?   @map("decided_by")
-  decisionNote     String?   @db.Text @map("decision_note")
-  decidedAt        DateTime? @map("decided_at")
-  executionResult  Json?     @map("execution_result")
-  isDemo           Boolean   @default(false) @map("is_demo")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  id              Int       @id @default(autoincrement())
+  orgId           String    @default("ravesoft") @map("org_id")
+  taskId          Int?      @map("task_id")
+  task            OsTask?   @relation(fields: [taskId], references: [id])
+  kind            String
+  title           String
+  objective       String    @db.Text
+  context         String?   @db.Text
+  options         Json?
+  recommendation  String    @db.Text
+  expectedImpact  String?   @map("expected_impact") @db.Text
+  confidence      Float?
+  risks           String?   @db.Text
+  requiredRole    String    @default("CEO") @map("required_role")
+  status          String    @default("PENDING")
+  action          Json?
+  requestedBy     String    @map("requested_by")
+  decidedBy       String?   @map("decided_by")
+  decisionNote    String?   @map("decision_note") @db.Text
+  decidedAt       DateTime? @map("decided_at")
+  executionResult Json?     @map("execution_result")
+  isDemo          Boolean   @default(false) @map("is_demo")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@index([orgId, status])
   @@map("os_approvals")
 }
 
 model OsOpportunity {
-  id               Int       @id @default(autoincrement())
-  orgId            String    @default("ravesoft") @map("org_id")
-  companyName      String    @map("company_name")
-  industry         String?
-  website          String?
-  country          String?
-  contactName      String?   @map("contact_name")
-  contactEmail     String?   @map("contact_email")
-  contactPhone     String?   @map("contact_phone")
-  businessUnit     String    @default("KOVABOT") @map("business_unit")
-  revenueEngine    String    @default("SAAS") @map("revenue_engine")
-  stage            String    @default("NEW")
-  score            Int?
-  scoreBreakdown   Json?     @map("score_breakdown")
-  signals          Json?
-  recommendedEmployees Json? @map("recommended_employees")
-  painPoints       Json?     @map("pain_points")
-  valueProposition String?   @db.Text @map("value_proposition")
-  suggestedOffer   String?   @map("suggested_offer")
-  confidence       Float?
-  dealValueCents   Int       @default(0) @map("deal_value_cents")
-  probability      Float     @default(0)
-  expectedCloseAt  DateTime? @map("expected_close_at")
-  ownerUser        String?   @map("owner_user")
-  ownerAgentKey    String?   @map("owner_agent_key")
-  nextAction       String?   @map("next_action")
-  nextFollowUpAt   DateTime? @map("next_follow_up_at")
-  lastContactAt    DateTime? @map("last_contact_at")
-  qualification    Json?
-  notes            String?   @db.Text
-  customFields     Json?     @map("custom_fields")
-  source           String?
-  leadId           Int?      @map("lead_id")
-  isDemo           Boolean   @default(false) @map("is_demo")
-  activities       OsActivity[]
-  outreach         OsOutreach[]
-  customer         OsCustomer?
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  id                   Int          @id @default(autoincrement())
+  orgId                String       @default("ravesoft") @map("org_id")
+  companyName          String       @map("company_name")
+  industry             String?
+  website              String?
+  country              String?
+  contactName          String?      @map("contact_name")
+  contactEmail         String?      @map("contact_email")
+  contactPhone         String?      @map("contact_phone")
+  businessUnit         String       @default("KOVABOT") @map("business_unit")
+  revenueEngine        String       @default("SAAS") @map("revenue_engine")
+  stage                String       @default("NEW")
+  score                Int?
+  scoreBreakdown       Json?        @map("score_breakdown")
+  signals              Json?
+  recommendedEmployees Json?        @map("recommended_employees")
+  painPoints           Json?        @map("pain_points")
+  valueProposition     String?      @map("value_proposition") @db.Text
+  suggestedOffer       String?      @map("suggested_offer")
+  confidence           Float?
+  dealValueCents       Int          @default(0) @map("deal_value_cents")
+  probability          Float        @default(0)
+  expectedCloseAt      DateTime?    @map("expected_close_at")
+  ownerUser            String?      @map("owner_user")
+  ownerAgentKey        String?      @map("owner_agent_key")
+  nextAction           String?      @map("next_action")
+  nextFollowUpAt       DateTime?    @map("next_follow_up_at")
+  lastContactAt        DateTime?    @map("last_contact_at")
+  qualification        Json?
+  notes                String?      @db.Text
+  customFields         Json?        @map("custom_fields")
+  source               String?
+  leadId               Int?         @map("lead_id")
+  isDemo               Boolean      @default(false) @map("is_demo")
+  activities           OsActivity[]
+  outreach             OsOutreach[]
+  customer             OsCustomer?
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
 
   @@index([orgId, stage])
   @@index([orgId, score])
@@ -598,7 +598,7 @@ model OsOutreach {
   error         String?       @db.Text
   sentAt        DateTime?     @map("sent_at")
   followUpAt    DateTime?     @map("follow_up_at")
-  responseText  String?       @db.Text @map("response_text")
+  responseText  String?       @map("response_text") @db.Text
   respondedAt   DateTime?     @map("responded_at")
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
@@ -620,51 +620,51 @@ model OsOptOut {
 }
 
 model OsCustomer {
-  id             Int            @id @default(autoincrement())
-  orgId          String         @default("ravesoft") @map("org_id")
-  opportunityId  Int?           @unique @map("opportunity_id")
-  opportunity    OsOpportunity? @relation(fields: [opportunityId], references: [id])
-  name           String
-  businessUnit   String         @map("business_unit")
-  revenueEngine  String         @default("SAAS") @map("revenue_engine")
-  plan           String?
-  status         String         @default("ONBOARDING")
-  health         String         @default("YELLOW")
-  healthReasons  Json?          @map("health_reasons")
-  mrrCents       Int            @default(0) @map("mrr_cents")
-  onboarding     Json?
-  lastActiveAt   DateTime?      @map("last_active_at")
-  usage30d       Int?           @map("usage_30d")
-  usagePrev30d   Int?           @map("usage_prev_30d")
-  externalRef    String?        @map("external_ref")
-  billingRef     String?        @map("billing_ref")
-  isDemo         Boolean        @default(false) @map("is_demo")
-  revenue        OsRevenueEntry[]
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @updatedAt @map("updated_at")
+  id            Int              @id @default(autoincrement())
+  orgId         String           @default("ravesoft") @map("org_id")
+  opportunityId Int?             @unique @map("opportunity_id")
+  opportunity   OsOpportunity?   @relation(fields: [opportunityId], references: [id])
+  name          String
+  businessUnit  String           @map("business_unit")
+  revenueEngine String           @default("SAAS") @map("revenue_engine")
+  plan          String?
+  status        String           @default("ONBOARDING")
+  health        String           @default("YELLOW")
+  healthReasons Json?            @map("health_reasons")
+  mrrCents      Int              @default(0) @map("mrr_cents")
+  onboarding    Json?
+  lastActiveAt  DateTime?        @map("last_active_at")
+  usage30d      Int?             @map("usage_30d")
+  usagePrev30d  Int?             @map("usage_prev_30d")
+  externalRef   String?          @map("external_ref")
+  billingRef    String?          @map("billing_ref")
+  isDemo        Boolean          @default(false) @map("is_demo")
+  revenue       OsRevenueEntry[]
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
 
   @@index([orgId, status])
   @@map("os_customers")
 }
 
 model OsRevenueEntry {
-  id            Int         @id @default(autoincrement())
-  orgId         String      @default("ravesoft") @map("org_id")
-  customerId    Int?        @map("customer_id")
-  customer      OsCustomer? @relation(fields: [customerId], references: [id])
-  businessUnit  String      @map("business_unit")
-  revenueEngine String      @map("revenue_engine")
-  kind          String
-  amountCents   Int         @map("amount_cents")
-  currency      String      @default("USD")
-  description   String?
-  source        String
-  externalRef   String?     @map("external_ref")
-  recurringEndsAt DateTime? @map("recurring_ends_at")
-  periodMonths  Int         @default(1) @map("period_months")
-  occurredAt    DateTime    @map("occurred_at")
-  isDemo        Boolean     @default(false) @map("is_demo")
-  createdAt     DateTime    @default(now()) @map("created_at")
+  id              Int         @id @default(autoincrement())
+  orgId           String      @default("ravesoft") @map("org_id")
+  customerId      Int?        @map("customer_id")
+  customer        OsCustomer? @relation(fields: [customerId], references: [id])
+  businessUnit    String      @map("business_unit")
+  revenueEngine   String      @map("revenue_engine")
+  kind            String
+  amountCents     Int         @map("amount_cents")
+  currency        String      @default("USD")
+  description     String?
+  source          String
+  externalRef     String?     @map("external_ref")
+  recurringEndsAt DateTime?   @map("recurring_ends_at")
+  periodMonths    Int         @default(1) @map("period_months")
+  occurredAt      DateTime    @map("occurred_at")
+  isDemo          Boolean     @default(false) @map("is_demo")
+  createdAt       DateTime    @default(now()) @map("created_at")
 
   @@unique([orgId, source, externalRef])
   @@index([orgId, occurredAt])
@@ -672,40 +672,40 @@ model OsRevenueEntry {
 }
 
 model OsBrainEntry {
-  id         Int      @id @default(autoincrement())
-  orgId      String   @default("ravesoft") @map("org_id")
-  section    String
-  title      String
-  content    String   @db.Text
-  tags       Json?
-  sourceUrl  String?  @map("source_url")
-  allowedDepartments Json? @map("allowed_departments")
-  version    Int      @default(1)
-  isDemo     Boolean  @default(false) @map("is_demo")
-  createdBy  String   @map("created_by")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id                 Int      @id @default(autoincrement())
+  orgId              String   @default("ravesoft") @map("org_id")
+  section            String
+  title              String
+  content            String   @db.Text
+  tags               Json?
+  sourceUrl          String?  @map("source_url")
+  allowedDepartments Json?    @map("allowed_departments")
+  version            Int      @default(1)
+  isDemo             Boolean  @default(false) @map("is_demo")
+  createdBy          String   @map("created_by")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@index([orgId, section])
   @@map("os_brain_entries")
 }
 
 model OsAuditLog {
-  id           Int      @id @default(autoincrement())
-  orgId        String   @default("ravesoft") @map("org_id")
-  actor        String
-  actorType    String   @map("actor_type")
-  action       String
-  resource     String
-  resourceId   String?  @map("resource_id")
-  input        Json?
-  output       Json?
-  ip           String?
-  approvalId   Int?     @map("approval_id")
-  result       String   @default("SUCCESS")
-  prevHash     String   @map("prev_hash")
-  hash         String
-  createdAt    DateTime @default(now()) @map("created_at")
+  id         Int      @id @default(autoincrement())
+  orgId      String   @default("ravesoft") @map("org_id")
+  actor      String
+  actorType  String   @map("actor_type")
+  action     String
+  resource   String
+  resourceId String?  @map("resource_id")
+  input      Json?
+  output     Json?
+  ip         String?
+  approvalId Int?     @map("approval_id")
+  result     String   @default("SUCCESS")
+  prevHash   String   @map("prev_hash")
+  hash       String
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([orgId, createdAt])
   @@index([resource, resourceId])
@@ -729,19 +729,19 @@ model OsAlert {
 }
 
 model OsEmployeeTemplate {
-  id          Int      @id @default(autoincrement())
-  orgId       String   @default("ravesoft") @map("org_id")
-  key         String
-  industry    String
-  name        String
-  role        String
-  description String?  @db.Text
-  keywords    Json
-  employees   Json
-  monthlyPriceUsd Int  @default(0) @map("monthly_price_usd")
-  definition  Json?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id              Int      @id @default(autoincrement())
+  orgId           String   @default("ravesoft") @map("org_id")
+  key             String
+  industry        String
+  name            String
+  role            String
+  description     String?  @db.Text
+  keywords        Json
+  employees       Json
+  monthlyPriceUsd Int      @default(0) @map("monthly_price_usd")
+  definition      Json?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@unique([orgId, key])
   @@map("os_employee_templates")
@@ -781,66 +781,66 @@ model OsProductEvent {
 }
 
 model OsCampaign {
-  id                     Int      @id @default(autoincrement())
-  orgId                  String   @default("ravesoft") @map("org_id")
-  name                   String
-  businessUnit           String   @default("KOVABOT") @map("business_unit")
-  channel                String
-  goal                   String
-  audience               String
-  offer                  String
-  status                 String   @default("PLANNED")
-  budgetCents            Int      @default(0) @map("budget_cents")
-  spendCents             Int      @default(0) @map("spend_cents")
-  expectedLeads          Int      @default(0) @map("expected_leads")
-  expectedCustomers      Int      @default(0) @map("expected_customers")
-  expectedRevenueCents   Int      @default(0) @map("expected_revenue_cents")
-  impressions            Int      @default(0)
-  clicks                 Int      @default(0)
-  leads                  Int      @default(0)
-  customers              Int      @default(0)
-  revenueCents           Int      @default(0) @map("revenue_cents")
-  createdAt              DateTime @default(now()) @map("created_at")
-  updatedAt              DateTime @updatedAt @map("updated_at")
+  id                   Int      @id @default(autoincrement())
+  orgId                String   @default("ravesoft") @map("org_id")
+  name                 String
+  businessUnit         String   @default("KOVABOT") @map("business_unit")
+  channel              String
+  goal                 String
+  audience             String
+  offer                String
+  status               String   @default("PLANNED")
+  budgetCents          Int      @default(0) @map("budget_cents")
+  spendCents           Int      @default(0) @map("spend_cents")
+  expectedLeads        Int      @default(0) @map("expected_leads")
+  expectedCustomers    Int      @default(0) @map("expected_customers")
+  expectedRevenueCents Int      @default(0) @map("expected_revenue_cents")
+  impressions          Int      @default(0)
+  clicks               Int      @default(0)
+  leads                Int      @default(0)
+  customers            Int      @default(0)
+  revenueCents         Int      @default(0) @map("revenue_cents")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
   @@index([orgId, status])
   @@map("os_campaigns")
 }
 
 model OsContent {
-  id         Int      @id @default(autoincrement())
-  slug       String?  @unique
-  excerpt    String?  @db.Text
-  metaDescription String? @map("meta_description")
-  publishedAt DateTime? @map("published_at")
-  orgId      String   @default("ravesoft") @map("org_id")
-  type       String
-  title      String
-  body       String   @db.Text
-  status     String   @default("DRAFT")
-  channel    String?
-  campaignId Int?     @map("campaign_id")
-  generatedBy String  @map("generated_by")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id              Int       @id @default(autoincrement())
+  slug            String?   @unique
+  excerpt         String?   @db.Text
+  metaDescription String?   @map("meta_description")
+  publishedAt     DateTime? @map("published_at")
+  orgId           String    @default("ravesoft") @map("org_id")
+  type            String
+  title           String
+  body            String    @db.Text
+  status          String    @default("DRAFT")
+  channel         String?
+  campaignId      Int?      @map("campaign_id")
+  generatedBy     String    @map("generated_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@index([orgId, status])
   @@map("os_content")
 }
 
 model OsWorkflow {
-  id         Int      @id @default(autoincrement())
-  orgId      String   @default("ravesoft") @map("org_id")
-  key        String
-  name       String
-  trigger    String
-  everyMinutes Int?   @map("every_minutes")
-  definition Json
-  enabled    Boolean  @default(true)
-  lastRunAt  DateTime? @map("last_run_at")
-  runs       OsWorkflowRun[]
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id           Int             @id @default(autoincrement())
+  orgId        String          @default("ravesoft") @map("org_id")
+  key          String
+  name         String
+  trigger      String
+  everyMinutes Int?            @map("every_minutes")
+  definition   Json
+  enabled      Boolean         @default(true)
+  lastRunAt    DateTime?       @map("last_run_at")
+  runs         OsWorkflowRun[]
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
 
   @@unique([orgId, key])
   @@map("os_workflows")
@@ -908,16 +908,16 @@ model OsLearning {
 }
 
 model OsInboundEmail {
-  id                  Int      @id @default(autoincrement())
-  orgId               String   @default("ravesoft") @map("org_id")
-  messageId           String   @map("message_id")
-  fromAddress         String   @map("from_address")
-  subject             String?
-  receivedAt          DateTime @map("received_at")
-  matchedOpportunityId Int?    @map("matched_opportunity_id")
-  action              String
-  snippet             String?  @db.Text
-  createdAt           DateTime @default(now()) @map("created_at")
+  id                   Int      @id @default(autoincrement())
+  orgId                String   @default("ravesoft") @map("org_id")
+  messageId            String   @map("message_id")
+  fromAddress          String   @map("from_address")
+  subject              String?
+  receivedAt           DateTime @map("received_at")
+  matchedOpportunityId Int?     @map("matched_opportunity_id")
+  action               String
+  snippet              String?  @db.Text
+  createdAt            DateTime @default(now()) @map("created_at")
 
   @@unique([orgId, messageId])
   @@index([orgId, createdAt])
@@ -925,20 +925,20 @@ model OsInboundEmail {
 }
 
 model OsPlan {
-  id             Int      @id @default(autoincrement())
-  orgId          String   @default("ravesoft") @map("org_id")
-  key            String
-  name           String
-  description    String?  @db.Text
-  businessUnit   String   @default("KOVABOT") @map("business_unit")
-  revenueEngine  String   @default("SAAS") @map("revenue_engine")
-  amountCents    Int      @map("amount_cents")
-  periodMonths   Int      @default(1) @map("period_months")
-  paystackPlanCode String? @map("paystack_plan_code")
-  assumed        Boolean  @default(false)
-  active         Boolean  @default(true)
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id               Int      @id @default(autoincrement())
+  orgId            String   @default("ravesoft") @map("org_id")
+  key              String
+  name             String
+  description      String?  @db.Text
+  businessUnit     String   @default("KOVABOT") @map("business_unit")
+  revenueEngine    String   @default("SAAS") @map("revenue_engine")
+  amountCents      Int      @map("amount_cents")
+  periodMonths     Int      @default(1) @map("period_months")
+  paystackPlanCode String?  @map("paystack_plan_code")
+  assumed          Boolean  @default(false)
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@unique([orgId, key])
   @@map("os_plans")
@@ -963,33 +963,33 @@ model GrIcpProfile {
 }
 
 model GrCompany {
-  id               Int       @id @default(autoincrement())
-  orgId            String    @default("ravesoft") @map("org_id")
-  profileKey       String    @map("profile_key")
+  id               Int          @id @default(autoincrement())
+  orgId            String       @default("ravesoft") @map("org_id")
+  profileKey       String       @map("profile_key")
   name             String
   domain           String
   website          String?
   category         String?
   country          String?
-  serviceArea      String?   @map("service_area")
+  serviceArea      String?      @map("service_area")
   phone            String?
-  status           String    @default("DISCOVERED")
-  fitScore         Int?      @map("fit_score")
-  readinessScore   Int?      @map("readiness_score")
-  scoreBreakdown   Json?     @map("score_breakdown")
+  status           String       @default("DISCOVERED")
+  fitScore         Int?         @map("fit_score")
+  readinessScore   Int?         @map("readiness_score")
+  scoreBreakdown   Json?        @map("score_breakdown")
   confidence       Float?
-  useCase          String?   @map("use_case")
-  decisionReason   String?   @db.Text @map("decision_reason")
-  needsReview      Boolean   @default(false) @map("needs_review")
-  outreachDisabled Boolean   @default(false) @map("outreach_disabled")
-  researchedAt     DateTime? @map("researched_at")
-  opportunityId    Int?      @map("opportunity_id")
+  useCase          String?      @map("use_case")
+  decisionReason   String?      @map("decision_reason") @db.Text
+  needsReview      Boolean      @default(false) @map("needs_review")
+  outreachDisabled Boolean      @default(false) @map("outreach_disabled")
+  researchedAt     DateTime?    @map("researched_at")
+  opportunityId    Int?         @map("opportunity_id")
   evidence         GrEvidence[]
   people           GrPerson[]
   contacts         GrContact[]
   drafts           GrDraft[]
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
 
   @@unique([orgId, domain])
   @@index([orgId, status])
@@ -997,31 +997,31 @@ model GrCompany {
 }
 
 model GrEvidence {
-  id         Int        @id @default(autoincrement())
-  companyId  Int        @map("company_id")
-  company    GrCompany  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  personId   Int?       @map("person_id")
+  id         Int       @id @default(autoincrement())
+  companyId  Int       @map("company_id")
+  company    GrCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  personId   Int?      @map("person_id")
   signal     String
-  claim      String     @db.Text
-  sourceUrl  String     @db.Text @map("source_url")
-  verified   Boolean    @default(false)
-  capturedAt DateTime   @default(now()) @map("captured_at")
+  claim      String    @db.Text
+  sourceUrl  String    @map("source_url") @db.Text
+  verified   Boolean   @default(false)
+  capturedAt DateTime  @default(now()) @map("captured_at")
 
   @@index([companyId])
   @@map("gr_evidence")
 }
 
 model GrPerson {
-  id         Int       @id @default(autoincrement())
-  companyId  Int       @map("company_id")
-  company    GrCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id         Int         @id @default(autoincrement())
+  companyId  Int         @map("company_id")
+  company    GrCompany   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   name       String
   role       String
-  sourceUrl  String    @db.Text @map("source_url")
-  verified   Boolean   @default(false)
+  sourceUrl  String      @map("source_url") @db.Text
+  verified   Boolean     @default(false)
   confidence Float?
   contacts   GrContact[]
-  createdAt  DateTime  @default(now()) @map("created_at")
+  createdAt  DateTime    @default(now()) @map("created_at")
 
   @@index([companyId])
   @@map("gr_people")
@@ -1048,27 +1048,27 @@ model GrContact {
 }
 
 model GrDraft {
-  id            Int       @id @default(autoincrement())
-  companyId     Int       @map("company_id")
-  company       GrCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  contactId     Int       @map("contact_id")
-  sequenceKey   String    @map("sequence_key")
-  touch         Int       @default(1)
-  version       Int       @default(1)
-  toEmail       String    @map("to_email")
-  senderIdentity String   @map("sender_identity")
-  subject       String
-  body          String    @db.Text
-  contentHash   String    @map("content_hash")
-  evidenceIds   Json      @map("evidence_ids")
-  rationale     String?   @db.Text
-  model         String
-  promptVersion String    @map("prompt_version")
-  policyResult  Json      @map("policy_result")
-  status        String    @default("PENDING_APPROVAL")
-  approvals     GrApproval[]
-  outbox        GrOutbox[]
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id             Int          @id @default(autoincrement())
+  companyId      Int          @map("company_id")
+  company        GrCompany    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contactId      Int          @map("contact_id")
+  sequenceKey    String       @map("sequence_key")
+  touch          Int          @default(1)
+  version        Int          @default(1)
+  toEmail        String       @map("to_email")
+  senderIdentity String       @map("sender_identity")
+  subject        String
+  body           String       @db.Text
+  contentHash    String       @map("content_hash")
+  evidenceIds    Json         @map("evidence_ids")
+  rationale      String?      @db.Text
+  model          String
+  promptVersion  String       @map("prompt_version")
+  policyResult   Json         @map("policy_result")
+  status         String       @default("PENDING_APPROVAL")
+  approvals      GrApproval[]
+  outbox         GrOutbox[]
+  createdAt      DateTime     @default(now()) @map("created_at")
 
   @@unique([companyId, sequenceKey, touch, version])
   @@index([status])
@@ -1076,18 +1076,18 @@ model GrDraft {
 }
 
 model GrApproval {
-  id          Int       @id @default(autoincrement())
-  draftId     Int       @map("draft_id")
-  draft       GrDraft   @relation(fields: [draftId], references: [id], onDelete: Cascade)
-  contentHash String    @map("content_hash")
-  toEmail     String    @map("to_email")
-  channel     String    @default("EMAIL")
-  sender      String
-  approvedBy  String    @map("approved_by")
-  approvedAt  DateTime  @default(now()) @map("approved_at")
-  expiresAt   DateTime  @map("expires_at")
-  status      String    @default("ACTIVE")
-  invalidReason String? @map("invalid_reason")
+  id            Int      @id @default(autoincrement())
+  draftId       Int      @map("draft_id")
+  draft         GrDraft  @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  contentHash   String   @map("content_hash")
+  toEmail       String   @map("to_email")
+  channel       String   @default("EMAIL")
+  sender        String
+  approvedBy    String   @map("approved_by")
+  approvedAt    DateTime @default(now()) @map("approved_at")
+  expiresAt     DateTime @map("expires_at")
+  status        String   @default("ACTIVE")
+  invalidReason String?  @map("invalid_reason")
 
   @@index([draftId, status])
   @@map("gr_approvals")
@@ -1129,20 +1129,44 @@ model GrSuppression {
 }
 
 model GrReply {
-  id            Int      @id @default(autoincrement())
-  companyId     Int?     @map("company_id")
-  outboxId      Int?     @map("outbox_id")
-  fromEmail     String   @map("from_email")
-  messageId     String   @map("message_id")
-  body          String   @db.Text
-  category      String
-  confidence    Float
-  nextAction    String   @map("next_action")
-  reviewStatus  String   @default("NEEDS_REVIEW") @map("review_status")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id           Int      @id @default(autoincrement())
+  companyId    Int?     @map("company_id")
+  outboxId     Int?     @map("outbox_id")
+  fromEmail    String   @map("from_email")
+  messageId    String   @map("message_id")
+  body         String   @db.Text
+  category     String
+  confidence   Float
+  nextAction   String   @map("next_action")
+  reviewStatus String   @default("NEEDS_REVIEW") @map("review_status")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   @@unique([messageId])
   @@map("gr_replies")
+}
+
+/// A reply (or proactive follow-up) drafted by the Reply/Conversion agents. Never sent without a human approval of this exact hash.
+model GrReplyDraft {
+  id          Int       @id @default(autoincrement())
+  replyId     Int?      @map("reply_id")
+  companyId   Int       @map("company_id")
+  toEmail     String    @map("to_email")
+  kind        String    @default("REPLY")
+  subject     String
+  body        String    @db.Text
+  contentHash String    @map("content_hash")
+  flags       Json?
+  model       String
+  status      String    @default("PENDING_APPROVAL")
+  approvedBy  String?   @map("approved_by")
+  providerRef String?   @map("provider_ref")
+  error       String?   @db.Text
+  sentAt      DateTime? @map("sent_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([status])
+  @@index([companyId])
+  @@map("gr_reply_drafts")
 }
 
 model GrProviderUsage {
