@@ -326,7 +326,7 @@ export default function ChatWidget() {
   return (
     <>
       <div
-        className={cn("fixed right-6 z-50", isOpen && "hidden")}
+        className={cn("rave-chat-launcher fixed right-6 z-50", isOpen && "hidden")}
         style={{ bottom: "var(--fab-bottom-offset, 1.5rem)" }}
       >
         <span

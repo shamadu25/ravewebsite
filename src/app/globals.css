@@ -373,3 +373,8 @@
 .card-glow-hover:hover::after {
   opacity: 1;
 }
+
+/* The floating chat launcher must not sit on top of the full-screen mobile navigation. */
+body[data-mobile-nav-open="true"] .rave-chat-launcher {
+  visibility: hidden;
+}

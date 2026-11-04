@@ -23,14 +23,38 @@ export const COMPANY = {
   },
 };
 
-export const NAV_LINKS = [
+export interface NavLink {
+  label: string;
+  href: string;
+  /** Opens a dropdown (desktop) / accordion (mobile) of child links. */
+  menu?: "services" | "products";
+}
+
+export const NAV_LINKS: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
-  { label: "Services", href: "/services" },
-  { label: "Products", href: "/products" },
+  { label: "Services", href: "/services", menu: "services" },
+  { label: "Products", href: "/products", menu: "products" },
+  { label: "AI Solutions", href: "/ai-employee" },
   { label: "Case Studies", href: "/case-studies" },
   { label: "Industries", href: "/industries" },
   { label: "Blog", href: "/blog" },
+];
+
+export interface NavChild {
+  label: string;
+  href: string;
+  desc: string;
+}
+
+/** Children of the Services menu (shown in the header dropdown and the mobile accordion). */
+export const NAV_SERVICES: NavChild[] = [
+  { label: "Custom Software", href: "/services/custom-software", desc: "Tailored systems for your operations" },
+  { label: "SaaS Development", href: "/services/saas-development", desc: "Build scalable software products" },
+  { label: "Website Design", href: "/services/website-design", desc: "Premium, conversion-focused websites" },
+  { label: "Mobile Apps", href: "/services/mobile-apps", desc: "iOS and Android applications" },
+  { label: "Business Automation", href: "/services/business-automation", desc: "AI-powered workflow automation" },
+  { label: "POS & ERP", href: "/services/pos-erp", desc: "Complete business management" },
 ];
 
 export const SERVICES = [
@@ -1010,6 +1034,8 @@ export const FOOTER_LINKS = {
     { label: "Mobile Apps", href: "/services/mobile-apps" },
     { label: "Business Automation", href: "/services/business-automation" },
     { label: "POS & ERP", href: "/services/pos-erp" },
+    { label: "AI Employee", href: "/ai-employee" },
+    { label: "All Services", href: "/services" },
   ],
   products: [
     { label: "CliqPOS", href: "/products/cliqpos" },
@@ -1017,6 +1043,7 @@ export const FOOTER_LINKS = {
     { label: "Hospital System", href: "/products/hospital" },
     { label: "School System", href: "/products/school" },
     { label: "Hotel System", href: "/products/hotel" },
+    { label: "All Products", href: "/products" },
   ],
   company: [
     { label: "About Us", href: "/about" },

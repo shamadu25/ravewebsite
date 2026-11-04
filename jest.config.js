@@ -12,5 +12,6 @@ module.exports = {
     '^.+\\.(ts|tsx|js)$': 'ts-jest',
   },
   transformIgnorePatterns: ['/node_modules/(?!(jose)/)'],
-  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
+  // tests/e2e are Playwright specs (run with `npm run test:e2e`), not Jest tests.
+  testPathIgnorePatterns: ['/node_modules/', '/.next/', '<rootDir>/tests/e2e/'],
 };
