@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/ai/rateLimit";
+import { sharedRateLimit } from "./sharedLimit";
 import { verifyFormToken } from "./formToken";
 import { analyzeContent, type ContentInput } from "./content";
 import { turnstileEnabled, verifyTurnstile } from "./turnstile";
@@ -57,7 +58,7 @@ async function recordBlock(form: string, reason: string, ip: string): Promise<vo
 }
 
 /**
- * Runs every protection in order: IP/global rate limits → honeypot → signed time-trap token → optional
+ * Runs every protection in order: IP/global rate limits (shared across serverless instances) → honeypot → signed time-trap token → optional
  * Turnstile → content heuristics → per-email limit. Returns the first failure.
  */
 export async function guardForm(policy: FormPolicy, input: GuardInput): Promise<GuardResult> {
@@ -67,9 +68,9 @@ export async function guardForm(policy: FormPolicy, input: GuardInput): Promise<
     return r;
   };
 
-  if (rateLimit(`${form}:ip:${input.ip}`, policy.perIp.max, policy.perIp.windowMs))
+  if (await sharedRateLimit(`${form}:ip:${input.ip}`, policy.perIp.max, policy.perIp.windowMs))
     return block({ ok: false, status: 429, reason: "ip_rate", error: "Too many requests. Please try again shortly." });
-  if (rateLimit(`${form}:global`, policy.global.max, policy.global.windowMs))
+  if (await sharedRateLimit(`${form}:global`, policy.global.max, policy.global.windowMs))
     return block({ ok: false, status: 429, reason: "global_rate", error: "We're receiving a lot of requests right now. Please try again in a few minutes." });
   if (input.honeypot) return block({ ok: false, status: 200, reason: "honeypot", error: "", silent: true });
 
@@ -102,7 +103,7 @@ export async function guardForm(policy: FormPolicy, input: GuardInput): Promise<
 
   // Per-email limit LAST, and only for attempts that passed every other check. Otherwise a spammer could
   // burn a real customer's quota by submitting junk with their address (a lock-out attack).
-  if (policy.perEmail && input.email && rateLimit(`${form}:email:${input.email.toLowerCase()}`, policy.perEmail.max, policy.perEmail.windowMs))
+  if (policy.perEmail && input.email && (await sharedRateLimit(`${form}:email:${input.email.toLowerCase()}`, policy.perEmail.max, policy.perEmail.windowMs)))
     return block({ ok: false, status: 429, reason: "email_rate", error: "You've already sent several messages. We'll reply as soon as we can." });
 
   return { ok: true };

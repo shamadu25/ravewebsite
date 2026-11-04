@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, timingSafeEqual } from "crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "crypto";
 
 /**
  * Signed, short-lived form tokens. A real browser loads the page, fetches a token, and submits it
@@ -13,7 +13,10 @@ let ephemeralSecret: string | null = null;
 function secret(): string {
   const s = process.env.FORM_TOKEN_SECRET ?? process.env.ADMIN_SESSION_SECRET ?? process.env.OS_UNSUBSCRIBE_SECRET;
   if (s) return s;
-  // No secret configured: still protects a single long-lived process, and fails closed across restarts.
+  // No dedicated secret: derive a stable one from the database URL (it contains the DB password, so it is
+  // secret and identical on every serverless instance — a random per-instance secret would make tokens
+  // issued by one instance fail verification on another).
+  if (process.env.DATABASE_URL) return createHash("sha256").update(`form-token:${process.env.DATABASE_URL}`).digest("hex");
   return (ephemeralSecret ??= randomBytes(32).toString("hex"));
 }
 
