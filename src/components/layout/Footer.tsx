@@ -55,7 +55,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/ai-employee")) {
+  if (pathname?.startsWith("/ai-employee") || pathname?.startsWith("/get-started")) {
     return <CampaignFooter />;
   }
 

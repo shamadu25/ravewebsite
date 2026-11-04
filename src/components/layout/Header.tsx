@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown, ArrowRight } from "lucide-react";
 import { NAV_LINKS, NAV_SERVICES, PRODUCTS, type NavChild, type NavLink } from "@/lib/data";
+import { trackEvent } from "@/lib/utils";
 
 type MenuKey = NonNullable<NavLink["menu"]>;
 
@@ -202,6 +203,36 @@ export default function Header() {
 
   if (pathname?.startsWith("/ai-employee")) {
     return null;
+  }
+
+  // Paid-ads landing page: a focused header (logo + one CTA) so nothing pulls the visitor away from the form.
+  if (pathname?.startsWith("/get-started")) {
+    return (
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#070B19]/92 backdrop-blur-xl">
+        <a href="#lead-form" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-gray-900">
+          Skip to the enquiry form
+        </a>
+        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-5 sm:px-8">
+          <Link href="/" className="flex shrink-0 items-center" aria-label="RaveSoft Digital Solutions — home">
+            <div className="rounded-xl border border-white/20 bg-white px-2.5 py-1.5">
+              <Image src="/img/logo.png" alt="" width={134} height={80} className="h-7 w-auto" priority />
+            </div>
+          </Link>
+          <a
+            href="#lead-form"
+            onClick={(e) => {
+              e.preventDefault();
+              trackEvent("consultation_cta_click", { location: "header", solution: "none" });
+              document.getElementById("lead-form")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+              window.setTimeout(() => document.getElementById("lead-fullName")?.focus({ preventScroll: true }), 450);
+            }}
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#FFB200] px-4 text-sm font-bold text-[#070B19] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            Free consultation <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </a>
+        </div>
+      </header>
+    );
   }
 
   // The logo already links home, so "Home" is only listed in the mobile menu.

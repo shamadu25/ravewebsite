@@ -22,6 +22,10 @@ export interface FormPolicy {
 export const POLICIES = {
   contact: { form: "contact", minAgeMs: 4_000, perIp: { max: 5, windowMs: 10 * 60_000 }, perEmail: { max: 3, windowMs: 60 * 60_000 }, global: { max: 60, windowMs: 60 * 60_000 } },
   assessment: { form: "assessment", minAgeMs: 6_000, perIp: { max: 5, windowMs: 10 * 60_000 }, perEmail: { max: 3, windowMs: 60 * 60_000 }, global: { max: 60, windowMs: 60 * 60_000 } },
+  // Ad traffic: mobile carriers often put many real visitors behind one public IP, so the per-IP cap is generous;
+  // the per-email, global and content/token checks do the real work. Per-email is 8/hour (not 3) because retries and
+  // genuine second enquiries from the same business must not be blocked.
+  getStarted: { form: "get_started", minAgeMs: 3_000, perIp: { max: 15, windowMs: 10 * 60_000 }, perEmail: { max: 8, windowMs: 60 * 60_000 }, global: { max: 300, windowMs: 60 * 60_000 } },
   chatStart: { form: "chat_start", minAgeMs: 0, perIp: { max: 10, windowMs: 10 * 60_000 }, global: { max: 600, windowMs: 60 * 60_000 }, skipContent: true },
 } satisfies Record<string, FormPolicy>;
 

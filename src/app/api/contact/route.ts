@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { guardForm, POLICIES } from "@/lib/antispam/guard";
 import { clientIp } from "../ai/_shared";
+import { isSameOrigin, readJsonLimited } from "@/lib/antispam/request";
+import { handleLandingLead } from "@/lib/landingLead";
 import { EnquirySchema, persistEnquiry, recordNotifyFailure, type PersistResult } from "@/lib/enquiry";
 
 function escapeHtml(value: string): string {
@@ -20,7 +22,19 @@ function sanitizeHeaderValue(value: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => null);
+  // Cross-site posts are refused; oversized bodies are cut off before parsing.
+  if (!isSameOrigin(req)) return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  const read = await readJsonLimited(req);
+  if (!read.ok) {
+    return NextResponse.json({ error: read.status === 413 ? "Request too large." : "Please check the form and try again." }, { status: read.status });
+  }
+  const body = read.body;
+
+  // The /get-started landing page posts to this same endpoint with formType "get_started".
+  if (body && typeof body === "object" && (body as { formType?: unknown }).formType === "get_started") {
+    return handleLandingLead(req, body);
+  }
+
   const parsed = EnquirySchema.safeParse(body);
 
   if (!parsed.success) {
