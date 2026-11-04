@@ -7,10 +7,10 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV, isActive } from "./nav";
 
-const PRIMARY = ["Home", "AI Employees", "Leads & Sales", "Approvals"];
+const PRIMARY = ["Home", "Leads & Sales", "Live chats", "Approvals"];
 
 /** Phone navigation: four primary destinations plus a drawer for everything else. */
-export default function MobileNav({ approvals }: { approvals: number }) {
+export default function MobileNav({ approvals, chats }: { approvals: number; chats: number }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const primary = NAV.filter((n) => PRIMARY.includes(n.label));
@@ -24,6 +24,7 @@ export default function MobileNav({ approvals }: { approvals: number }) {
             <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={cn("relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px]", active ? "text-white" : "text-[var(--sidebar-muted)]")}>
               <Icon className="h-5 w-5" aria-hidden />{item.label.split(" ")[0]}
               {item.badge === "approvals" && approvals > 0 && <span className="absolute right-1/4 top-1 rounded-full bg-[#f59e0b] px-1.5 text-[10px] font-semibold text-[#080b16]">{approvals}</span>}
+              {item.badge === "chats" && chats > 0 && <span className="absolute right-1/4 top-1 rounded-full bg-[#f59e0b] px-1.5 text-[10px] font-semibold text-[#080b16]"><span className="sr-only">{chats} chats waiting for a reply</span><span aria-hidden>{chats}</span></span>}
             </Link>
           );
         })}
