@@ -123,3 +123,5 @@ export const startOfToday = () => {
 export function stageLabel(stage: string): string {
   return stage.replace(/_/g, " ");
 }
+
+export const hoursAgo = (h: number) => new Date(Date.now() - h * 3_600_000);

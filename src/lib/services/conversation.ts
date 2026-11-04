@@ -83,6 +83,9 @@ export async function startConversation(input: StartConversationInput): Promise<
   return conversation;
 }
 
+/** A single chat may not be used as an unlimited AI pipe; genuine conversations stay far below this. */
+export const MAX_VISITOR_MESSAGES = 150;
+
 export interface SendMessageResult {
   message: string;
   needsHuman: boolean;
@@ -114,10 +117,20 @@ export async function sendMessage(
     },
   });
 
+  const visitorMessages = await prisma.message.count({ where: { conversationId: conversation.id, role: "visitor" } });
+  if (visitorMessages > MAX_VISITOR_MESSAGES) {
+    return {
+      message: "This chat has reached its length limit. Please continue with our team on WhatsApp and we'll pick it up from here.",
+      needsHuman: true,
+      aiUnavailable: false,
+      cta: "whatsapp_continue",
+      contactCaptured: Boolean(conversation.contactId),
+    };
+  }
+
   // Instant team alerts (best-effort, after the response): first message of a new chat, or a
   // visitor waiting on a team member who has already joined.
   const humanActive = conversation.status === HUMAN_ACTIVE;
-  const visitorMessages = await prisma.message.count({ where: { conversationId: conversation.id, role: "visitor" } });
   if (humanActive || visitorMessages === 1) {
     inBackground(() =>
       alertTeam(humanActive ? "visitor_waiting" : "new_chat", {

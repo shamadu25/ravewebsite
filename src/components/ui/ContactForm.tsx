@@ -1,11 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Send, CheckCircle2, Loader2 } from "lucide-react";
 import { PROJECT_TYPES, BUDGET_RANGES, COMPANY } from "@/lib/data";
 import { trackEvent } from "@/lib/utils";
 import { getLandingPage } from "@/lib/ai/session";
+import { prefetchFormToken, takeFormToken } from "@/lib/formToken";
+import TurnstileField from "@/components/ui/TurnstileField";
 
 interface FormState {
   fullName: string;
@@ -50,6 +52,12 @@ function attribution(honeypot: string) {
 export default function ContactForm() {
   const [form, setForm] = useState<FormState>(initialState);
   const honeypotRef = useRef<HTMLInputElement>(null);
+  const turnstileRef = useRef<string | null>(null);
+
+  // Fetch the anti-spam token as soon as the form mounts so it has "aged" by submit time.
+  useEffect(() => {
+    prefetchFormToken();
+  }, []);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errors, setErrors] = useState<Partial<FormState>>({});
 
@@ -69,10 +77,11 @@ export default function ContactForm() {
     if (!validate()) return;
     setStatus("submitting");
 
+    const formToken = await takeFormToken();
     const res = await fetch("/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, ...attribution(honeypotRef.current?.value ?? "") }),
+      body: JSON.stringify({ ...form, ...attribution(honeypotRef.current?.value ?? ""), formToken, turnstileToken: turnstileRef.current }),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -270,6 +279,8 @@ export default function ContactForm() {
           </a>
         </p>
       )}
+
+      <TurnstileField onToken={(t) => { turnstileRef.current = t; }} />
 
       <button
         type="submit"

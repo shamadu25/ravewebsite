@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { isRateLimited } from "@/lib/ai/rateLimit";
+import { guardForm, POLICIES } from "@/lib/antispam/guard";
 import { clientIp } from "../ai/_shared";
 import { EnquirySchema, persistEnquiry, recordNotifyFailure, type PersistResult } from "@/lib/enquiry";
 
@@ -20,10 +20,6 @@ function sanitizeHeaderValue(value: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  if (isRateLimited(`contact:${clientIp(req)}`)) {
-    return NextResponse.json({ error: "Too many requests. Please try again shortly." }, { status: 429 });
-  }
-
   const body = await req.json().catch(() => null);
   const parsed = EnquirySchema.safeParse(body);
 
@@ -31,10 +27,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please check the form and try again." }, { status: 422 });
   }
 
-  const { fullName, companyName, email, phone, projectType, budget, message, website, page } = parsed.data;
+  const { fullName, companyName, email, phone, projectType, budget, message, website, page, formToken, turnstileToken } = parsed.data;
 
-  // Honeypot: a bot filled the hidden field. Pretend success so it does not retry; store/send nothing.
-  if (website) return NextResponse.json({ success: true });
+  // Anti-spam: rate limits (IP, email, global) → honeypot → signed time-trap token → Turnstile (if enabled) → content.
+  const guard = await guardForm(POLICIES.contact, {
+    ip: clientIp(req),
+    email,
+    name: fullName,
+    company: companyName,
+    message,
+    honeypot: website,
+    formToken,
+    turnstileToken,
+  });
+  if (!guard.ok) {
+    // Honeypot hits get a fake success so the bot moves on; everything else gets a real, explained error.
+    if (guard.silent) return NextResponse.json({ success: true });
+    return NextResponse.json({ error: guard.error }, { status: guard.status });
+  }
 
   // 1) Save the lead FIRST so an SMTP outage can never lose an enquiry. Persistence failure is
   //    logged but does not block the email (the email is the established, working channel).

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import AutoRefresh from "@/components/os/AutoRefresh";
-import { LEAD_STAGES, PAGE_SIZE, contactName, stageLabel } from "@/lib/os/chats";
+import { LEAD_STAGES, PAGE_SIZE, contactName, hoursAgo, stageLabel } from "@/lib/os/chats";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +52,8 @@ export default async function AdminLeadsPage({
   }
   const where = and.length ? { AND: and } : {};
 
-  const [leads, total, sources, byStage] = await Promise.all([
+  const since = hoursAgo(24);
+  const [leads, total, sources, byStage, spamBlocked] = await Promise.all([
     prisma.lead.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -68,6 +69,7 @@ export default async function AdminLeadsPage({
     prisma.lead.count({ where }),
     prisma.lead.groupBy({ by: ["source"], _count: { _all: true } }),
     prisma.lead.groupBy({ by: ["stage"], _count: { _all: true } }),
+    prisma.conversionEvent.count({ where: { eventType: "spam_blocked", occurredAt: { gte: since } } }),
   ]);
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -83,7 +85,12 @@ export default async function AdminLeadsPage({
   return (
     <div>
       <AutoRefresh seconds={30} />
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Leads</h1>
+      <div className="flex items-baseline justify-between mb-4">
+        <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
+        <span className="text-xs text-gray-500" title="Honeypot, bad token, spam content and similar blocks on public forms">
+          🛡 {spamBlocked} spam attempt{spamBlocked === 1 ? "" : "s"} blocked in the last 24h
+        </span>
+      </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
         <Link href={link({ source: "all", page: 1 })} className={cn("px-3 py-1.5 rounded-full text-sm border", source === "all" ? "bg-gray-900 text-white border-gray-900" : "bg-white border-gray-200 text-gray-700")}>

@@ -1,3 +1,4 @@
+jest.mock("@/lib/formToken", () => ({ prefetchFormToken: jest.fn(), takeFormToken: jest.fn().mockResolvedValue(null) }));
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ChatWidget from "@/components/ai/ChatWidget";
 

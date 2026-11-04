@@ -17,6 +17,8 @@ export const EnquirySchema = z.object({
   website: z.string().max(500).optional().default(""),
   page: z.string().trim().max(2048).optional().default(""),
   referrer: z.string().trim().max(2048).optional().default(""),
+  formToken: z.string().max(200).nullish(),
+  turnstileToken: z.string().max(4096).nullish(),
   utm: z.record(z.string().max(60), z.string().max(255)).optional().default({}),
 });
 export type Enquiry = z.infer<typeof EnquirySchema>;

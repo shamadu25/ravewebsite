@@ -1,4 +1,5 @@
 import { VisitorContext } from "./session";
+import { takeFormToken } from "@/lib/formToken";
 
 // Same-origin — the AI agent lives in this same Next.js project (src/app/api/ai),
 // not a separate backend/subdomain.
@@ -58,10 +59,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function startConversation(context: VisitorContext): Promise<ConversationResponse> {
+export async function startConversation(context: VisitorContext): Promise<ConversationResponse> {
+  // Signed anti-spam token (see src/lib/antispam). If it cannot be fetched the server decides.
+  const form_token = await takeFormToken();
   return request<ConversationResponse>("/conversations", {
     method: "POST",
-    body: JSON.stringify(context),
+    body: JSON.stringify({ ...context, form_token }),
   });
 }
 

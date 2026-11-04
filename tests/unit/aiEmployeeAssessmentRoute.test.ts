@@ -34,6 +34,10 @@ jest.mock("@/lib/mail/notifications", () => ({
 
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/ai-employee/assessment/route";
+import { issueFormToken } from "@/lib/antispam/formToken";
+
+/** A token that is old enough to pass the anti-spam time trap. */
+const agedToken = () => issueFormToken(Date.now() - 60_000);
 
 function makeRequest(body: unknown): NextRequest {
   return new NextRequest("http://localhost/api/ai-employee/assessment", {
@@ -61,6 +65,7 @@ const VALID_BODY = {
   },
   attribution: { utmSource: "facebook" },
   consent: true,
+  formToken: agedToken(),
 };
 
 describe("POST /api/ai-employee/assessment", () => {
@@ -112,5 +117,32 @@ describe("POST /api/ai-employee/assessment", () => {
 
     expect(mockContactUpdate).toHaveBeenCalled();
     expect(mockContactCreate).not.toHaveBeenCalled();
+  });
+
+  describe("anti-spam", () => {
+    it("rejects a submission without a form token and creates nothing", async () => {
+      const response = await POST(makeRequest({ ...VALID_BODY, formToken: undefined, contact: { ...VALID_BODY.contact, workEmail: "notoken@example.com" } }));
+      expect(response.status).toBe(422);
+      expect(mockLeadCreate).not.toHaveBeenCalled();
+      expect(mockSendAssessmentCompletedNotification).not.toHaveBeenCalled();
+    });
+
+    it("honeypot: fake success for the bot, nothing stored or emailed", async () => {
+      const response = await POST(makeRequest({ ...VALID_BODY, website: "http://spam.example", contact: { ...VALID_BODY.contact, workEmail: "bot@example.com" } }));
+      const json = await response.json();
+      expect(response.status).toBe(201);
+      expect(json.lead_id).toBeNull();
+      expect(json.recommendation).toBeDefined();
+      expect(mockLeadCreate).not.toHaveBeenCalled();
+      expect(mockSendAssessmentCompletedNotification).not.toHaveBeenCalled();
+    });
+
+    it("blocks obvious spam content", async () => {
+      const response = await POST(
+        makeRequest({ ...VALID_BODY, answers: { ...VALID_BODY.answers, successCriteria: "Buy cheap viagra and get SEO services, visit http://a.com http://b.com http://c.com" }, contact: { ...VALID_BODY.contact, workEmail: "spam@example.com" } })
+      );
+      expect(response.status).toBe(422);
+      expect(mockLeadCreate).not.toHaveBeenCalled();
+    });
   });
 });
