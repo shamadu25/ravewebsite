@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import { COMPANY } from "@/lib/data";
+import { prefetchFormToken, takeFormToken } from "@/lib/formToken";
+import TurnstileField from "@/components/ui/TurnstileField";
 import { cn, trackEvent } from "@/lib/utils";
 import { AssessmentAnswers, AssessmentRecommendation } from "@/lib/assessment/types";
 import { captureAttribution, Attribution } from "@/lib/assessment/attribution";
@@ -100,6 +102,13 @@ export default function AssessmentWidget({ id }: { id?: string }) {
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const honeypotRef = useRef<HTMLInputElement>(null);
+  const turnstileRef = useRef<string | null>(null);
+
+  // Fetch the anti-spam token as soon as the widget mounts so it has "aged" by submit time.
+  useEffect(() => {
+    prefetchFormToken();
+  }, []);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [recommendation, setRecommendation] = useState<AssessmentRecommendation | null>(null);
   const [attribution, setAttribution] = useState<Attribution | null>(null);
@@ -227,6 +236,7 @@ export default function AssessmentWidget({ id }: { id?: string }) {
 
     try {
       const currentAttribution = attribution ?? captureAttribution();
+      const formToken = await takeFormToken();
       const response = await fetch("/api/ai-employee/assessment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -241,10 +251,21 @@ export default function AssessmentWidget({ id }: { id?: string }) {
           },
           attribution: currentAttribution,
           consent,
+          formToken,
+          turnstileToken: turnstileRef.current,
+          website: honeypotRef.current?.value ?? "",
         }),
       });
 
       if (!response.ok) {
+        // Anti-spam / rate-limit rejections carry a human-readable message worth showing.
+        if (response.status === 422 || response.status === 429) {
+          const body = await response.json().catch(() => null);
+          if (body && typeof body.error === "string") {
+            setSubmitError(body.error);
+            return;
+          }
+        }
         throw new Error(`Request failed: ${response.status}`);
       }
 
@@ -538,6 +559,15 @@ export default function AssessmentWidget({ id }: { id?: string }) {
               {errors.country && <p className="text-red-600 text-xs mt-1">{errors.country}</p>}
             </div>
           </div>
+
+          {/* Spam trap: invisible to people and screen readers, tempting to bots. */}
+          <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+            <label>
+              Leave this field empty
+              <input ref={honeypotRef} type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
+            </label>
+          </div>
+          <TurnstileField onToken={(t) => { turnstileRef.current = t; }} />
 
           <label className="flex items-start gap-2.5 mb-2 cursor-pointer">
             <input

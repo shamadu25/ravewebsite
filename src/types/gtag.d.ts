@@ -7,6 +7,11 @@ interface Window {
   ) => void;
   dataLayer: unknown[];
   // Meta Pixel — injected by the pixel loader script, undefined until NEXT_PUBLIC_META_PIXEL_ID is set
-  fbq?: (command: "track" | "trackCustom" | "init", target: string, params?: Record<string, unknown>) => void;
+  fbq?: (
+    command: "track" | "trackCustom" | "init",
+    target: string,
+    params?: Record<string, unknown>,
+    options?: { eventID?: string }
+  ) => void;
   clarity?: (command: "event" | "identify" | "set", ...args: unknown[]) => void;
 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { isRateLimited } from "@/lib/ai/rateLimit";
+import { guardForm, POLICIES } from "@/lib/antispam/guard";
 import { computeRecommendation } from "@/lib/assessment/recommend";
 import { BUSINESS_TYPES, INQUIRY_CHANNELS, INQUIRY_VOLUMES, MAIN_PROBLEMS, RESPONSE_SPEEDS } from "@/lib/assessment/types";
 import { scoreLead } from "@/lib/services/leadScoring";
@@ -40,13 +40,12 @@ const AssessmentSchema = z.object({
     .optional()
     .default({}),
   consent: z.boolean().optional().default(false),
+  formToken: z.string().max(200).nullish(),
+  turnstileToken: z.string().max(4096).nullish(),
+  website: z.string().max(500).optional().default(""),
 });
 
 export async function POST(request: NextRequest) {
-  if (isRateLimited(`assessment:${clientIp(request)}`)) {
-    return NextResponse.json({ error: "Too many requests." }, { status: 429 });
-  }
-
   const body = await request.json().catch(() => null);
   const parsed = AssessmentSchema.safeParse(body);
 
@@ -54,8 +53,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request.", details: parsed.error.flatten() }, { status: 422 });
   }
 
-  const { answers, contact, attribution, consent } = parsed.data;
+  const { answers, contact, attribution, consent, formToken, turnstileToken, website } = parsed.data;
   const recommendation = computeRecommendation(answers);
+
+  const guard = await guardForm(POLICIES.assessment, {
+    ip: clientIp(request),
+    email: contact.workEmail,
+    name: contact.fullName,
+    company: contact.businessName,
+    message: answers.successCriteria,
+    honeypot: website,
+    formToken,
+    turnstileToken,
+  });
+  if (!guard.ok) {
+    // Bots get a plausible success (the recommendation is computed without touching the database).
+    if (guard.silent) return NextResponse.json({ recommendation, lead_id: null }, { status: 201 });
+    return NextResponse.json({ error: guard.error }, { status: guard.status });
+  }
 
   const existingCompany = await prisma.company.findFirst({ where: { name: contact.businessName } });
   const company =

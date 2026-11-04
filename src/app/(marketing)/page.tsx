@@ -40,6 +40,7 @@ import CTASection from "@/components/ui/CTASection";
 import ProofBar from "@/components/ui/ProofBar";
 import TestimonialsSection from "@/components/ui/TestimonialsSection";
 import FAQAccordion from "@/components/ui/FAQAccordion";
+import CommercialVideo from "@/components/ui/CommercialVideo";
 import {
   SERVICES,
   PRODUCTS,
@@ -210,6 +211,19 @@ export default function HomePage() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* BRAND VIDEO — loads nothing until played */}
+      <section aria-labelledby="home-video-title" className="bg-[#050816] pb-14 pt-4 sm:pb-20">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-10">
+          <div className="mx-auto mb-8 max-w-2xl text-center">
+            <h2 id="home-video-title" className="text-3xl sm:text-4xl font-black text-white leading-[1.1] tracking-tight mb-3">
+              A quick look at RaveSoft
+            </h2>
+            <p className="text-gray-400 text-base">Watch our short commercial to see what we build and how we work.</p>
+          </div>
+          <CommercialVideo />
         </div>
       </section>
 

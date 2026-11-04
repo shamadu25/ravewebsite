@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Send, CheckCircle2, Loader2 } from "lucide-react";
 import { PROJECT_TYPES, BUDGET_RANGES, COMPANY } from "@/lib/data";
 import { trackEvent } from "@/lib/utils";
+import { getLandingPage } from "@/lib/ai/session";
+import { prefetchFormToken, takeFormToken } from "@/lib/formToken";
+import TurnstileField from "@/components/ui/TurnstileField";
 
 interface FormState {
   fullName: string;
@@ -26,8 +29,35 @@ const initialState: FormState = {
   message: "",
 };
 
+/** Where the visitor came from, sent with the enquiry so the team knows which page/campaign produced it. */
+function attribution(honeypot: string) {
+  const utm: Record<string, string> = {};
+  try {
+    const params = new URLSearchParams(window.location.search);
+    for (const k of ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]) {
+      const v = params.get(k);
+      if (v) utm[k] = v.slice(0, 255);
+    }
+  } catch {
+    // ignore — attribution is best-effort
+  }
+  return {
+    website: honeypot,
+    page: getLandingPage(window.location.pathname),
+    referrer: document.referrer,
+    utm,
+  };
+}
+
 export default function ContactForm() {
   const [form, setForm] = useState<FormState>(initialState);
+  const honeypotRef = useRef<HTMLInputElement>(null);
+  const turnstileRef = useRef<string | null>(null);
+
+  // Fetch the anti-spam token as soon as the form mounts so it has "aged" by submit time.
+  useEffect(() => {
+    prefetchFormToken();
+  }, []);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errors, setErrors] = useState<Partial<FormState>>({});
 
@@ -47,10 +77,11 @@ export default function ContactForm() {
     if (!validate()) return;
     setStatus("submitting");
 
+    const formToken = await takeFormToken();
     const res = await fetch("/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, ...attribution(honeypotRef.current?.value ?? ""), formToken, turnstileToken: turnstileRef.current }),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -104,6 +135,13 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      {/* Spam trap: invisible to people and screen readers, tempting to bots. */}
+      <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+        <label>
+          Leave this field empty
+          <input ref={honeypotRef} type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
+        </label>
+      </div>
       {/* Row 1 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -241,6 +279,8 @@ export default function ContactForm() {
           </a>
         </p>
       )}
+
+      <TurnstileField onToken={(t) => { turnstileRef.current = t; }} />
 
       <button
         type="submit"

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { isRateLimited } from "@/lib/ai/rateLimit";
+import { isRateLimited, rateLimit } from "@/lib/ai/rateLimit";
 import { sendMessage } from "@/lib/services/conversation";
 import { clientIp } from "../../../_shared";
 
@@ -16,6 +16,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const { id } = await params;
+  // One chat cannot be used to hammer the AI even if the attacker rotates IP addresses.
+  if (rateLimit(`message-conv:${id}`, 40, 10 * 60_000)) {
+    return NextResponse.json({ error: "You're sending messages very quickly. Please wait a moment." }, { status: 429 });
+  }
   const conversation = await prisma.conversation.findUnique({ where: { externalId: id } });
 
   if (!conversation) {
@@ -39,5 +43,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     ai_unavailable: result.aiUnavailable,
     cta: result.cta,
     contact_captured: result.contactCaptured,
+    human_active: Boolean(result.humanActive),
   });
 }

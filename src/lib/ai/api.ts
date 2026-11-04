@@ -1,4 +1,5 @@
 import { VisitorContext } from "./session";
+import { takeFormToken } from "@/lib/formToken";
 
 // Same-origin — the AI agent lives in this same Next.js project (src/app/api/ai),
 // not a separate backend/subdomain.
@@ -6,7 +7,7 @@ const API_BASE = "/api/ai";
 
 export interface ChatMessage {
   id: number;
-  role: "visitor" | "assistant";
+  role: "visitor" | "assistant" | "agent";
   content: string;
   created_at: string | null;
 }
@@ -32,6 +33,13 @@ export interface SendMessageResponse {
   ai_unavailable: boolean;
   cta: string;
   contact_captured: boolean;
+  /** A team member is handling the chat; the reply will arrive via fetchUpdates. */
+  human_active?: boolean;
+}
+
+export interface UpdatesResponse {
+  messages: ChatMessage[];
+  human_active: boolean;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -51,10 +59,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function startConversation(context: VisitorContext): Promise<ConversationResponse> {
+export async function startConversation(context: VisitorContext): Promise<ConversationResponse> {
+  // Signed anti-spam token (see src/lib/antispam). If it cannot be fetched the server decides.
+  const form_token = await takeFormToken();
   return request<ConversationResponse>("/conversations", {
     method: "POST",
-    body: JSON.stringify(context),
+    body: JSON.stringify({ ...context, form_token }),
   });
 }
 
@@ -71,4 +81,9 @@ export function sendMessage(
     method: "POST",
     body: JSON.stringify({ message, current_page: currentPage }),
   });
+}
+
+/** Team replies written after `afterId` (poll). */
+export function fetchUpdates(conversationId: string, afterId: number): Promise<UpdatesResponse> {
+  return request<UpdatesResponse>(`/conversations/${conversationId}/updates?after=${afterId}`);
 }

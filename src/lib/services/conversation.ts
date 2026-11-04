@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { AI_CONFIG, normalizeCta } from "@/lib/ai/config";
 import { runRaveConciergeAgent } from "@/lib/ai/agent/raveConcierge";
 import { AiProviderUnavailableError } from "@/lib/ai/providers/types";
+import { sendHumanHandoffNotification } from "@/lib/mail/notifications";
+import { alertTeam, inBackground } from "@/lib/services/teamAlerts";
+import { HUMAN_ACTIVE } from "@/lib/os/chats";
 import type { Conversation } from "@prisma/client";
 
 const AI_FALLBACK_MESSAGE =
@@ -80,12 +83,17 @@ export async function startConversation(input: StartConversationInput): Promise<
   return conversation;
 }
 
+/** A single chat may not be used as an unlimited AI pipe; genuine conversations stay far below this. */
+export const MAX_VISITOR_MESSAGES = 150;
+
 export interface SendMessageResult {
   message: string;
   needsHuman: boolean;
   aiUnavailable: boolean;
   cta: string;
   contactCaptured: boolean;
+  /** A team member is handling this chat: the AI did not answer and the reply will arrive from the team. */
+  humanActive?: boolean;
 }
 
 export async function sendMessage(
@@ -96,6 +104,48 @@ export async function sendMessage(
   await prisma.message.create({
     data: { conversationId: conversation.id, role: "visitor", content: text },
   });
+
+  // Surface the chat in the admin the moment the visitor writes, not only after the AI
+  // answers, so a failing AI call can never leave a visitor message sitting unseen.
+  // A visitor writing into a chat that was closed reopens it.
+  await prisma.conversation.update({
+    where: { id: conversation.id },
+    data: {
+      lastMessageAt: new Date(),
+      ...(context.currentPage ? { currentPage: context.currentPage } : {}),
+      ...(conversation.status === "closed" ? { status: "open" } : {}),
+    },
+  });
+
+  const visitorMessages = await prisma.message.count({ where: { conversationId: conversation.id, role: "visitor" } });
+  if (visitorMessages > MAX_VISITOR_MESSAGES) {
+    return {
+      message: "This chat has reached its length limit. Please continue with our team on WhatsApp and we'll pick it up from here.",
+      needsHuman: true,
+      aiUnavailable: false,
+      cta: "whatsapp_continue",
+      contactCaptured: Boolean(conversation.contactId),
+    };
+  }
+
+  // Instant team alerts (best-effort, after the response): first message of a new chat, or a
+  // visitor waiting on a team member who has already joined.
+  const humanActive = conversation.status === HUMAN_ACTIVE;
+  if (humanActive || visitorMessages === 1) {
+    inBackground(() =>
+      alertTeam(humanActive ? "visitor_waiting" : "new_chat", {
+        conversationId: conversation.id,
+        externalId: conversation.externalId,
+        contactId: conversation.contactId,
+        page: context.currentPage ?? conversation.currentPage,
+        message: text,
+      })
+    );
+  }
+
+  if (humanActive) {
+    return { message: "", needsHuman: true, aiUnavailable: false, cta: "human_handoff", contactCaptured: Boolean(conversation.contactId), humanActive: true };
+  }
 
   const historyRows = await prisma.message.findMany({
     where: { conversationId: conversation.id },
@@ -114,11 +164,14 @@ export async function sendMessage(
       landingPage: conversation.landingPage,
     });
   } catch (error) {
-    if (!(error instanceof AiProviderUnavailableError)) {
-      throw error;
+    // Any agent failure (provider outage OR an unexpected error) is handled the same way:
+    // the visitor message is already saved, the visitor gets the fallback, and the team is
+    // alerted — never a silent 500.
+    if (error instanceof AiProviderUnavailableError) {
+      console.warn("RaveSoft AI unavailable, returning fallback", error.message);
+    } else {
+      console.error("RaveSoft AI agent failed, returning fallback", error);
     }
-
-    console.warn("RaveSoft AI unavailable, returning fallback", error.message);
 
     await prisma.message.create({
       data: { conversationId: conversation.id, role: "assistant", content: AI_FALLBACK_MESSAGE },
@@ -127,6 +180,11 @@ export async function sendMessage(
       where: { id: conversation.id },
       data: { status: "human_handoff", lastMessageAt: new Date() },
     });
+
+    // Alert once per handoff (not on every follow-up message while the AI is down).
+    if (conversation.status !== "human_handoff") {
+      await notifyAiFailure(conversation, error);
+    }
 
     return {
       message: AI_FALLBACK_MESSAGE,
@@ -181,6 +239,33 @@ export async function sendMessage(
     cta: normalizeCta(structured.recommendedNextAction),
     contactCaptured: Boolean(refreshed?.contactId),
   };
+}
+
+/** Best-effort: records the failure and emails the team. Must never throw into the visitor's request. */
+async function notifyAiFailure(conversation: Conversation, error: unknown): Promise<void> {
+  const reason =
+    error instanceof AiProviderUnavailableError ? "AI provider unavailable" : "AI assistant error";
+  try {
+    await prisma.conversionEvent.create({
+      data: {
+        conversationId: conversation.id,
+        contactId: conversation.contactId,
+        eventType: "human_handoff",
+        metadata: { reason, automatic: true },
+        occurredAt: new Date(),
+      },
+    });
+    const contact = conversation.contactId
+      ? await prisma.contact.findUnique({ where: { id: conversation.contactId } })
+      : null;
+    await sendHumanHandoffNotification({
+      conversationExternalId: conversation.externalId,
+      contactName: contact ? [contact.firstName, contact.lastName].filter(Boolean).join(" ") || null : null,
+      reason: `${reason} — a visitor message is waiting for a reply.`,
+    });
+  } catch (notifyError) {
+    console.error("Failed to record/notify AI failure handoff", notifyError);
+  }
 }
 
 async function recordIntent(conversationId: number, intentKey: string): Promise<void> {

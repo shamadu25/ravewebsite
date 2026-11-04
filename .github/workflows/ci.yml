@@ -1,0 +1,50 @@
+name: CI
+
+# Quality gate for the website. Typecheck, unit tests and the production build must pass.
+# Lint is reported but does not block yet: the repository still has older lint errors
+# (mostly unescaped quotes in content pages) that should be cleaned up separately.
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # --ignore-scripts: do not run postinstall during install; the Prisma client is generated explicitly below.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test -- --ci
+
+      - name: Lint (informational)
+        run: npm run lint
+        continue-on-error: true
+
+      # No DATABASE_URL on purpose: the build must not need a database or any secret.
+      - name: Production build
+        run: npm run build

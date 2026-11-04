@@ -21,6 +21,13 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Brand video + poster under /video/. Files are versioned by name, so they can be cached for a year.
+        source: "/video/:file*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
         // Next.js built static chunks (JS/CSS) — already immutable by default, this reinforces
         source: "/_next/static/:path*",
         headers: [

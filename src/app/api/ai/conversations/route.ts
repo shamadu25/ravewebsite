@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { AI_CONFIG, QUICK_ACTIONS } from "@/lib/ai/config";
-import { isRateLimited } from "@/lib/ai/rateLimit";
+import { guardForm, POLICIES } from "@/lib/antispam/guard";
 import { startConversation } from "@/lib/services/conversation";
 import { clientIp } from "../_shared";
 
@@ -19,13 +19,11 @@ const StartConversationSchema = z.object({
   device: z.string().max(50).nullish(),
   browser: z.string().max(50).nullish(),
   language: z.string().max(20).nullish(),
+  form_token: z.string().max(200).nullish(),
+  turnstile_token: z.string().max(4096).nullish(),
 });
 
 export async function POST(request: NextRequest) {
-  if (isRateLimited(`start:${clientIp(request)}`)) {
-    return NextResponse.json({ error: "Too many requests." }, { status: 429 });
-  }
-
   const body = await request.json().catch(() => null);
   const parsed = StartConversationSchema.safeParse(body);
 
@@ -34,6 +32,9 @@ export async function POST(request: NextRequest) {
   }
 
   const data = parsed.data;
+
+  const guard = await guardForm(POLICIES.chatStart, { ip: clientIp(request), formToken: data.form_token, turnstileToken: data.turnstile_token });
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: guard.status === 200 ? 429 : guard.status });
 
   const conversation = await startConversation({
     visitorId: data.visitor_id,

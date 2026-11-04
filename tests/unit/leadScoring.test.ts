@@ -47,7 +47,7 @@ describe("scoreLead", () => {
 
     expect(score.totalScore).toBe(35);
     expect(score.level).toBe("nurture");
-    expect(score.components).toHaveLength(3);
+    expect((score as unknown as { components: unknown[] }).components).toHaveLength(3);
   });
 
   it("caps the total score at one hundred", async () => {

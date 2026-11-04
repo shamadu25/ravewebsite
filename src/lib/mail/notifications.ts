@@ -185,3 +185,84 @@ export async function sendConsultationCanceledNotification(input: ConsultationCa
 
   await send(`❌ Consultation canceled: ${input.contactName}`, html);
 }
+
+export interface ChatActivityNotificationInput {
+  kind: "new_chat" | "visitor_waiting";
+  conversationExternalId: string;
+  visitorName: string | null;
+  page: string | null;
+  preview: string;
+}
+
+/** Instant heads-up that a visitor started a chat, or is waiting for a team member who already joined. */
+export async function sendChatActivityNotification(input: ChatActivityNotificationInput): Promise<void> {
+  const isNew = input.kind === "new_chat";
+  const title = isNew ? "💬 New website chat" : "⏳ Visitor is waiting for a reply";
+  const html = wrapper(
+    title,
+    isNew ? "A visitor just started a live chat" : "A visitor wrote while a team member is handling the chat",
+    `<table style="width:100%;border-collapse:collapse;">
+      ${row("Visitor", input.visitorName ?? "Anonymous")}
+      ${input.page ? row("Page", input.page) : ""}
+      ${row("Message", input.preview)}
+    </table>
+    <p style="margin-top:16px;"><a href="${APP_URL}/admin/conversations/${encodeURIComponent(input.conversationExternalId)}" style="color:#3b82f6;font-weight:600;">Open chat and reply →</a></p>`
+  );
+  await send(`${title}${input.visitorName ? ` — ${input.visitorName}` : ""}`, html);
+}
+
+export interface WebsiteLeadNotificationInput {
+  leadId: number | null;
+  fullName: string;
+  businessName: string;
+  phone: string;
+  email: string;
+  businessTypeLabel: string;
+  solutionLabel: string;
+  message: string;
+  submittedAt: string;
+  attribution: { label: string; value: string | null | undefined }[];
+}
+
+export type NotifyOutcome = "sent" | "not_configured" | "failed";
+
+/**
+ * "New RaveSoft Website Lead" email for the /get-started landing page. Uses the existing mail transporter,
+ * sender and recipient configuration (no new addresses). Unlike the older helpers it REPORTS the outcome so the
+ * caller can flag a lead whose email did not go out — the lead itself is already saved and is never lost.
+ */
+export async function sendWebsiteLeadNotification(input: WebsiteLeadNotificationInput): Promise<NotifyOutcome> {
+  if (!isMailConfigured()) return "not_configured";
+  const attrRows = input.attribution.filter((a) => a.value).map((a) => row(a.label, String(a.value)));
+  const html = wrapper(
+    "🎯 New Website Lead",
+    "Submitted via the RaveSoft /get-started landing page",
+    `<table style="width:100%;border-collapse:collapse;">
+      ${row("Name", input.fullName)}
+      ${row("Business", input.businessName)}
+      ${row("Phone / WhatsApp", input.phone)}
+      ${row("Email", input.email)}
+      ${row("Business type", input.businessTypeLabel)}
+      ${row("Solution required", input.solutionLabel)}
+      ${row("Submitted", input.submittedAt)}
+      ${input.leadId ? row("Lead ID", `#${input.leadId}`) : ""}
+    </table>
+    ${input.message ? `<p style="color:#64748b;font-size:13px;margin:20px 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Additional requirements</p><div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;font-size:14px;color:#0f172a;line-height:1.6;white-space:pre-wrap;">${escapeHtml(input.message)}</div>` : ""}
+    ${attrRows.length ? `<p style="color:#64748b;font-size:13px;margin:20px 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Campaign attribution</p><table style="width:100%;border-collapse:collapse;">${attrRows.join("")}</table>` : ""}
+    ${input.leadId ? `<p style="margin-top:16px;"><a href="${APP_URL}/admin/leads/${input.leadId}" style="color:#3b82f6;font-weight:600;">Open lead in admin →</a></p>` : ""}`
+  );
+  try {
+    await getMailTransporter().sendMail({
+      from: `"RaveSoft AI Agent" <${process.env.SMTP_USER}>`,
+      to: notificationRecipient(),
+      replyTo: input.email,
+      subject: sanitizeHeaderValue(`New RaveSoft Website Lead — ${input.solutionLabel}`),
+      html,
+    });
+    return "sent";
+  } catch (error) {
+    // Never log the lead's details — only the failure class.
+    console.error("[notifications] website lead email failed:", error instanceof Error ? error.message : "unknown error");
+    return "failed";
+  }
+}
