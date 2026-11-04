@@ -7,9 +7,9 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV, isActive } from "./nav";
 
-interface Props { approvals: number; userName: string; userRole: string }
+interface Props { approvals: number; chats: number; userName: string; userRole: string }
 
-export default function Sidebar({ approvals, userName, userRole }: Props) {
+export default function Sidebar({ approvals, chats, userName, userRole }: Props) {
   const pathname = usePathname();
   return (
     <aside aria-label="Primary" className="fixed inset-y-0 left-0 z-30 hidden w-16 flex-col bg-[var(--sidebar)] text-white md:flex lg:w-60">
@@ -24,7 +24,7 @@ export default function Sidebar({ approvals, userName, userRole }: Props) {
         {NAV.map((item) => {
           const active = isActive(item, pathname);
           const Icon = item.icon;
-          const count = item.badge === "approvals" ? approvals : 0;
+          const count = item.badge === "approvals" ? approvals : item.badge === "chats" ? chats : 0;
           return (
             <Link
               key={item.href}
@@ -40,7 +40,7 @@ export default function Sidebar({ approvals, userName, userRole }: Props) {
               <span className="hidden flex-1 lg:inline">{item.label}</span>
               {count > 0 && (
                 <span className="absolute right-2 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#f59e0b] px-1 text-[11px] font-semibold text-[#080b16] lg:static lg:ml-auto">
-                  {count > 99 ? "99+" : count}<span className="sr-only"> pending approvals</span>
+                  {count > 99 ? "99+" : count}<span className="sr-only">{item.badge === "chats" ? " chats waiting for a reply" : " pending approvals"}</span>
                 </span>
               )}
             </Link>

@@ -14,9 +14,11 @@ export default async function AppShell({ children }: { children: React.ReactNode
   const session = await getAdminSession();
   const email = session?.email ?? "";
   const isEnvAdmin = email.toLowerCase() === (process.env.ADMIN_EMAIL ?? "").toLowerCase();
-  const [member, approvals] = await Promise.all([
+  const [member, approvals, chats] = await Promise.all([
     isEnvAdmin ? null : prisma.osUser.findUnique({ where: { email: email.toLowerCase() } }).catch(() => null),
     prisma.osApproval.count({ where: { orgId: ORG_ID, status: { in: ["PENDING", "INFO_REQUESTED"] } } }).catch(() => 0),
+    // Website chats the AI handed to a human (or could not answer) and nobody has taken over yet.
+    prisma.conversation.count({ where: { channel: { not: "demo" }, status: "human_handoff" } }).catch(() => 0),
   ]);
   const name = member?.name ?? (isEnvAdmin ? process.env.ADMIN_NAME : undefined) ?? titleCase(email.split("@")[0] || "Admin");
   const role = isEnvAdmin ? "CEO / Founder" : titleCase(member?.role ?? "Viewer");
@@ -24,7 +26,7 @@ export default async function AppShell({ children }: { children: React.ReactNode
   return (
     <div className="min-h-screen">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2">Skip to content</a>
-      <Sidebar approvals={approvals} userName={name} userRole={role} />
+      <Sidebar approvals={approvals} chats={chats} userName={name} userRole={role} />
       <div className="min-w-0 overflow-x-clip md:pl-16 lg:pl-60">
         <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--background)]/90 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-3 px-4 sm:px-6 lg:px-8">
@@ -38,7 +40,7 @@ export default async function AppShell({ children }: { children: React.ReactNode
         </header>
         <main id="main" className="mx-auto max-w-[1600px] px-4 pb-24 pt-8 sm:px-6 md:pb-12 lg:px-8">{children}</main>
       </div>
-      <MobileNav approvals={approvals} />
+      <MobileNav approvals={approvals} chats={chats} />
     </div>
   );
 }

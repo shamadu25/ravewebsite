@@ -86,7 +86,10 @@ export default async function AdminLeadsPage({
     <div>
       <AutoRefresh seconds={30} />
       <div className="flex items-baseline justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
+        <div className="flex items-baseline gap-4">
+          <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
+          <Link href="/admin/conversations" className="text-sm font-medium text-blue-600 hover:underline">Live chats →</Link>
+        </div>
         <span className="text-xs text-gray-500" title="Honeypot, bad token, spam content and similar blocks on public forms">
           🛡 {spamBlocked} spam attempt{spamBlocked === 1 ? "" : "s"} blocked in the last 24h
         </span>

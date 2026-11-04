@@ -46,7 +46,8 @@ const include = {
   visitor: true,
   leads: { select: { id: true } },
   _count: { select: { messages: true } },
-  messages: { orderBy: { id: "desc" as const }, take: 1 },
+  // Newest few messages: the newest decides "needs a reply"; the latest VISITOR message is the preview.
+  messages: { orderBy: { id: "desc" as const }, take: 6 },
 };
 
 export default async function AdminConversationsPage({
@@ -101,7 +102,10 @@ export default async function AdminConversationsPage({
     <div>
       <AutoRefresh seconds={10} />
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Live chats</h1>
+        <div className="flex items-baseline gap-4">
+          <h1 className="text-2xl font-bold text-gray-900">Live chats</h1>
+          <Link href="/admin/leads" className="text-sm font-medium text-blue-600 hover:underline">Leads →</Link>
+        </div>
         <span className="text-xs text-gray-400">Auto-refreshes every 10s · every message is stored</span>
       </div>
 
@@ -173,7 +177,10 @@ export default async function AdminConversationsPage({
                   </span>
                 </p>
                 <p className="text-sm text-gray-500 truncate max-w-xl">
-                  {last ? `${last.role === "visitor" ? "Visitor: " : ""}${last.content}` : "—"}
+                  {(() => {
+                    const v = c.messages.find((m) => m.role === "visitor");
+                    return v ? `Visitor: ${v.content}` : last ? last.content : "—";
+                  })()}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
