@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic";
 const STATUS_STYLES: Record<string, string> = {
   open: "bg-green-100 text-green-700",
   human_handoff: "bg-red-100 text-red-700",
+  human_active: "bg-blue-100 text-blue-700",
   closed: "bg-gray-100 text-gray-600",
 };
 
@@ -138,6 +139,7 @@ export default async function AdminConversationsPage({
             <option value="all">Any status</option>
             <option value="open">Open</option>
             <option value="human_handoff">Human handoff</option>
+            <option value="human_active">Team handling</option>
             <option value="closed">Closed</option>
           </select>
           <select name="channel" defaultValue={f.channel} className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm">

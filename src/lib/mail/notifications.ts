@@ -185,3 +185,28 @@ export async function sendConsultationCanceledNotification(input: ConsultationCa
 
   await send(`❌ Consultation canceled: ${input.contactName}`, html);
 }
+
+export interface ChatActivityNotificationInput {
+  kind: "new_chat" | "visitor_waiting";
+  conversationExternalId: string;
+  visitorName: string | null;
+  page: string | null;
+  preview: string;
+}
+
+/** Instant heads-up that a visitor started a chat, or is waiting for a team member who already joined. */
+export async function sendChatActivityNotification(input: ChatActivityNotificationInput): Promise<void> {
+  const isNew = input.kind === "new_chat";
+  const title = isNew ? "💬 New website chat" : "⏳ Visitor is waiting for a reply";
+  const html = wrapper(
+    title,
+    isNew ? "A visitor just started a live chat" : "A visitor wrote while a team member is handling the chat",
+    `<table style="width:100%;border-collapse:collapse;">
+      ${row("Visitor", input.visitorName ?? "Anonymous")}
+      ${input.page ? row("Page", input.page) : ""}
+      ${row("Message", input.preview)}
+    </table>
+    <p style="margin-top:16px;"><a href="${APP_URL}/admin/conversations/${encodeURIComponent(input.conversationExternalId)}" style="color:#3b82f6;font-weight:600;">Open chat and reply →</a></p>`
+  );
+  await send(`${title}${input.visitorName ? ` — ${input.visitorName}` : ""}`, html);
+}

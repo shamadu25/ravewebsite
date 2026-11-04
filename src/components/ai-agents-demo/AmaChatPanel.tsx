@@ -110,7 +110,7 @@ export default function AmaChatPanel({
       storeConversationId(data.id);
       setConversationId(data.id);
       setMessages(
-        data.messages.map((m: ChatMessage) => ({ id: String(m.id), role: m.role, content: m.content }))
+        data.messages.map((m: ChatMessage) => ({ id: String(m.id), role: m.role === "visitor" ? "visitor" : "assistant", content: m.content }))
       );
     } catch {
       setUnavailable(true);

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { api, jsonBody } from "@/lib/os/http";
 import { prisma } from "@/lib/prisma";
 import { audit } from "@/lib/os/audit";
+import { HUMAN_ACTIVE } from "@/lib/os/chats";
 
 type P = { id: string }; // conversation externalId
 
@@ -9,6 +10,8 @@ const Body = z.discriminatedUnion("action", [
   z.object({ action: z.literal("close") }),
   z.object({ action: z.literal("reopen") }),
   z.object({ action: z.literal("note"), note: z.string().trim().min(1).max(2000) }),
+  z.object({ action: z.literal("reply"), message: z.string().trim().min(1).max(4000) }),
+  z.object({ action: z.literal("resume_ai") }),
 ]);
 
 /** Admin actions on a live-chat conversation. Never edits or deletes visitor messages. */
@@ -26,6 +29,28 @@ export const POST = api<P>("customer.update", async ({ request, caller, params }
         metadata: { note: body.note, by: caller.name },
         occurredAt: new Date(),
       },
+    });
+  } else if (body.action === "reply") {
+    // A team reply is a real message in the visitor's chat window. While a human is active the AI
+    // stays silent; the chat is handed back with "resume_ai" (or closed/reopened).
+    await prisma.message.create({ data: { conversationId: conversation.id, role: "agent", content: body.message } });
+    await prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { status: HUMAN_ACTIVE, lastMessageAt: new Date() },
+    });
+    await prisma.conversionEvent.create({
+      data: {
+        conversationId: conversation.id,
+        contactId: conversation.contactId,
+        eventType: "agent_reply",
+        metadata: { by: caller.name },
+        occurredAt: new Date(),
+      },
+    });
+  } else if (body.action === "resume_ai") {
+    await prisma.conversation.update({ where: { id: conversation.id }, data: { status: "open" } });
+    await prisma.conversionEvent.create({
+      data: { conversationId: conversation.id, contactId: conversation.contactId, eventType: "ai_resumed", metadata: { by: caller.name }, occurredAt: new Date() },
     });
   } else {
     await prisma.conversation.update({
@@ -51,5 +76,6 @@ export const POST = api<P>("customer.update", async ({ request, caller, params }
     resourceId: conversation.id,
     ip: caller.ip,
   });
-  return { message: body.action === "note" ? "Note saved." : body.action === "close" ? "Chat closed." : "Chat reopened." };
+  const done = { note: "Note saved.", reply: "Reply sent to the visitor.", resume_ai: "Handed back to the AI.", close: "Chat closed.", reopen: "Chat reopened." };
+  return { message: done[body.action] };
 });

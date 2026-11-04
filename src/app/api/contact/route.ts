@@ -1,18 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { z } from "zod";
 import { isRateLimited } from "@/lib/ai/rateLimit";
 import { clientIp } from "../ai/_shared";
-
-const ContactSchema = z.object({
-  fullName: z.string().trim().min(1).max(200),
-  companyName: z.string().trim().max(200).optional().default(""),
-  email: z.string().trim().email().max(255),
-  phone: z.string().trim().max(50).optional().default(""),
-  projectType: z.string().trim().max(100).optional().default(""),
-  budget: z.string().trim().max(100).optional().default(""),
-  message: z.string().trim().min(1).max(5000),
-});
+import { EnquirySchema, persistEnquiry, recordNotifyFailure, type PersistResult } from "@/lib/enquiry";
 
 function escapeHtml(value: string): string {
   return value
@@ -35,13 +25,27 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => null);
-  const parsed = ContactSchema.safeParse(body);
+  const parsed = EnquirySchema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json({ error: "Please check the form and try again." }, { status: 422 });
   }
 
-  const { fullName, companyName, email, phone, projectType, budget, message } = parsed.data;
+  const { fullName, companyName, email, phone, projectType, budget, message, website, page } = parsed.data;
+
+  // Honeypot: a bot filled the hidden field. Pretend success so it does not retry; store/send nothing.
+  if (website) return NextResponse.json({ success: true });
+
+  // 1) Save the lead FIRST so an SMTP outage can never lose an enquiry. Persistence failure is
+  //    logged but does not block the email (the email is the established, working channel).
+  let saved: PersistResult | null = null;
+  try {
+    saved = await persistEnquiry(parsed.data);
+  } catch (err) {
+    console.error("[contact/route] failed to save enquiry:", err);
+  }
+  // Identical re-submission (double click / retry): already saved and already emailed.
+  if (saved?.duplicate) return NextResponse.json({ success: true });
 
   try {
     const transporter = nodemailer.createTransport({
@@ -67,6 +71,7 @@ export async function POST(req: NextRequest) {
           <tr><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:14px;">Email</td><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:14px;"><a href="mailto:${escapeHtml(email)}" style="color:#3b82f6;">${escapeHtml(email)}</a></td></tr>
           ${phone ? `<tr><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:14px;">Phone</td><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:14px;color:#0f172a;">${escapeHtml(phone)}</td></tr>` : ""}
           ${projectType ? `<tr><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:14px;">Project Type</td><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:14px;color:#0f172a;">${escapeHtml(projectType)}</td></tr>` : ""}
+          ${page ? `<tr><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:14px;">Page</td><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:14px;color:#0f172a;">${escapeHtml(page)}</td></tr>` : ""}
           ${budget ? `<tr><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:14px;">Budget</td><td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:14px;color:#0f172a;">${escapeHtml(budget)}</td></tr>` : ""}
         </table>
 
@@ -90,6 +95,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[contact/route] SMTP error:", err);
+    if (saved) {
+      // The enquiry is safely stored and visible in /admin/leads; flag it so the team knows no email went out.
+      await recordNotifyFailure(saved.leadId, saved.contactId, err).catch(() => undefined);
+      return NextResponse.json({ success: true });
+    }
     return NextResponse.json({ error: "Failed to send message. Please try again." }, { status: 500 });
   }
 }

@@ -13,7 +13,9 @@ export const LEAD_STAGES = [
 ] as const;
 export type LeadStage = (typeof LEAD_STAGES)[number];
 
-export const CHAT_STATUSES = ["open", "human_handoff", "closed"] as const;
+/** "human_active": a team member has replied, so the AI stays silent until the chat is handed back. */
+export const HUMAN_ACTIVE = "human_active";
+export const CHAT_STATUSES = ["open", "human_handoff", HUMAN_ACTIVE, "closed"] as const;
 export const PAGE_SIZE = 50;
 /** Chats scanned in memory for the "awaiting reply" view (last-message role cannot be filtered in SQL). */
 export const AWAITING_SCAN_LIMIT = 400;
@@ -73,6 +75,7 @@ export function buildConversationWhere(f: ChatFilters): Prisma.ConversationWhere
  */
 export function isAwaitingReply(c: { status: string; lastRole: string | null }): boolean {
   if (c.status === "closed") return false;
+  if (c.status === HUMAN_ACTIVE) return c.lastRole === "visitor";
   return c.status === "human_handoff" || c.lastRole === "visitor";
 }
 

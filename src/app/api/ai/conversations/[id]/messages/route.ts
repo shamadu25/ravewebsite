@@ -39,5 +39,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     ai_unavailable: result.aiUnavailable,
     cta: result.cta,
     contact_captured: result.contactCaptured,
+    human_active: Boolean(result.humanActive),
   });
 }

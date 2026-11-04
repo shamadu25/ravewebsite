@@ -10,6 +10,7 @@ import {
   ChatMessage,
   ConversationResponse,
   fetchConversation,
+  fetchUpdates,
   QuickAction,
   sendMessage,
   startConversation,
@@ -43,7 +44,7 @@ function whatsAppContinuationUrl(messages: DisplayMessage[]): string {
 
 interface DisplayMessage {
   id: string;
-  role: "visitor" | "assistant";
+  role: "visitor" | "assistant" | "agent";
   content: string;
   cta?: string;
 }
@@ -67,6 +68,9 @@ export default function ChatWidget() {
   const [captureEmail, setCaptureEmail] = useState("");
   const [captureWhatsapp, setCaptureWhatsapp] = useState("");
   const [captureSubmitting, setCaptureSubmitting] = useState(false);
+  const [unread, setUnread] = useState(0);
+  const [humanActive, setHumanActive] = useState(false);
+  const lastAgentIdRef = useRef(0);
   const initialized = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isOpenRef = useRef(isOpen);
@@ -108,6 +112,8 @@ export default function ChatWidget() {
     setMessages(
       data.messages.map((m: ChatMessage) => ({ id: String(m.id), role: m.role, content: m.content }))
     );
+    lastAgentIdRef.current = data.messages.reduce((max, m) => (m.role === "agent" ? Math.max(max, m.id) : max), 0);
+    setHumanActive(data.status === "human_active");
     if (data.contact_captured) setContactCaptured(true);
   };
 
@@ -144,10 +150,15 @@ export default function ChatWidget() {
 
     try {
       const result = await sendMessage(id, trimmed, window.location.pathname);
-      setMessages((prev) => [
-        ...prev,
-        { id: `local-${Date.now()}-reply`, role: "assistant", content: result.message, cta: result.cta },
-      ]);
+      if (result.human_active) {
+        // A team member is handling this chat: no AI bubble — their reply arrives via polling.
+        setHumanActive(true);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { id: `local-${Date.now()}-reply`, role: "assistant", content: result.message, cta: result.cta },
+        ]);
+      }
       if (result.ai_unavailable) {
         trackEvent("ai_unavailable", {});
       }
@@ -167,6 +178,7 @@ export default function ChatWidget() {
 
   const handleOpen = (detail: OpenChatDetail = {}) => {
     setIsOpen(true);
+    setUnread(0);
     trackEvent("chat_opened", { location: detail.initialMessage ? "cta" : "floating_launcher" });
 
     if (!initialized.current) {
@@ -191,6 +203,40 @@ export default function ChatWidget() {
     return () => window.removeEventListener(OPEN_CHAT_EVENT, onOpenRequest);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /** Picks up replies written by the team in the admin. Polls faster while the chat is open and
+   * slower (with an unread badge on the launcher) while it is closed. Pauses when the tab is hidden. */
+  useEffect(() => {
+    if (!conversationId || unavailable) return;
+    let stopped = false;
+    const tick = async () => {
+      if (stopped || document.visibilityState !== "visible") return;
+      try {
+        const res = await fetchUpdates(conversationId, lastAgentIdRef.current);
+        if (stopped) return;
+        setHumanActive(res.human_active);
+        if (res.messages.length > 0) {
+          lastAgentIdRef.current = Math.max(lastAgentIdRef.current, ...res.messages.map((m) => m.id));
+          setMessages((prev) => {
+            const known = new Set(prev.map((m) => m.id));
+            const fresh = res.messages.filter((m) => !known.has(String(m.id)));
+            return fresh.length
+              ? [...prev, ...fresh.map((m) => ({ id: String(m.id), role: m.role, content: m.content }))]
+              : prev;
+          });
+          if (!isOpenRef.current) setUnread((n) => n + res.messages.length);
+          trackEvent("team_reply_received", {});
+        }
+      } catch {
+        // transient network error or rate limit — try again on the next tick
+      }
+    };
+    const timer = window.setInterval(() => void tick(), isOpen ? 5000 : 20000);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+    };
+  }, [conversationId, unavailable, isOpen]);
 
   /** Nudges visitors who haven't left contact details toward doing so before
    * they leave the site — desktop exit-intent (mouse toward the tab/URL bar)
@@ -296,6 +342,15 @@ export default function ChatWidget() {
         >
           <Image src="/img/ama.png" alt="" width={56} height={56} className="w-full h-full object-cover" />
         </button>
+        {unread > 0 && (
+          <span
+            role="status"
+            aria-label={`${unread} new repl${unread === 1 ? "y" : "ies"} from the RaveSoft team`}
+            className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-bold flex items-center justify-center ring-2 ring-white"
+          >
+            {unread}
+          </span>
+        )}
         <span
           aria-hidden="true"
           className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white pointer-events-none"
@@ -368,10 +423,13 @@ export default function ChatWidget() {
             {!isLoading &&
               messages.map((m) => (
                 <div key={m.id}>
+                  {m.role === "agent" && (
+                    <p className="text-[11px] font-semibold text-blue-700 mb-0.5">RaveSoft team</p>
+                  )}
                   <div
                     className={cn(
                       "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap",
-                      m.role === "assistant"
+                      m.role !== "visitor"
                         ? "bg-white border border-gray-200 text-gray-800 mr-auto"
                         : "bg-blue-600 text-white ml-auto"
                     )}
@@ -393,7 +451,13 @@ export default function ChatWidget() {
                 </div>
               ))}
 
-            {isSending && (
+            {humanActive && (
+              <p className="text-xs text-center text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                A RaveSoft team member is on this chat — their reply will appear here.
+              </p>
+            )}
+
+            {isSending && !humanActive && (
               <div className="flex items-center gap-2 text-gray-500 text-sm">
                 <Loader2 className="w-4 h-4 animate-spin" /> Typing…
               </div>

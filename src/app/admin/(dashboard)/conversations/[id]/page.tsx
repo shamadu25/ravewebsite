@@ -25,7 +25,7 @@ export default async function AdminConversationDetailPage({ params }: { params: 
       messages: { orderBy: { id: "asc" } },
       leads: { include: { scores: { orderBy: { computedAt: "desc" }, take: 1 } } },
       conversionEvents: {
-        where: { eventType: { in: ["conversation_note", "conversation_closed", "conversation_reopened", "human_handoff"] } },
+        where: { eventType: { in: ["conversation_note", "conversation_closed", "conversation_reopened", "human_handoff", "agent_reply", "ai_resumed"] } },
         orderBy: { id: "desc" },
         take: 30,
       },
@@ -100,6 +100,28 @@ export default async function AdminConversationDetailPage({ params }: { params: 
               ))}
             </div>
           </section>
+
+          {conversation.status !== "closed" && (
+            <section className="bg-white rounded-2xl border border-gray-200 p-5">
+              <h2 className="font-semibold text-gray-900 mb-1">Reply in the visitor&apos;s chat window</h2>
+              <p className="text-xs text-gray-500 mb-3">
+                {conversation.status === "human_active"
+                  ? "You are handling this chat — the AI is paused. The visitor sees replies within a few seconds if their page is open."
+                  : "Sending a reply pauses the AI for this chat so it does not talk over you."}
+              </p>
+              <ApiForm
+                url={url}
+                fields={[{ name: "message", label: "Message to visitor", type: "textarea", required: true, placeholder: "Hi, this is the RaveSoft team…" }]}
+                extra={{ action: "reply" }}
+                submitLabel="Send reply"
+              />
+              {conversation.status === "human_active" && (
+                <div className="mt-3">
+                  <ApiButton label="Hand back to AI" url={url} body={{ action: "resume_ai" }} variant="secondary" />
+                </div>
+              )}
+            </section>
+          )}
 
           <section className="bg-white rounded-2xl border border-gray-200 p-5">
             <h2 className="font-semibold text-gray-900 mb-3">Internal notes &amp; activity</h2>

@@ -6,7 +6,7 @@ const API_BASE = "/api/ai";
 
 export interface ChatMessage {
   id: number;
-  role: "visitor" | "assistant";
+  role: "visitor" | "assistant" | "agent";
   content: string;
   created_at: string | null;
 }
@@ -32,6 +32,13 @@ export interface SendMessageResponse {
   ai_unavailable: boolean;
   cta: string;
   contact_captured: boolean;
+  /** A team member is handling the chat; the reply will arrive via fetchUpdates. */
+  human_active?: boolean;
+}
+
+export interface UpdatesResponse {
+  messages: ChatMessage[];
+  human_active: boolean;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -71,4 +78,9 @@ export function sendMessage(
     method: "POST",
     body: JSON.stringify({ message, current_page: currentPage }),
   });
+}
+
+/** Team replies written after `afterId` (poll). */
+export function fetchUpdates(conversationId: string, afterId: number): Promise<UpdatesResponse> {
+  return request<UpdatesResponse>(`/conversations/${conversationId}/updates?after=${afterId}`);
 }

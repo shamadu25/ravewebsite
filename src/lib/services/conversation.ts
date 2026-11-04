@@ -4,6 +4,8 @@ import { AI_CONFIG, normalizeCta } from "@/lib/ai/config";
 import { runRaveConciergeAgent } from "@/lib/ai/agent/raveConcierge";
 import { AiProviderUnavailableError } from "@/lib/ai/providers/types";
 import { sendHumanHandoffNotification } from "@/lib/mail/notifications";
+import { alertTeam, inBackground } from "@/lib/services/teamAlerts";
+import { HUMAN_ACTIVE } from "@/lib/os/chats";
 import type { Conversation } from "@prisma/client";
 
 const AI_FALLBACK_MESSAGE =
@@ -87,6 +89,8 @@ export interface SendMessageResult {
   aiUnavailable: boolean;
   cta: string;
   contactCaptured: boolean;
+  /** A team member is handling this chat: the AI did not answer and the reply will arrive from the team. */
+  humanActive?: boolean;
 }
 
 export async function sendMessage(
@@ -109,6 +113,26 @@ export async function sendMessage(
       ...(conversation.status === "closed" ? { status: "open" } : {}),
     },
   });
+
+  // Instant team alerts (best-effort, after the response): first message of a new chat, or a
+  // visitor waiting on a team member who has already joined.
+  const humanActive = conversation.status === HUMAN_ACTIVE;
+  const visitorMessages = await prisma.message.count({ where: { conversationId: conversation.id, role: "visitor" } });
+  if (humanActive || visitorMessages === 1) {
+    inBackground(() =>
+      alertTeam(humanActive ? "visitor_waiting" : "new_chat", {
+        conversationId: conversation.id,
+        externalId: conversation.externalId,
+        contactId: conversation.contactId,
+        page: context.currentPage ?? conversation.currentPage,
+        message: text,
+      })
+    );
+  }
+
+  if (humanActive) {
+    return { message: "", needsHuman: true, aiUnavailable: false, cta: "human_handoff", contactCaptured: Boolean(conversation.contactId), humanActive: true };
+  }
 
   const historyRows = await prisma.message.findMany({
     where: { conversationId: conversation.id },
