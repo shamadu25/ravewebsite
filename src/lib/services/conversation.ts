@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { AI_CONFIG, normalizeCta } from "@/lib/ai/config";
 import { runRaveConciergeAgent } from "@/lib/ai/agent/raveConcierge";
 import { AiProviderUnavailableError } from "@/lib/ai/providers/types";
+import { sendHumanHandoffNotification } from "@/lib/mail/notifications";
 import type { Conversation } from "@prisma/client";
 
 const AI_FALLBACK_MESSAGE =
@@ -97,6 +98,18 @@ export async function sendMessage(
     data: { conversationId: conversation.id, role: "visitor", content: text },
   });
 
+  // Surface the chat in the admin the moment the visitor writes, not only after the AI
+  // answers, so a failing AI call can never leave a visitor message sitting unseen.
+  // A visitor writing into a chat that was closed reopens it.
+  await prisma.conversation.update({
+    where: { id: conversation.id },
+    data: {
+      lastMessageAt: new Date(),
+      ...(context.currentPage ? { currentPage: context.currentPage } : {}),
+      ...(conversation.status === "closed" ? { status: "open" } : {}),
+    },
+  });
+
   const historyRows = await prisma.message.findMany({
     where: { conversationId: conversation.id },
     orderBy: { id: "asc" },
@@ -114,11 +127,14 @@ export async function sendMessage(
       landingPage: conversation.landingPage,
     });
   } catch (error) {
-    if (!(error instanceof AiProviderUnavailableError)) {
-      throw error;
+    // Any agent failure (provider outage OR an unexpected error) is handled the same way:
+    // the visitor message is already saved, the visitor gets the fallback, and the team is
+    // alerted — never a silent 500.
+    if (error instanceof AiProviderUnavailableError) {
+      console.warn("RaveSoft AI unavailable, returning fallback", error.message);
+    } else {
+      console.error("RaveSoft AI agent failed, returning fallback", error);
     }
-
-    console.warn("RaveSoft AI unavailable, returning fallback", error.message);
 
     await prisma.message.create({
       data: { conversationId: conversation.id, role: "assistant", content: AI_FALLBACK_MESSAGE },
@@ -127,6 +143,11 @@ export async function sendMessage(
       where: { id: conversation.id },
       data: { status: "human_handoff", lastMessageAt: new Date() },
     });
+
+    // Alert once per handoff (not on every follow-up message while the AI is down).
+    if (conversation.status !== "human_handoff") {
+      await notifyAiFailure(conversation, error);
+    }
 
     return {
       message: AI_FALLBACK_MESSAGE,
@@ -181,6 +202,33 @@ export async function sendMessage(
     cta: normalizeCta(structured.recommendedNextAction),
     contactCaptured: Boolean(refreshed?.contactId),
   };
+}
+
+/** Best-effort: records the failure and emails the team. Must never throw into the visitor's request. */
+async function notifyAiFailure(conversation: Conversation, error: unknown): Promise<void> {
+  const reason =
+    error instanceof AiProviderUnavailableError ? "AI provider unavailable" : "AI assistant error";
+  try {
+    await prisma.conversionEvent.create({
+      data: {
+        conversationId: conversation.id,
+        contactId: conversation.contactId,
+        eventType: "human_handoff",
+        metadata: { reason, automatic: true },
+        occurredAt: new Date(),
+      },
+    });
+    const contact = conversation.contactId
+      ? await prisma.contact.findUnique({ where: { id: conversation.contactId } })
+      : null;
+    await sendHumanHandoffNotification({
+      conversationExternalId: conversation.externalId,
+      contactName: contact ? [contact.firstName, contact.lastName].filter(Boolean).join(" ") || null : null,
+      reason: `${reason} — a visitor message is waiting for a reply.`,
+    });
+  } catch (notifyError) {
+    console.error("Failed to record/notify AI failure handoff", notifyError);
+  }
 }
 
 async function recordIntent(conversationId: number, intentKey: string): Promise<void> {
