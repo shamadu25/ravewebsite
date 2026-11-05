@@ -15,6 +15,7 @@ export const NAV: NavItem[] = [
   { href: "/admin/revenue", label: "Leads & Sales", icon: Target, also: ["/admin/leads", "/admin/forecast"] },
   { href: "/admin/conversations", label: "Live chats", icon: MessageSquare, badge: "chats" },
   { href: "/admin/growth", label: "Growth Engine", icon: Rocket },
+  { href: "/admin/revenue-os/catalogue", label: "Solution catalogue", icon: Boxes },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/marketing", label: "Marketing", icon: Megaphone },
   { href: "/admin/products", label: "Products", icon: Boxes },
