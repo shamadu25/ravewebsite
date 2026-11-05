@@ -1,9 +1,11 @@
 import type { MetadataRoute } from "next";
 import { BLOG_POSTS, CASE_STUDIES, INDUSTRIES } from "@/lib/data";
 import { getPublishedArticles } from "@/lib/os/blog";
+import { getIndustryConfigs } from "@/lib/ai-automation/repo";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const dbArticles = await getPublishedArticles();
+  const aiIndustries = await getIndustryConfigs({ pagesOnly: true });
   const base = "https://ravesoftsolutions.com";
 
   const blogRoutes = BLOG_POSTS.map((p) => ({
@@ -28,6 +30,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
+
+  const aiAutomationRoutes = [
+    { url: `${base}/ai-automation`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.9 },
+    ...aiIndustries.map((i) => ({ url: `${base}/ai-automation/${i.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 })),
+  ];
 
   return [
     { url: base, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
@@ -54,6 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/products/hotel`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/privacy`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
     { url: `${base}/terms`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+    ...aiAutomationRoutes,
     ...blogRoutes,
     ...dbBlogRoutes,
     ...caseStudyRoutes,

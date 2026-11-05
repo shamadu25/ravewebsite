@@ -26,3 +26,11 @@ jobs:
           code=$(curl -sS -o response.json -w '%{http_code}' --max-time 120 -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/os/cron")
           cat response.json; echo
           [ "$code" = "200" ] || { echo "Scheduler returned HTTP $code"; exit 1; }
+      - name: Call AI Automation scheduler
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          code=$(curl -sS -o ai-response.json -w '%{http_code}' --max-time 120 -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/ai-automation/cron")
+          cat ai-response.json; echo
+          [ "$code" = "200" ] || { echo "AI Automation scheduler returned HTTP $code"; exit 1; }

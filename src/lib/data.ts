@@ -54,6 +54,7 @@ export const NAV_SERVICES: NavChild[] = [
   { label: "Website Design", href: "/services/website-design", desc: "Premium, conversion-focused websites" },
   { label: "Mobile Apps", href: "/services/mobile-apps", desc: "iOS and Android applications" },
   { label: "Business Automation", href: "/services/business-automation", desc: "AI-powered workflow automation" },
+  { label: "AI Automation Assessment", href: "/ai-automation", desc: "Free AI assessment and proposal" },
   { label: "POS & ERP", href: "/services/pos-erp", desc: "Complete business management" },
 ];
 
@@ -1035,6 +1036,7 @@ export const FOOTER_LINKS = {
     { label: "Business Automation", href: "/services/business-automation" },
     { label: "POS & ERP", href: "/services/pos-erp" },
     { label: "AI Employee", href: "/ai-employee" },
+    { label: "AI Automation", href: "/ai-automation" },
     { label: "All Services", href: "/services" },
   ],
   products: [
