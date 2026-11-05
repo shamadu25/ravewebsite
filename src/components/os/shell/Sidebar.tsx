@@ -14,7 +14,7 @@ export default function Sidebar({ approvals, chats, userName, userRole }: Props)
   return (
     <aside aria-label="Primary" className="fixed inset-y-0 left-0 z-30 hidden w-16 flex-col bg-[var(--sidebar)] text-white md:flex lg:w-60">
       <div className="flex h-16 items-center gap-3 px-4 lg:px-5">
-        <Image src="/img/logo.png" alt="RaveSoft" width={32} height={32} className="h-8 w-8 shrink-0 rounded-lg object-contain" />
+        <Image src="/img/icon-mark.png" alt="RaveSoft" width={32} height={32} priority className="h-8 w-8 shrink-0 rounded-lg bg-white p-1 object-contain" />
         <div className="hidden leading-tight lg:block">
           <p className="text-[15px] font-semibold">RaveSoft</p>
           <p className="text-[11px] text-[var(--sidebar-muted)]">AI Command Centre</p>
