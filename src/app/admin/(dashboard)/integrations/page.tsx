@@ -49,11 +49,16 @@ export default async function IntegrationsPage() {
         </div>
         <ul className="space-y-1.5 text-[13px]">
           <li className="flex justify-between gap-3"><span>Assistant switched on</span><span>{chatAi.enabled ? "Yes" : "NO — AI_AGENT_ENABLED is \"false\""}</span></li>
-          <li className="flex justify-between gap-3"><span>OpenAI API key (the only key the chat reads)</span><span>{chatAi.keyConfigured ? "Set" : "MISSING — set OPENAI_API_KEY"}</span></li>
-          <li className="flex justify-between gap-3"><span>Model</span><span>{chatAi.model}</span></li>
+          {chatAi.providers.map((p) => (
+            <li key={p.name} className="flex justify-between gap-3">
+              <span>{p.label}</span>
+              <span>{p.configured ? `Key set · ${p.model} · ${p.position === 1 ? "tried first" : `fallback #${p.position}`}` : `Not configured (${p.envVar})`}</span>
+            </li>
+          ))}
         </ul>
-        {!chatAi.keyConfigured && llm.configured && (
-          <p className="mt-3 rounded-lg bg-amber-50 p-3 text-[13px] text-amber-900">Other AI providers ({llm.providers.filter((p) => p.available).map((p) => p.name).join(", ")}) are configured for the business tools, but the website chat does not use them. Without OPENAI_API_KEY every visitor sees the &ldquo;temporarily unavailable&rdquo; message.</p>
+        <p className="mt-2 text-[12px] text-gray-500">The chat tries every configured provider in this order and uses the first that answers, so one provider&apos;s outage or billing problem does not stop it. Put another one first with CHAT_AI_PROVIDER=anthropic or google.</p>
+        {!chatAi.anyConfigured && (
+          <p className="mt-3 rounded-lg bg-amber-50 p-3 text-[13px] text-amber-900">No AI provider key is set, so every visitor sees the &ldquo;temporarily unavailable&rdquo; message. Set OPENAI_API_KEY, ANTHROPIC_API_KEY or GEMINI_API_KEY.</p>
         )}
         <div className="mt-4 border-t border-gray-100 pt-3">
           <p className="mb-2 text-[12px] font-semibold uppercase text-gray-500">Recent chat AI failures</p>

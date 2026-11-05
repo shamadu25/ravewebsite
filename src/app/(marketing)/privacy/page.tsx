@@ -89,6 +89,7 @@ export default function PrivacyPolicyPage() {
               <p>We may use trusted third-party services including:</p>
               <ul className="mt-3 space-y-2 list-disc pl-5">
                 <li>Email service providers for communications</li>
+                <li>AI service providers that generate replies in our website chat (messages you type in the chat are sent to them)</li>
                 <li>Analytics platforms (e.g., Google Analytics) for website analytics</li>
                 <li>Cloud hosting providers for website infrastructure</li>
               </ul>

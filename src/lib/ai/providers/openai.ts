@@ -1,4 +1,4 @@
-import { AiProviderUnavailableError, LLMMessage, LLMProvider, LLMResponse } from "./types";
+import { AiProviderUnavailableError, LLMMessage, LLMProvider, LLMResponse, REQUEST_TIMEOUT_MS } from "./types";
 
 export class OpenAIProvider implements LLMProvider {
   constructor(
@@ -28,6 +28,7 @@ export class OpenAIProvider implements LLMProvider {
           response_format: { type: "json_object" },
           temperature: 0.4,
         }),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
     } catch (error) {
       throw new AiProviderUnavailableError("Failed to reach the AI provider.", { cause: error });

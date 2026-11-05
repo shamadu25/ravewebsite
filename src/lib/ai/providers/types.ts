@@ -9,6 +9,8 @@ export interface LLMResponse {
   inputTokens: number;
   outputTokens: number;
   latencyMs: number;
+  /** Which provider answered (set when several are configured). */
+  provider?: string;
 }
 
 export interface LLMProvider {
@@ -22,3 +24,6 @@ export class AiProviderUnavailableError extends Error {
     this.name = "AiProviderUnavailableError";
   }
 }
+
+/** Per-request time limit for a chat provider, so a hung provider falls through to the next in time. */
+export const REQUEST_TIMEOUT_MS = 15_000;

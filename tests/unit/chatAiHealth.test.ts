@@ -22,25 +22,59 @@ describe("diagnoseChatAiError", () => {
   });
 });
 
-describe("the exact symptom: no OpenAI key", () => {
+describe("multi-provider diagnosis", () => {
+  it("explains every provider that failed, in order", () => {
+    const d = diagnoseChatAiError("[openai] AI provider request failed with status 429. | [google] AI provider request failed with status 401.");
+    expect(d.cause).toBe("quota_or_rate_limit");
+    expect(d.summary).toMatch(/Every AI provider failed/);
+    expect(d.summary).toMatch(/OpenAI refused the request/);
+    expect(d.summary).toMatch(/Google Gemini rejected the API key/);
+    expect(d.fix).toMatch(/GEMINI_API_KEY/);
+  });
+
+  it("names the right key and billing page per provider", () => {
+    expect(diagnoseChatAiError("[anthropic] AI provider request failed with status 401.").fix).toMatch(/ANTHROPIC_API_KEY/);
+    expect(diagnoseChatAiError("[anthropic] AI provider request failed with status 429.").fix).toMatch(/console\.anthropic\.com/);
+    expect(diagnoseChatAiError("[openai] AI provider request failed with status 429.").fix).toMatch(/platform\.openai\.com/);
+  });
+});
+
+describe("the exact symptom: no AI key", () => {
   const ENV = { ...process.env };
+  const clearKeys = () => {
+    delete process.env.OPENAI_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.GEMINI_API_KEY;
+    delete process.env.CHAT_AI_PROVIDER;
+    process.env.AI_AGENT_ENABLED = "true";
+  };
   afterEach(() => {
     process.env = { ...ENV };
     jest.resetModules();
+    jest.restoreAllMocks();
   });
 
-  it("testChatAi names the missing key instead of failing silently", async () => {
-    delete process.env.OPENAI_API_KEY;
-    process.env.GEMINI_API_KEY = "set-but-the-chat-ignores-it";
-    process.env.AI_AGENT_ENABLED = "true";
+  it("testChatAi names the missing keys instead of failing silently", async () => {
+    clearKeys();
     jest.resetModules();
     const { testChatAi, chatAiStatus } = await import("@/lib/ai/health");
-    expect(chatAiStatus()).toMatchObject({ enabled: true, keyConfigured: false });
-    const r = await testChatAi();
-    expect(r).toMatchObject({ ok: false, cause: "no_key" });
+    expect(chatAiStatus()).toMatchObject({ enabled: true, anyConfigured: false });
+    expect(await testChatAi()).toMatchObject({ ok: false, cause: "no_key" });
   });
 
-  it("testChatAi reports a switched-off assistant", async () => {
+  it("a Gemini-only setup now works (this used to be the failure)", async () => {
+    clearKeys();
+    process.env.GEMINI_API_KEY = "gem-key";
+    jest.resetModules();
+    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue({ ok: true, json: async () => ({ modelVersion: "gemini-x", candidates: [{ content: { parts: [{ text: '{"ok":true}' }] } }] }) } as Response);
+    const { testChatAi, chatAiStatus } = await import("@/lib/ai/health");
+    expect(chatAiStatus().anyConfigured).toBe(true);
+    expect(await testChatAi()).toMatchObject({ ok: true, provider: "google", model: "gemini-x" });
+    expect(String(fetchMock.mock.calls[0][0])).toContain("generativelanguage.googleapis.com");
+  });
+
+  it("reports a switched-off assistant", async () => {
+    clearKeys();
     process.env.OPENAI_API_KEY = "sk-test";
     process.env.AI_AGENT_ENABLED = "false";
     jest.resetModules();
@@ -48,23 +82,32 @@ describe("the exact symptom: no OpenAI key", () => {
     expect(await testChatAi()).toMatchObject({ ok: false, cause: "disabled" });
   });
 
-  it("testChatAi surfaces an OpenAI quota error from the real provider code", async () => {
+  it("OpenAI out of credit falls through to Claude, and the test says who answered", async () => {
+    clearKeys();
     process.env.OPENAI_API_KEY = "sk-test";
-    process.env.AI_AGENT_ENABLED = "true";
+    process.env.ANTHROPIC_API_KEY = "ak-test";
     jest.resetModules();
-    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue({ ok: false, status: 429 } as Response);
+    jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    const fetchMock = jest.spyOn(global, "fetch").mockImplementation(async (url) =>
+      String(url).includes("openai.com")
+        ? ({ ok: false, status: 429 } as Response)
+        : ({ ok: true, json: async () => ({ model: "claude-haiku-5-5", content: [{ type: "text", text: '{"ok":true}' }] }) } as Response)
+    );
     const { testChatAi } = await import("@/lib/ai/health");
-    expect(await testChatAi()).toMatchObject({ ok: false, cause: "quota_or_rate_limit" });
-    fetchMock.mockRestore();
+    expect(await testChatAi()).toMatchObject({ ok: true, provider: "anthropic", model: "claude-haiku-5-5" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("testChatAi reports success with the model used", async () => {
+  it("when every provider fails, the diagnosis explains each one", async () => {
+    clearKeys();
     process.env.OPENAI_API_KEY = "sk-test";
-    process.env.AI_AGENT_ENABLED = "true";
+    process.env.GEMINI_API_KEY = "gem-key";
     jest.resetModules();
-    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue({ ok: true, json: async () => ({ model: "gpt-4o-mini-2024", choices: [{ message: { content: '{"ok":true}' } }] }) } as Response);
+    jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    jest.spyOn(global, "fetch").mockImplementation(async (url) => ({ ok: false, status: String(url).includes("openai.com") ? 429 : 503 }) as Response);
     const { testChatAi } = await import("@/lib/ai/health");
-    expect(await testChatAi()).toMatchObject({ ok: true, model: "gpt-4o-mini-2024" });
-    fetchMock.mockRestore();
+    const r = await testChatAi();
+    expect(r).toMatchObject({ ok: false, cause: "quota_or_rate_limit" });
+    expect((r as { summary: string }).summary).toMatch(/OpenAI refused[\s\S]*Google Gemini had an outage/);
   });
 });
