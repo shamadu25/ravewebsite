@@ -36,7 +36,7 @@ export function SectionHeading({ id, eyebrow, title, intro, tone = "light", alig
 }
 
 export function CtaLink({ href, children, variant = "primary", className, onDark = false }: { href: string; children: React.ReactNode; variant?: "primary" | "secondary"; className?: string; onDark?: boolean }) {
-  const base = "inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg px-6 text-[15px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+  const base = "inline-flex min-h-[48px] w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg px-5 text-center sm:w-auto text-[15px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
   const styles =
     variant === "primary"
       ? "bg-[#FFB200] text-[#071536] hover:bg-[#ffc233] focus-visible:ring-[#FFB200]"

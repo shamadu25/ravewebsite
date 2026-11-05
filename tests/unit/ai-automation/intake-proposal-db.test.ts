@@ -5,7 +5,8 @@ jest.mock("@/lib/antispam/guard", () => ({ guardForm: (...a: unknown[]) => guard
 jest.mock("@/lib/ai-automation/seed", () => ({ ensureSeeded: jest.fn(async () => undefined), seedAiAutomation: jest.fn() }));
 jest.mock("@/lib/ai-automation/jobs", () => ({ enqueueJob: (...a: unknown[]) => (enqueueJob as unknown as (...x: unknown[]) => unknown)(...a) }));
 
-const db = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db: Record<string, any> = {
   aiAssessment: { findUnique: jest.fn(), findFirst: jest.fn(), create: jest.fn(async ({ data }: { data: Record<string, unknown> }) => ({ id: 77, ...data })) },
   aiIndustry: { findUnique: jest.fn(async () => ({ id: 3 })) },
   aiAssessmentResponse: { createMany: jest.fn(async () => ({ count: 1 })) },

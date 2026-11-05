@@ -34,21 +34,18 @@ export default function PageHero({ breadcrumbs, eyebrow, headline, subcopy, poin
                 <li key={p} className="flex items-start gap-3 text-[15px] text-slate-100"><Check className="mt-0.5 h-4 w-4 shrink-0 text-[#FFB200]" aria-hidden="true" /><span>{p}</span></li>
               ))}
             </ul>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-wrap gap-3">
               <CtaLink href="#assessment">{primary}</CtaLink>
               <CtaLink href={secondaryHref} variant="secondary" onDark>{secondary}</CtaLink>
             </div>
           </div>
           <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-24">
-            <HeroStarter industries={industries} initialIndustry={industry?.slug} industryName={industry?.name} />
-          </div>
-          <div className="lg:col-start-1 lg:row-start-2">
-            <div className="relative overflow-hidden rounded-lg border border-white/10">
-              <Image src={image.src} alt={image.alt} width={1672} height={941} priority sizes="(min-width: 1024px) 640px, 92vw" className="h-auto w-full" />
-              <div className="absolute bottom-3 right-3 hidden w-[270px] xl:block"><AnalysisPreview industry={industry?.name.toLowerCase()} /></div>
+            <div className="overflow-hidden rounded-lg border border-white/10">
+              <Image src={image.src} alt={image.alt} width={1672} height={941} priority sizes="(min-width: 1024px) 520px, 92vw" className="h-auto w-full" />
             </div>
-            <div className="mt-4 xl:hidden"><AnalysisPreview industry={industry?.name.toLowerCase()} /></div>
+            <div className="relative -mt-10 px-3 sm:px-5"><HeroStarter industries={industries} initialIndustry={industry?.slug} industryName={industry?.name} /></div>
           </div>
+          <div className="lg:col-start-1 lg:row-start-2"><AnalysisPreview industry={industry?.name.toLowerCase()} /></div>
         </div>
       </Container>
     </section>
