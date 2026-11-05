@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { sendHumanHandoffNotification } from "@/lib/mail/notifications";
+import { sendSmsAlert } from "@/lib/sms/alerts";
+import { inBackground } from "@/lib/services/teamAlerts";
 import { Tool } from "./types";
 
 /**
@@ -43,6 +45,8 @@ export const EscalateHumanTool: Tool = {
       contactName,
       reason,
     });
+
+    inBackground(() => sendSmsAlert("human_handoff", { name: contactName, detail: reason ?? "A visitor asked for a human.", path: `/admin/conversations/${conversation.externalId}` }));
 
     console.info("RaveSoft AI human handoff requested", {
       conversationId: conversation.id,

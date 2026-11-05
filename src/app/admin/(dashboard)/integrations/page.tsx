@@ -9,6 +9,8 @@ import { emailDailyCap, emailsSentToday } from "@/lib/os/outreach";
 import { prisma } from "@/lib/prisma";
 import { chargeCurrency, fxRate, paystackConfigured } from "@/lib/os/paystack";
 import { ORG_ID } from "@/lib/os/constants";
+import { hoursAgo } from "@/lib/os/chats";
+import { alertNumbers, dailyCap, enabledEvents, maskNumber } from "@/lib/sms/alerts";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +32,25 @@ export default async function IntegrationsPage() {
     prisma.systemSetting.findUnique({ where: { key: `os:${ORG_ID}:inbox_last_poll` } }).catch(() => null),
     prisma.osInboundEmail.findMany({ where: { orgId: ORG_ID }, orderBy: { id: "desc" }, take: 5 }).catch(() => []),
   ]);
+  const smsStatus = channels.find((c) => c.channel === "SMS");
+  const smsNumbers = alertNumbers();
+  const smsSentToday = await prisma.osAuditLog.count({ where: { orgId: ORG_ID, action: "sms.alert", createdAt: { gte: hoursAgo(24) } } }).catch(() => 0);
   const row = (ok: boolean) => <Badge>{ok ? "ACTIVE" : "DRAFT"}</Badge>;
   return (
     <div className="space-y-6">
       <PageHeader title="Integrations" subtitle="Status is computed from server configuration. Secrets are never sent to the browser." />
+      <Card>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-gray-900">Instant SMS alerts</h2>
+          <ApiButton label="Send test SMS to the team" url="/api/os/sms/test" result="smsTest" />
+        </div>
+        <ul className="space-y-1.5 text-[13px]">
+          <li className="flex justify-between gap-3"><span>Provider (Twilio)</span><span>{smsStatus?.connected ? "Connected" : `NOT CONNECTED — ${smsStatus?.reason ?? "set TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM"}`}</span></li>
+          <li className="flex justify-between gap-3"><span>Team numbers</span><span>{smsNumbers.length ? smsNumbers.map(maskNumber).join(", ") : "NONE — set SMS_ALERT_NUMBERS (comma-separated, e.g. +233531561484,+233201234567)"}</span></li>
+          <li className="flex justify-between gap-3"><span>Texts you for</span><span>{enabledEvents().map((e) => e.replace(/_/g, " ")).join(", ") || "nothing"}</span></li>
+          <li className="flex justify-between gap-3"><span>Sent in the last 24h</span><span>{smsSentToday} / {dailyCap()} cap</span></li>
+        </ul>
+      </Card>
       <Card>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-gray-900">Email</h2>

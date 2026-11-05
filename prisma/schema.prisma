@@ -145,6 +145,18 @@ model Message {
   @@map("messages")
 }
 
+/// Team-editable one-click replies for the live-chat inbox. Empty table → the built-in defaults are used.
+model CannedReply {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String   @db.Text
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("canned_replies")
+}
+
 model ConversationSummary {
   id             Int          @id @default(autoincrement())
   conversationId Int          @map("conversation_id")

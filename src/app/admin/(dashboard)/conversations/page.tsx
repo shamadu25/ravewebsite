@@ -119,6 +119,8 @@ export default async function AdminConversationsPage({
         <div className="flex items-baseline gap-4">
           <h1 className="text-2xl font-bold text-gray-900">Live chats</h1>
           <Link href="/admin/leads" className="text-sm font-medium text-blue-600 hover:underline">Leads →</Link>
+          <Link href="/admin/conversations/analytics" className="text-sm font-medium text-blue-600 hover:underline">Analytics →</Link>
+          <Link href="/admin/conversations/canned" className="text-sm font-medium text-blue-600 hover:underline">Canned replies →</Link>
         </div>
         <span className="text-xs text-gray-400">Auto-refreshes every 10s · every message is stored</span>
       </div>

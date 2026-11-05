@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { LEAD_SCORE_LEVELS, LEAD_SCORING_WEIGHTS } from "@/lib/ai/config";
 import { sendHotLeadNotification } from "@/lib/mail/notifications";
+import { sendSmsAlert } from "@/lib/sms/alerts";
+import { inBackground } from "@/lib/services/teamAlerts";
 import type { LeadScore } from "@prisma/client";
 
 /**
@@ -62,6 +64,15 @@ async function notifyHotLead(leadId: number, totalScore: number): Promise<void> 
     serviceInterest: lead.serviceInterest,
     totalScore,
   });
+
+  inBackground(() =>
+    sendSmsAlert("hot_lead", {
+      name: contactName,
+      extra: `score ${totalScore}`,
+      detail: [lead.serviceInterest, lead.contact.whatsapp ?? lead.contact.phone ?? lead.contact.email].filter(Boolean).join(" | "),
+      path: `/admin/leads/${lead.id}`,
+    })
+  );
 }
 
 function levelFor(totalScore: number): string {

@@ -6,7 +6,7 @@ import ApiButton from "@/components/os/ApiButton";
 import ApiForm from "@/components/os/ApiForm";
 import ChatReplyBox from "@/components/os/ChatReplyBox";
 import ChatAssign from "@/components/os/ChatAssign";
-import { CANNED_REPLIES } from "@/lib/os/cannedReplies";
+import { listCannedReplies } from "@/lib/os/cannedStore";
 import {
   SCORE_STYLES,
   SLA_STYLES,
@@ -48,7 +48,8 @@ export default async function AdminConversationDetailPage({ params }: { params: 
 
   if (!conversation) notFound();
 
-  const [buyingSignals, users] = await Promise.all([
+  const [{ replies: cannedReplies }, buyingSignals, users] = await Promise.all([
+    listCannedReplies(),
     prisma.conversionEvent.count({ where: { conversationId: conversation.id, eventType: "buying_signal_detected" } }),
     prisma.osUser.findMany({ where: { active: true }, select: { email: true }, orderBy: { email: "asc" } }),
   ]);
@@ -136,7 +137,10 @@ export default async function AdminConversationDetailPage({ params }: { params: 
 
           {conversation.status !== "closed" && (
             <section className="bg-white rounded-2xl border border-gray-200 p-5">
-              <h2 className="font-semibold text-gray-900 mb-1">Reply in the visitor&apos;s chat window</h2>
+              <div className="flex items-baseline justify-between">
+                <h2 className="font-semibold text-gray-900 mb-1">Reply in the visitor&apos;s chat window</h2>
+                <Link href="/admin/conversations/canned" className="text-xs text-blue-600 hover:underline">Edit canned replies</Link>
+              </div>
               <p className="text-xs text-gray-500 mb-3">
                 {conversation.status === "human_active"
                   ? "You are handling this chat — the AI is paused. The visitor sees replies within a few seconds if their page is open."
@@ -146,7 +150,7 @@ export default async function AdminConversationDetailPage({ params }: { params: 
                 url={url}
                 typingUrl={`${url}/typing`}
                 firstName={contact?.firstName ?? null}
-                canned={CANNED_REPLIES}
+                canned={cannedReplies}
                 humanActive={conversation.status === "human_active"}
               />
               {conversation.status === "human_active" && (

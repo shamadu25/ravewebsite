@@ -4,6 +4,7 @@ import { AI_CONFIG, normalizeCta } from "@/lib/ai/config";
 import { runRaveConciergeAgent } from "@/lib/ai/agent/raveConcierge";
 import { AiProviderUnavailableError } from "@/lib/ai/providers/types";
 import { sendHumanHandoffNotification } from "@/lib/mail/notifications";
+import { sendSmsAlert } from "@/lib/sms/alerts";
 import { alertTeam, inBackground } from "@/lib/services/teamAlerts";
 import { HUMAN_ACTIVE } from "@/lib/os/chats";
 import { chatLang, openerFor, pickReturningTopic } from "@/lib/ai/i18n";
@@ -296,6 +297,13 @@ async function notifyAiFailure(conversation: Conversation, error: unknown): Prom
       contactName: contact ? [contact.firstName, contact.lastName].filter(Boolean).join(" ") || null : null,
       reason: `${reason} — a visitor message is waiting for a reply.`,
     });
+    inBackground(() =>
+      sendSmsAlert("human_handoff", {
+        name: contact ? [contact.firstName, contact.lastName].filter(Boolean).join(" ") || null : null,
+        detail: `${reason} - a visitor message is waiting for a reply.`,
+        path: `/admin/conversations/${conversation.externalId}`,
+      })
+    );
   } catch (notifyError) {
     console.error("Failed to record/notify AI failure handoff", notifyError);
   }
