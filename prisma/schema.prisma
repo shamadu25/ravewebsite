@@ -18,6 +18,7 @@ model Company {
   country     String?
   contacts    Contact[]
   leads       Lead[]
+  aiLeads     AiLead[]
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
@@ -42,6 +43,7 @@ model Contact {
   conversations    Conversation[]
   leads            Lead[]
   conversionEvents ConversionEvent[]
+  aiLeads          AiLead[]
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
 
@@ -194,6 +196,7 @@ model Lead {
   owner            String?
   scores           LeadScore[]
   conversionEvents ConversionEvent[]
+  aiLeads          AiLead[]
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
 
@@ -1180,4 +1183,541 @@ model GrProviderUsage {
 
   @@index([provider, createdAt])
   @@map("gr_provider_usage")
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// RaveSoft AI Automation platform (tables prefixed ai_)
+// Statuses are strings validated in src/lib/ai-automation/types.ts.
+// Money: DECIMAL(14,2). No price is ever invented: NULL = "no approved price".
+// ═══════════════════════════════════════════════════════════════════════
+
+model AiIndustry {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique @db.VarChar(80)
+  name        String   @db.VarChar(160)
+  active      Boolean  @default(true)
+  hasPage     Boolean  @default(true) @map("has_page")
+  sortOrder   Int      @default(0) @map("sort_order")
+  /// Landing-page content (hero, problems, use cases, integrations, FAQs, links) — validated by IndustryContentSchema.
+  content     Json
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  page        AiIndustryPage?
+  questions   AiIndustryQuestion[]
+  mappings    AiSolutionIndustryMapping[]
+  assessments AiAssessment[]
+
+  @@map("ai_industries")
+}
+
+model AiIndustryPage {
+  id             Int      @id @default(autoincrement())
+  industryId     Int      @unique @map("industry_id")
+  industry       AiIndustry @relation(fields: [industryId], references: [id], onDelete: Cascade)
+  seoTitle       String   @map("seo_title") @db.VarChar(200)
+  seoDescription String   @map("seo_description") @db.VarChar(400)
+  keywords       Json?
+  ogImage        String?  @map("og_image") @db.VarChar(300)
+  active         Boolean  @default(true)
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("ai_industry_pages")
+}
+
+model AiIndustryQuestion {
+  id           Int      @id @default(autoincrement())
+  /// NULL industry = universal question shown for every industry.
+  industryId   Int?     @map("industry_id")
+  industry     AiIndustry? @relation(fields: [industryId], references: [id], onDelete: Cascade)
+  key          String   @db.VarChar(80)
+  stage        Int      @default(2)
+  label        String   @db.VarChar(400)
+  helpText     String?  @map("help_text") @db.VarChar(600)
+  type         String   @db.VarChar(24)
+  required     Boolean  @default(false)
+  sortOrder    Int      @default(0) @map("sort_order")
+  /// Conditional display: { key, in: [...] }
+  showIf       Json?    @map("show_if")
+  active       Boolean  @default(true)
+  options      AiIndustryQuestionOption[]
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([industryId, key])
+  @@index([industryId, stage, sortOrder])
+  @@map("ai_industry_questions")
+}
+
+model AiIndustryQuestionOption {
+  id         Int      @id @default(autoincrement())
+  questionId Int      @map("question_id")
+  question   AiIndustryQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  value      String   @db.VarChar(120)
+  label      String   @db.VarChar(240)
+  sortOrder  Int      @default(0) @map("sort_order")
+
+  @@unique([questionId, value])
+  @@map("ai_industry_question_options")
+}
+
+model AiSolutionCatalogue {
+  id                 Int      @id @default(autoincrement())
+  key                String   @unique @db.VarChar(80)
+  name               String   @db.VarChar(160)
+  description        String   @db.Text
+  problemsSolved     Json     @map("problems_solved")
+  capabilities       Json
+  deliverables       Json
+  integrations       Json
+  dependencies       Json
+  /// NULL = no approved price → manual review.
+  basePrice          Decimal? @map("base_price") @db.Decimal(14, 2)
+  /// FIXED | PER_UNIT | HOURLY
+  pricingMethod      String   @default("FIXED") @map("pricing_method") @db.VarChar(16)
+  currency           String   @default("USD") @db.VarChar(3)
+  /// Enabled complexity levels e.g. ["LOW","MEDIUM","HIGH"]
+  complexityLevels   Json     @map("complexity_levels")
+  defaultComplexity  String   @default("MEDIUM") @map("default_complexity") @db.VarChar(12)
+  estimatedHours     Int?     @map("estimated_hours")
+  deliveryWeeks      Int?     @map("delivery_weeks")
+  monthlyMaintenance Decimal? @map("monthly_maintenance") @db.Decimal(14, 2)
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  mappings           AiSolutionIndustryMapping[]
+
+  @@map("ai_solution_catalogue")
+}
+
+model AiSolutionIndustryMapping {
+  id          Int      @id @default(autoincrement())
+  solutionId  Int      @map("solution_id")
+  solution    AiSolutionCatalogue @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+  industryId  Int      @map("industry_id")
+  industry    AiIndustry @relation(fields: [industryId], references: [id], onDelete: Cascade)
+  /// Lower = recommended earlier.
+  priority    Int      @default(100)
+  /// Business problems / automation areas that make this solution relevant (matching signals).
+  signals     Json?
+
+  @@unique([solutionId, industryId])
+  @@map("ai_solution_industry_mappings")
+}
+
+model AiPricingRule {
+  id        Int      @id @default(autoincrement())
+  /// COMPLEXITY_MULTIPLIER | INTEGRATION_FEE | TRAINING_FEE | THIRD_PARTY_API_FEE | INFRASTRUCTURE_FEE | CUSTOM_DEV_RATE | MIN_PROJECT_FEE | DISCOUNT | TAX | APPROVAL_THRESHOLD | MIN_MARGIN | COST_RATE | PAYMENT_SCHEDULE | OPTIONAL_SERVICE
+  kind      String   @db.VarChar(32)
+  key       String   @db.VarChar(80)
+  label     String   @db.VarChar(200)
+  params    Json
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0) @map("sort_order")
+  updatedBy String?  @map("updated_by") @db.VarChar(160)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([kind, key])
+  @@map("ai_pricing_rules")
+}
+
+model AiLead {
+  id               Int      @id @default(autoincrement())
+  contactId        Int      @map("contact_id")
+  contact          Contact  @relation(fields: [contactId], references: [id])
+  companyId        Int?     @map("company_id")
+  company          Company? @relation(fields: [companyId], references: [id])
+  crmLeadId        Int?     @map("crm_lead_id")
+  crmLead          Lead?    @relation(fields: [crmLeadId], references: [id])
+  /// NEW_LEAD | ASSESSMENT_COMPLETED | AI_ANALYSIS_COMPLETED | QUALIFIED | PROPOSAL_GENERATED | AWAITING_APPROVAL | PROPOSAL_SENT | NEGOTIATION | ACCEPTED | IMPLEMENTATION | ACTIVE_CUSTOMER | COMPLETED | LOST
+  status           String   @default("NEW_LEAD") @db.VarChar(32)
+  /// HIGH | MEDIUM | LOW | MANUAL_REVIEW
+  priority         String?  @db.VarChar(16)
+  qualificationScore Int?   @map("qualification_score")
+  qualificationReasons Json? @map("qualification_reasons")
+  industrySlug     String?  @map("industry_slug") @db.VarChar(80)
+  country          String?  @db.VarChar(100)
+  assignedTo       String?  @map("assigned_to") @db.VarChar(160)
+  dealValue        Decimal? @map("deal_value") @db.Decimal(14, 2)
+  monthlyRecurring Decimal? @map("monthly_recurring") @db.Decimal(14, 2)
+  currency         String   @default("USD") @db.VarChar(3)
+  nextActionAt     DateTime? @map("next_action_at")
+  nextActionNote   String?  @map("next_action_note") @db.VarChar(400)
+  lostReason       String?  @map("lost_reason") @db.VarChar(400)
+  emailOptOut      Boolean  @default(false) @map("email_opt_out")
+  optedOutAt       DateTime? @map("opted_out_at")
+  followupsStopped Boolean  @default(false) @map("followups_stopped")
+  anonymisedAt     DateTime? @map("anonymised_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  assessments AiAssessment[]
+  proposals   AiProposal[]
+  assignments AiLeadAssignment[]
+  notes       AiLeadNote[]
+  activity    AiActivityLog[]
+  emails      AiEmailLog[]
+
+  @@index([status])
+  @@index([industrySlug])
+  @@index([country])
+  @@index([contactId])
+  @@index([priority])
+  @@map("ai_leads")
+}
+
+model AiLeadAssignment {
+  id         Int      @id @default(autoincrement())
+  leadId     Int      @map("lead_id")
+  lead       AiLead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  assignee   String?  @db.VarChar(160)
+  assignedBy String   @map("assigned_by") @db.VarChar(160)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([leadId])
+  @@map("ai_lead_assignments")
+}
+
+model AiLeadNote {
+  id        Int      @id @default(autoincrement())
+  leadId    Int      @map("lead_id")
+  lead      AiLead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  author    String   @db.VarChar(160)
+  body      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([leadId])
+  @@map("ai_lead_notes")
+}
+
+model AiAssessment {
+  id             Int      @id @default(autoincrement())
+  publicRef      String   @unique @map("public_ref") @db.VarChar(40)
+  /// Client-generated key + server dedupe hash. Same key → same assessment (no duplicate on retry / double-click).
+  idempotencyKey String   @unique @map("idempotency_key") @db.VarChar(100)
+  leadId         Int      @map("lead_id")
+  lead           AiLead   @relation(fields: [leadId], references: [id])
+  industryId     Int?     @map("industry_id")
+  industry       AiIndustry? @relation(fields: [industryId], references: [id])
+  industrySlug   String   @map("industry_slug") @db.VarChar(80)
+  /// SUBMITTED | ANALYSING | ANALYSED | INFO_REQUESTED | ANALYSIS_FAILED
+  status         String   @default("SUBMITTED") @db.VarChar(24)
+  businessName   String   @map("business_name") @db.VarChar(200)
+  country        String?  @db.VarChar(100)
+  entryPage      String?  @map("entry_page") @db.VarChar(200)
+  attribution    Json?
+  consent        Json
+  submittedAt    DateTime @default(now()) @map("submitted_at")
+  anonymisedAt   DateTime? @map("anonymised_at")
+
+  responses AiAssessmentResponse[]
+  analyses  AiBusinessAnalysis[]
+  proposal  AiProposal?
+  pricing   AiPricingCalculation[]
+
+  @@index([industrySlug])
+  @@index([submittedAt])
+  @@map("ai_assessments")
+}
+
+model AiAssessmentResponse {
+  id            Int      @id @default(autoincrement())
+  assessmentId  Int      @map("assessment_id")
+  assessment    AiAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  stage         Int
+  questionKey   String   @map("question_key") @db.VarChar(80)
+  questionLabel String   @map("question_label") @db.VarChar(400)
+  value         Json
+
+  @@unique([assessmentId, questionKey])
+  @@map("ai_assessment_responses")
+}
+
+model AiBusinessAnalysis {
+  id           Int      @id @default(autoincrement())
+  assessmentId Int      @map("assessment_id")
+  assessment   AiAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  version      Int
+  /// OK | FALLBACK (rules-based, no AI provider) | EDITED
+  status       String   @db.VarChar(16)
+  provider     String   @db.VarChar(40)
+  model        String?  @db.VarChar(80)
+  promptVersion String  @map("prompt_version") @db.VarChar(24)
+  inputHash    String   @map("input_hash") @db.VarChar(64)
+  output       Json
+  note         String?  @db.VarChar(400)
+  createdBy    String   @default("system") @map("created_by") @db.VarChar(160)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([assessmentId, version])
+  @@map("ai_business_analyses")
+}
+
+model AiPricingCalculation {
+  id           Int      @id @default(autoincrement())
+  assessmentId Int      @map("assessment_id")
+  assessment   AiAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  proposalId   Int?     @map("proposal_id")
+  /// COMPLETE | MANUAL_REVIEW
+  status       String   @db.VarChar(16)
+  currency     String   @db.VarChar(3)
+  initialTotal Decimal? @map("initial_total") @db.Decimal(14, 2)
+  monthlyTotal Decimal? @map("monthly_total") @db.Decimal(14, 2)
+  /// Full snapshot: inputs, rules applied, fx source + timestamp, lines, flags. Immutable.
+  snapshot     Json
+  createdBy    String   @default("system") @map("created_by") @db.VarChar(160)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([assessmentId])
+  @@index([proposalId])
+  @@map("ai_pricing_calculations")
+}
+
+model AiProposal {
+  id             Int      @id @default(autoincrement())
+  ref            String   @unique @db.VarChar(40)
+  /// One proposal per assessment — regenerate = new version, never a second proposal.
+  assessmentId   Int      @unique @map("assessment_id")
+  assessment     AiAssessment @relation(fields: [assessmentId], references: [id])
+  leadId         Int      @map("lead_id")
+  lead           AiLead   @relation(fields: [leadId], references: [id])
+  /// DRAFT | MANUAL_REVIEW | AWAITING_APPROVAL | APPROVED | REJECTED | SENT | ACCEPTED | DECLINED | EXPIRED
+  status         String   @default("DRAFT") @db.VarChar(20)
+  currentVersion Int      @default(1) @map("current_version")
+  currency       String   @default("USD") @db.VarChar(3)
+  initialTotal   Decimal? @map("initial_total") @db.Decimal(14, 2)
+  monthlyTotal   Decimal? @map("monthly_total") @db.Decimal(14, 2)
+  approvalReasons Json?   @map("approval_reasons")
+  validUntil     DateTime? @map("valid_until")
+  approvedBy     String?  @map("approved_by") @db.VarChar(160)
+  approvedAt     DateTime? @map("approved_at")
+  rejectedReason String?  @map("rejected_reason") @db.VarChar(400)
+  sentAt         DateTime? @map("sent_at")
+  viewedAt       DateTime? @map("viewed_at")
+  acceptedAt     DateTime? @map("accepted_at")
+  declinedAt     DateTime? @map("declined_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  items    AiProposalItem[]
+  versions AiProposalVersion[]
+  followups AiFollowupRun[]
+  emails   AiEmailLog[]
+  project  AiImplementationProject?
+
+  @@index([status])
+  @@index([leadId])
+  @@map("ai_proposals")
+}
+
+model AiProposalItem {
+  id          Int      @id @default(autoincrement())
+  proposalId  Int      @map("proposal_id")
+  proposal    AiProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  /// IMPLEMENTATION | INTEGRATION | TRAINING | ADDITIONAL_DEV | INFRASTRUCTURE | OPTIONAL | MAINTENANCE | DISCOUNT | TAX
+  kind        String   @db.VarChar(20)
+  solutionKey String?  @map("solution_key") @db.VarChar(80)
+  name        String   @db.VarChar(240)
+  description String?  @db.VarChar(600)
+  quantity    Int      @default(1)
+  complexity  String?  @db.VarChar(12)
+  unitPrice   Decimal  @map("unit_price") @db.Decimal(14, 2)
+  lineTotal   Decimal  @map("line_total") @db.Decimal(14, 2)
+  recurring   Boolean  @default(false)
+  sortOrder   Int      @default(0) @map("sort_order")
+
+  @@index([proposalId])
+  @@map("ai_proposal_items")
+}
+
+model AiProposalVersion {
+  id            Int      @id @default(autoincrement())
+  proposalId    Int      @map("proposal_id")
+  proposal      AiProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  version       Int
+  /// Full editable proposal document (sections) as JSON.
+  content       Json
+  calculationId Int?     @map("calculation_id")
+  /// Stored privately in MySQL; only served via signed link or authenticated admin route.
+  pdf           Bytes?   @db.LongBlob
+  pdfSha256     String?  @map("pdf_sha256") @db.VarChar(64)
+  pdfBytes      Int?     @map("pdf_bytes")
+  changeNote    String?  @map("change_note") @db.VarChar(400)
+  createdBy     String   @map("created_by") @db.VarChar(160)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([proposalId, version])
+  @@map("ai_proposal_versions")
+}
+
+model AiEmailLog {
+  id           Int      @id @default(autoincrement())
+  /// Unique per (kind, proposal/lead, step). Prevents duplicate customer emails.
+  dedupeKey    String   @unique @map("dedupe_key") @db.VarChar(160)
+  kind         String   @db.VarChar(32)
+  toEmail      String   @map("to_email") @db.VarChar(254)
+  subject      String   @db.VarChar(300)
+  /// QUEUED | ACCEPTED (SMTP server accepted — NOT proof of delivery) | DELIVERED | BOUNCED | FAILED
+  status       String   @default("QUEUED") @db.VarChar(16)
+  providerMessageId String? @map("provider_message_id") @db.VarChar(200)
+  attempts     Int      @default(0)
+  error        String?  @db.VarChar(600)
+  leadId       Int?     @map("lead_id")
+  lead         AiLead?  @relation(fields: [leadId], references: [id])
+  proposalId   Int?     @map("proposal_id")
+  proposal     AiProposal? @relation(fields: [proposalId], references: [id])
+  acceptedAt   DateTime? @map("accepted_at")
+  deliveredAt  DateTime? @map("delivered_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([status])
+  @@index([proposalId])
+  @@map("ai_email_logs")
+}
+
+model AiFollowupSequence {
+  id             Int      @id @default(autoincrement())
+  key            String   @unique @db.VarChar(60)
+  name           String   @db.VarChar(160)
+  active         Boolean  @default(true)
+  /// [{ delayDays, templateKey, status }]
+  steps          Json
+  maxAttempts    Int      @default(3) @map("max_attempts")
+  /// ["OPT_OUT","DECLINED","ACCEPTED","EXPIRED","ADMIN_STOPPED"]
+  stopConditions Json     @map("stop_conditions")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  runs AiFollowupRun[]
+
+  @@map("ai_followup_sequences")
+}
+
+model AiFollowupRun {
+  id          Int      @id @default(autoincrement())
+  proposalId  Int      @map("proposal_id")
+  proposal    AiProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  sequenceId  Int      @map("sequence_id")
+  sequence    AiFollowupSequence @relation(fields: [sequenceId], references: [id])
+  stepIndex   Int      @map("step_index")
+  dueAt       DateTime @map("due_at")
+  /// PENDING | SENT | SKIPPED | CANCELLED
+  status      String   @default("PENDING") @db.VarChar(12)
+  reason      String?  @db.VarChar(200)
+  emailLogId  Int?     @map("email_log_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([proposalId, sequenceId, stepIndex])
+  @@index([status, dueAt])
+  @@map("ai_followup_runs")
+}
+
+model AiActivityLog {
+  id           Int      @id @default(autoincrement())
+  leadId       Int?     @map("lead_id")
+  lead         AiLead?  @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  assessmentId Int?     @map("assessment_id")
+  proposalId   Int?     @map("proposal_id")
+  actor        String   @db.VarChar(160)
+  action       String   @db.VarChar(80)
+  detail       Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([leadId, createdAt])
+  @@index([action])
+  @@map("ai_activity_logs")
+}
+
+model AiAutomationSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique @db.VarChar(100)
+  value     Json
+  updatedBy String?  @map("updated_by") @db.VarChar(160)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("ai_automation_settings")
+}
+
+model AiImplementationProject {
+  id          Int      @id @default(autoincrement())
+  proposalId  Int      @unique @map("proposal_id")
+  proposal    AiProposal @relation(fields: [proposalId], references: [id])
+  /// PENDING_KICKOFF | AWAITING_PROVISIONING | PROVISIONING | TESTING | LIVE | FAILED | CANCELLED
+  status      String   @default("PENDING_KICKOFF") @db.VarChar(24)
+  provider    String   @default("manual") @db.VarChar(40)
+  externalRef String?  @map("external_ref") @db.VarChar(200)
+  scope       Json
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  logs AiIntegrationLog[]
+
+  @@map("ai_implementation_projects")
+}
+
+model AiIntegrationLog {
+  id        Int      @id @default(autoincrement())
+  projectId Int?     @map("project_id")
+  project   AiImplementationProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  provider  String   @db.VarChar(40)
+  action    String   @db.VarChar(60)
+  /// OK | SKIPPED | NOT_CONFIGURED | FAILED
+  status    String   @db.VarChar(16)
+  request   Json?
+  response  Json?
+  error     String?  @db.VarChar(600)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([provider, createdAt])
+  @@map("ai_integration_logs")
+}
+
+model AiJob {
+  id             Int      @id @default(autoincrement())
+  /// ANALYSIS | MATCH_PRICE | PROPOSAL | PDF | EMAIL | FOLLOWUP | PROVISION
+  type           String   @db.VarChar(24)
+  idempotencyKey String   @unique @map("idempotency_key") @db.VarChar(160)
+  /// QUEUED | RUNNING | DONE | FAILED
+  status         String   @default("QUEUED") @db.VarChar(10)
+  payload        Json
+  attempts       Int      @default(0)
+  maxAttempts    Int      @default(4) @map("max_attempts")
+  runAfter       DateTime @default(now()) @map("run_after")
+  lockedAt       DateTime? @map("locked_at")
+  lastError      String?  @map("last_error") @db.VarChar(600)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([status, runAfter])
+  @@map("ai_jobs")
+}
+
+/// Privacy-conscious funnel events: no IP, no cookies, anonymous per-tab session id.
+model AiEvent {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(40)
+  industrySlug String?  @map("industry_slug") @db.VarChar(80)
+  sessionId    String?  @map("session_id") @db.VarChar(40)
+  step         Int?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([name, createdAt])
+  @@index([industrySlug, name])
+  @@map("ai_events")
+}
+
+model AiDataRequest {
+  id        Int      @id @default(autoincrement())
+  email     String   @db.VarChar(254)
+  /// CORRECTION | DELETION | OPT_OUT
+  kind      String   @db.VarChar(16)
+  details   String?  @db.VarChar(1000)
+  /// OPEN | DONE
+  status    String   @default("OPEN") @db.VarChar(8)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([status])
+  @@map("ai_data_requests")
 }
