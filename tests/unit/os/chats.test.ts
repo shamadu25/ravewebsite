@@ -8,7 +8,7 @@ import {
 
 describe("parseChatFilters", () => {
   it("defaults to website chats, all statuses, page 1", () => {
-    expect(parseChatFilters({})).toEqual({ q: "", status: "all", view: "all", channel: "website", page: 1 });
+    expect(parseChatFilters({})).toEqual({ q: "", status: "all", view: "all", channel: "website", sort: "recent", page: 1 });
   });
   it("rejects unknown values instead of passing them to the query", () => {
     const f = parseChatFilters({ status: "x'; DROP", view: "nope", page: "-3", q: "  hi  " });

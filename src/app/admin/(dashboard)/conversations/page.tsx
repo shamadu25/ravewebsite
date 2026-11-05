@@ -6,10 +6,17 @@ import {
   AWAITING_SCAN_LIMIT,
   PAGE_SIZE,
   buildConversationWhere,
+  SCORE_STYLES,
+  SLA_STYLES,
+  attributionLabel,
   contactName,
+  formatWaiting,
   isAwaitingReply,
   parseChatFilters,
+  slaLevel,
   startOfToday,
+  topScore,
+  waitingMinutes,
   type ChatFilters,
 } from "@/lib/os/chats";
 
@@ -27,6 +34,7 @@ const VIEWS: { key: ChatFilters["view"]; label: string }[] = [
   { key: "awaiting", label: "Needs a reply" },
   { key: "leads", label: "With a lead" },
   { key: "no_contact", label: "No contact yet" },
+  { key: "unassigned", label: "Unassigned" },
 ];
 
 function href(f: ChatFilters, patch: Partial<ChatFilters>): string {
@@ -35,6 +43,7 @@ function href(f: ChatFilters, patch: Partial<ChatFilters>): string {
   if (n.q) p.set("q", n.q);
   if (n.status !== "all") p.set("status", n.status);
   if (n.view !== "all") p.set("view", n.view);
+  if (n.sort === "score") p.set("sort", "score");
   if (n.channel === "all") p.set("channel", "all");
   if (n.page > 1) p.set("page", String(n.page));
   const s = p.toString();
@@ -43,8 +52,8 @@ function href(f: ChatFilters, patch: Partial<ChatFilters>): string {
 
 const include = {
   contact: true,
-  visitor: true,
-  leads: { select: { id: true } },
+  visitor: { include: { sessions: { orderBy: { id: "desc" as const }, take: 1 } } },
+  leads: { select: { id: true, scores: { orderBy: { computedAt: "desc" as const }, take: 1, select: { totalScore: true, level: true } } } },
   _count: { select: { messages: true } },
   // Newest few messages: the newest decides "needs a reply"; the latest VISITOR message is the preview.
   messages: { orderBy: { id: "desc" as const }, take: 6 },
@@ -59,6 +68,8 @@ export default async function AdminConversationsPage({
   const where = buildConversationWhere(f);
   const today = startOfToday();
   const websiteOnly = { channel: { not: "demo" } };
+  // "Needs a reply" (last-message role) and "hottest first" (lead score) cannot be done in SQL, so those scan recent chats in memory.
+  const scanInMemory = f.view === "awaiting" || f.sort === "score";
 
   const [stats, rows, total] = await Promise.all([
     Promise.all([
@@ -68,7 +79,7 @@ export default async function AdminConversationsPage({
       prisma.conversation.count({ where: { ...websiteOnly, status: "open" } }),
       prisma.lead.count({ where: { source: "website_chat" } }),
     ]),
-    f.view === "awaiting"
+    scanInMemory
       ? prisma.conversation.findMany({ where, orderBy: { lastMessageAt: "desc" }, take: AWAITING_SCAN_LIMIT, include })
       : prisma.conversation.findMany({
           where,
@@ -77,15 +88,18 @@ export default async function AdminConversationsPage({
           take: PAGE_SIZE,
           include,
         }),
-    f.view === "awaiting" ? Promise.resolve(0) : prisma.conversation.count({ where }),
+    scanInMemory ? Promise.resolve(0) : prisma.conversation.count({ where }),
   ]);
 
   const [chatsToday, messagesToday, handoffs, open, chatLeads] = stats;
 
   let list = rows;
   let pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if (f.view === "awaiting") {
-    const all = rows.filter((c) => isAwaitingReply({ status: c.status, lastRole: c.messages[0]?.role ?? null }));
+  if (scanInMemory) {
+    let all = f.view === "awaiting" ? rows.filter((c) => isAwaitingReply({ status: c.status, lastRole: c.messages[0]?.role ?? null })) : rows;
+    if (f.sort === "score") {
+      all = [...all].sort((a, b) => (topScore(b.leads)?.score ?? -1) - (topScore(a.leads)?.score ?? -1) || (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0));
+    }
     pages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
     list = all.slice((f.page - 1) * PAGE_SIZE, f.page * PAGE_SIZE);
   }
@@ -131,8 +145,19 @@ export default async function AdminConversationsPage({
             {v.label}
           </Link>
         ))}
+        <Link
+          href={href(f, { sort: f.sort === "score" ? "recent" : "score", page: 1 })}
+          className={cn(
+            "px-3 py-1.5 rounded-full text-sm border",
+            f.sort === "score" ? "bg-red-600 text-white border-red-600" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+          )}
+          title="Sort by lead score, hottest first"
+        >
+          🔥 Hottest first
+        </Link>
         <form method="get" action="/admin/conversations" className="ml-auto flex flex-wrap items-center gap-2">
           {f.view !== "all" && <input type="hidden" name="view" value={f.view} />}
+          {f.sort === "score" && <input type="hidden" name="sort" value="score" />}
           <input
             name="q"
             defaultValue={f.q}
@@ -161,6 +186,10 @@ export default async function AdminConversationsPage({
           const name = contactName(c.contact);
           const awaiting = isAwaitingReply({ status: c.status, lastRole: last?.role ?? null });
           const when = c.lastMessageAt ?? c.createdAt;
+          const score = topScore(c.leads);
+          const wait = awaiting ? waitingMinutes(last?.role === "visitor" ? last.createdAt : c.lastMessageAt) : 0;
+          const session = c.visitor?.sessions[0];
+          const source = attributionLabel({ utmSource: session?.utmSource, utmMedium: session?.utmMedium, utmCampaign: session?.utmCampaign, referrer: session?.referrer });
 
           return (
             <Link
@@ -173,7 +202,7 @@ export default async function AdminConversationsPage({
                   {awaiting && <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-2 align-middle" title="Needs a reply" />}
                   {name ?? c.contact?.email ?? c.contact?.whatsapp ?? "Anonymous visitor"}
                   <span className="ml-2 text-xs font-normal text-gray-400">
-                    {c._count.messages} msg · {c.landingPage ?? c.currentPage ?? "—"}
+                    {c._count.messages} msg · {c.landingPage ?? c.currentPage ?? "—"} · {source}
                   </span>
                 </p>
                 <p className="text-sm text-gray-500 truncate max-w-xl">
@@ -187,8 +216,22 @@ export default async function AdminConversationsPage({
                 {c.channel === "demo" && (
                   <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">Demo</span>
                 )}
-                {c.leads.length > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Lead</span>
+                {awaiting && (
+                  <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", SLA_STYLES[slaLevel(wait)])} title="How long the visitor has been waiting">
+                    ⏱ {formatWaiting(wait)}
+                  </span>
+                )}
+                {score ? (
+                  <span className={cn("px-2 py-0.5 rounded-full text-xs font-semibold", SCORE_STYLES[score.level] ?? SCORE_STYLES.low)}>
+                    {score.score} · {score.level.replace(/_/g, " ")}
+                  </span>
+                ) : (
+                  c.leads.length > 0 && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Lead</span>
+                )}
+                {c.assignee && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 max-w-32 truncate" title={`Owner: ${c.assignee}`}>
+                    {c.assignee.split("@")[0]}
+                  </span>
                 )}
                 {!c.contactId && (
                   <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">No contact</span>

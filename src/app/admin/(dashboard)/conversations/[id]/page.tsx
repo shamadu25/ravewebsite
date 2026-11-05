@@ -4,7 +4,20 @@ import { prisma } from "@/lib/prisma";
 import AutoRefresh from "@/components/os/AutoRefresh";
 import ApiButton from "@/components/os/ApiButton";
 import ApiForm from "@/components/os/ApiForm";
-import { contactName, roleLabel } from "@/lib/os/chats";
+import ChatReplyBox from "@/components/os/ChatReplyBox";
+import ChatAssign from "@/components/os/ChatAssign";
+import { CANNED_REPLIES } from "@/lib/os/cannedReplies";
+import {
+  SCORE_STYLES,
+  SLA_STYLES,
+  attributionLabel,
+  contactName,
+  formatWaiting,
+  roleLabel,
+  slaLevel,
+  topScore,
+  waitingMinutes,
+} from "@/lib/os/chats";
 import { COMPANY } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -24,8 +37,9 @@ export default async function AdminConversationDetailPage({ params }: { params: 
       visitor: { include: { sessions: { orderBy: { id: "desc" }, take: 1 } } },
       messages: { orderBy: { id: "asc" } },
       leads: { include: { scores: { orderBy: { computedAt: "desc" }, take: 1 } } },
+      intentDetections: { orderBy: { id: "desc" }, take: 12, include: { primaryIntent: true } },
       conversionEvents: {
-        where: { eventType: { in: ["conversation_note", "conversation_closed", "conversation_reopened", "human_handoff", "agent_reply", "ai_resumed"] } },
+        where: { eventType: { in: ["conversation_note", "conversation_closed", "conversation_reopened", "human_handoff", "agent_reply", "ai_resumed", "conversation_assigned"] } },
         orderBy: { id: "desc" },
         take: 30,
       },
@@ -33,6 +47,12 @@ export default async function AdminConversationDetailPage({ params }: { params: 
   });
 
   if (!conversation) notFound();
+
+  const [buyingSignals, users] = await Promise.all([
+    prisma.conversionEvent.count({ where: { conversationId: conversation.id, eventType: "buying_signal_detected" } }),
+    prisma.osUser.findMany({ where: { active: true }, select: { email: true }, orderBy: { email: "asc" } }),
+  ]);
+  const assigneeOptions = Array.from(new Set([process.env.ADMIN_EMAIL, ...users.map((u) => u.email)].filter((e): e is string => Boolean(e))));
 
   const lead = conversation.leads[0];
   const session = conversation.visitor?.sessions[0];
@@ -42,6 +62,15 @@ export default async function AdminConversationDetailPage({ params }: { params: 
   const url = `/api/os/conversations/${conversation.externalId}`;
   const lastMessage = conversation.messages[conversation.messages.length - 1];
   const awaiting = conversation.status !== "closed" && (conversation.status === "human_handoff" || lastMessage?.role === "visitor");
+  const waiting = awaiting ? waitingMinutes(lastMessage?.role === "visitor" ? lastMessage.createdAt : conversation.lastMessageAt) : 0;
+  const sla = slaLevel(waiting);
+  const score = topScore(lead ? [lead] : []);
+  const source = attributionLabel({ utmSource: session?.utmSource, utmMedium: session?.utmMedium, utmCampaign: session?.utmCampaign, referrer: session?.referrer });
+  const intents = Array.from(new Set(conversation.intentDetections.map((d) => d.primaryIntent.label))).slice(0, 5);
+  const firstResponse =
+    conversation.firstAgentReplyAt
+      ? formatWaiting(Math.max(0, Math.round((conversation.firstAgentReplyAt.getTime() - conversation.createdAt.getTime()) / 60_000)))
+      : null;
 
   return (
     <div>
@@ -53,7 +82,11 @@ export default async function AdminConversationDetailPage({ params }: { params: 
       <div className="flex flex-wrap items-center justify-between gap-3 mt-2 mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
           {name ?? contact?.email ?? "Anonymous visitor"}
-          {awaiting && <span className="ml-3 align-middle px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Needs a reply</span>}
+          {awaiting && (
+            <span className={`ml-3 align-middle px-2 py-0.5 rounded-full text-xs font-medium ${SLA_STYLES[sla]}`}>
+              Needs a reply · waiting {formatWaiting(waiting)}
+            </span>
+          )}
         </h1>
         <div className="flex flex-wrap gap-2">
           {reachNumber && (
@@ -109,11 +142,12 @@ export default async function AdminConversationDetailPage({ params }: { params: 
                   ? "You are handling this chat — the AI is paused. The visitor sees replies within a few seconds if their page is open."
                   : "Sending a reply pauses the AI for this chat so it does not talk over you."}
               </p>
-              <ApiForm
+              <ChatReplyBox
                 url={url}
-                fields={[{ name: "message", label: "Message to visitor", type: "textarea", required: true, placeholder: "Hi, this is the RaveSoft team…" }]}
-                extra={{ action: "reply" }}
-                submitLabel="Send reply"
+                typingUrl={`${url}/typing`}
+                firstName={contact?.firstName ?? null}
+                canned={CANNED_REPLIES}
+                humanActive={conversation.status === "human_active"}
               />
               {conversation.status === "human_active" && (
                 <div className="mt-3">
@@ -151,6 +185,31 @@ export default async function AdminConversationDetailPage({ params }: { params: 
         </div>
 
         <div className="space-y-6">
+          <section className="bg-white rounded-2xl border border-gray-200 p-5">
+            <h2 className="font-semibold text-gray-900 mb-3">Lead snapshot</h2>
+            <div className="flex items-center gap-3 mb-3">
+              {score ? (
+                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${SCORE_STYLES[score.level] ?? SCORE_STYLES.low}`}>
+                  {score.score}/100 · {score.level.replace(/_/g, " ")}
+                </span>
+              ) : (
+                <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-500">Not scored yet</span>
+              )}
+              {buyingSignals > 0 && <span className="text-xs font-medium text-green-700">🔥 {buyingSignals} buying signal{buyingSignals === 1 ? "" : "s"}</span>}
+            </div>
+            <dl className="text-sm space-y-2">
+              <Row k="Came from" v={source} />
+              <Row k="Interests" v={intents.join(", ")} />
+              <Row k="Language" v={conversation.language} />
+              <Row k="First team reply" v={firstResponse} />
+              <Row k="Visitor rating" v={conversation.rating ? `${"★".repeat(conversation.rating)}${"☆".repeat(5 - conversation.rating)}${conversation.ratingComment ? ` — “${conversation.ratingComment}”` : ""}` : null} />
+            </dl>
+            <div className="mt-4">
+              <p className="text-xs text-gray-500 mb-1">Owner</p>
+              <ChatAssign url={url} current={conversation.assignee} options={assigneeOptions} />
+            </div>
+          </section>
+
           <section className="bg-white rounded-2xl border border-gray-200 p-5">
             <h2 className="font-semibold text-gray-900 mb-3">Details</h2>
             <dl className="text-sm space-y-2">

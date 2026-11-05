@@ -25,6 +25,9 @@ export interface ConversationResponse {
   quick_actions: QuickAction[];
   assistant_name: string;
   contact_captured: boolean;
+  /** Who we already know (a returning visitor, or details they shared): used to pre-fill booking. */
+  contact?: { first_name: string | null; last_name: string | null; email: string | null } | null;
+  rating?: number | null;
 }
 
 export interface SendMessageResponse {
@@ -40,6 +43,10 @@ export interface SendMessageResponse {
 export interface UpdatesResponse {
   messages: ChatMessage[];
   human_active: boolean;
+  /** A team member is typing a reply right now. */
+  agent_typing?: boolean;
+  /** The team closed the chat (the widget then asks for feedback). */
+  closed?: boolean;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -86,4 +93,28 @@ export function sendMessage(
 /** Team replies written after `afterId` (poll). */
 export function fetchUpdates(conversationId: string, afterId: number): Promise<UpdatesResponse> {
   return request<UpdatesResponse>(`/conversations/${conversationId}/updates?after=${afterId}`);
+}
+
+/** URL of the Server-Sent Events stream (team replies + typing within ~2s). */
+export function streamUrl(conversationId: string, afterId: number): string {
+  return `${API_BASE}/conversations/${conversationId}/stream?after=${afterId}`;
+}
+
+export interface FeedbackInput {
+  rating: number;
+  comment?: string;
+  email?: string;
+  sendTranscript?: boolean;
+}
+
+export function sendFeedback(conversationId: string, input: FeedbackInput): Promise<{ ok: boolean; transcript_sent: boolean }> {
+  return request(`/conversations/${conversationId}/feedback`, {
+    method: "POST",
+    body: JSON.stringify({
+      rating: input.rating,
+      comment: input.comment || undefined,
+      email: input.email || undefined,
+      send_transcript: input.sendTranscript || undefined,
+    }),
+  });
 }

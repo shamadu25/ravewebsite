@@ -102,6 +102,19 @@ model Conversation {
   landingPage      String?               @map("landing_page")
   currentPage      String?               @map("current_page")
   lastMessageAt    DateTime?             @map("last_message_at")
+  /// Visitor browser language at chat start (e.g. "fr-GH"); drives the opener and the AI's reply language.
+  language         String?
+  /// OsUser email of the team member who owns this chat.
+  assignee         String?
+  /// Set by the admin reply box while a team member is typing; the widget shows "team is typing".
+  agentTypingAt    DateTime?             @map("agent_typing_at")
+  /// First team reply, for first-response-time reporting.
+  firstAgentReplyAt DateTime?            @map("first_agent_reply_at")
+  /// Visitor feedback (1-5) collected when a chat ends.
+  rating           Int?
+  ratingComment    String?               @map("rating_comment") @db.Text
+  ratedAt          DateTime?             @map("rated_at")
+  transcriptEmailedAt DateTime?          @map("transcript_emailed_at")
   messages         Message[]
   summaries        ConversationSummary[]
   leads            Lead[]

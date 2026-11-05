@@ -6,10 +6,14 @@ import { AiProviderUnavailableError } from "@/lib/ai/providers/types";
 import { sendHumanHandoffNotification } from "@/lib/mail/notifications";
 import { alertTeam, inBackground } from "@/lib/services/teamAlerts";
 import { HUMAN_ACTIVE } from "@/lib/os/chats";
+import { chatLang, openerFor, pickReturningTopic } from "@/lib/ai/i18n";
 import type { Conversation } from "@prisma/client";
 
 const AI_FALLBACK_MESSAGE =
   "Our AI assistant is temporarily unavailable. Leave your name and WhatsApp number and the RaveSoft team will contact you.";
+
+/** Visitors who come back within this window are recognised and greeted with their earlier topic. */
+export const RETURNING_WINDOW_DAYS = 90;
 
 export interface StartConversationInput {
   visitorId: string;
@@ -61,20 +65,48 @@ export async function startConversation(input: StartConversationInput): Promise<
   const originPage = input.landingPage ?? input.currentPage ?? "";
   const channel = originPage.startsWith("/ai-agents/demo") ? "demo" : "website";
 
+  // A returning visitor (same browser) is greeted by name with what they asked about last time, and the
+  // contact we already hold for them is attached so the team sees who is back.
+  const previous =
+    channel === "demo"
+      ? null
+      : await prisma.conversation.findFirst({
+          where: {
+            visitorId: visitor.id,
+            channel: { not: "demo" },
+            createdAt: { gte: new Date(Date.now() - RETURNING_WINDOW_DAYS * 86_400_000) },
+            messages: { some: { role: "visitor" } },
+          },
+          orderBy: { id: "desc" },
+          include: {
+            contact: { select: { id: true, firstName: true } },
+            messages: { where: { role: "visitor" }, orderBy: { id: "asc" }, take: 6, select: { content: true } },
+          },
+        });
+
   const conversation = await prisma.conversation.create({
     data: {
       externalId: randomUUID(),
       visitorId: visitor.id,
+      contactId: previous?.contact?.id ?? visitor.contactId ?? undefined,
       channel,
       stage: "new",
       status: "open",
+      language: input.language,
       landingPage: input.landingPage ?? input.currentPage,
       currentPage: input.currentPage,
       lastMessageAt: new Date(),
     },
   });
 
-  const opener = contextualOpener(input.currentPage);
+  const opener = openerFor({
+    lang: chatLang(input.language),
+    assistantName: AI_CONFIG.assistantName,
+    currentPage: input.currentPage,
+    returning: previous
+      ? { firstName: previous.contact?.firstName, topic: pickReturningTopic(previous.messages.map((m) => m.content)) }
+      : null,
+  });
 
   await prisma.message.create({
     data: { conversationId: conversation.id, role: "assistant", content: opener },
@@ -162,6 +194,7 @@ export async function sendMessage(
     structured = await runRaveConciergeAgent(conversation.id, history, {
       currentPage: context.currentPage ?? conversation.currentPage,
       landingPage: conversation.landingPage,
+      language: conversation.language,
     });
   } catch (error) {
     // Any agent failure (provider outage OR an unexpected error) is handled the same way:
@@ -289,25 +322,4 @@ function headline(key: string): string {
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-}
-
-function contextualOpener(currentPage?: string): string {
-  const assistantName = AI_CONFIG.assistantName;
-  const defaultOpener = `Hi, I'm ${assistantName} from RaveSoft. What are you trying to get done, or what's slowing your business down right now?`;
-
-  if (!currentPage) return defaultOpener;
-  if (currentPage.includes("cliqpos")) {
-    return "What type of business are you running? I'll help you identify the most suitable CliqPOS setup.";
-  }
-  if (currentPage.includes("hotel")) {
-    return "How many rooms does your property manage? I can help identify the right hotel management setup.";
-  }
-  if (currentPage.includes("business-automation")) {
-    return "Want to automate part of your business? I can help identify where an AI employee would produce the most value.";
-  }
-  if (currentPage.includes("ai-employee")) {
-    return "What kind of business do you run, and where are you currently losing the most time or customers — sales, support, follow-up, or something else?";
-  }
-
-  return defaultOpener;
 }
