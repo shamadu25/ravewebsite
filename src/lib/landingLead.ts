@@ -3,6 +3,7 @@ import { guardForm, POLICIES } from "@/lib/antispam/guard";
 import { LandingEnquirySchema, persistLandingEnquiry, recordNotifyFailure } from "@/lib/enquiry";
 import { sendWebsiteLeadNotification } from "@/lib/mail/notifications";
 import { BUSINESS_TYPES, solutionByValue } from "@/lib/getStarted";
+import { readTrackingIds, runAfterResponse, safeRecordFormFailure, safeRecordLeadConversion } from "@/lib/analytics/lead";
 import { clientIp } from "@/app/api/ai/_shared";
 
 /** Friendly, field-level messages for the independent server-side validation. */
@@ -30,6 +31,7 @@ export async function handleLandingLead(req: Request, body: unknown): Promise<Ne
       const key = String(issue.path[0] ?? "");
       if (key in FIELD_MESSAGES && !fields[key]) fields[key] = FIELD_MESSAGES[key];
     }
+    void runAfterResponse(() => safeRecordFormFailure(readTrackingIds(req), (body as { page?: string })?.page, "validation"));
     return NextResponse.json({ error: "Please check the highlighted fields.", code: "invalid", fields }, { status: 422 });
   }
   const e = parsed.data;
@@ -47,6 +49,7 @@ export async function handleLandingLead(req: Request, body: unknown): Promise<Ne
   if (!guard.ok) {
     // Bots that fill the honeypot get a fake success; nothing is stored or emailed.
     if (guard.silent) return NextResponse.json({ success: true, eventId: e.submissionId });
+    void runAfterResponse(() => safeRecordFormFailure(readTrackingIds(req), e.page, `guard_${guard.reason ?? "blocked"}`));
     return NextResponse.json({ error: guard.error, code: guard.reason }, { status: guard.status });
   }
 
@@ -56,11 +59,15 @@ export async function handleLandingLead(req: Request, body: unknown): Promise<Ne
   } catch (err) {
     // Log the failure class only — never the visitor's details.
     console.error("[get-started] failed to save lead:", err instanceof Error ? err.name : "unknown");
+    void runAfterResponse(() => safeRecordFormFailure(readTrackingIds(req), e.page, "persist_failed"));
     return NextResponse.json(
       { error: "We couldn't save your enquiry just now. Please try again in a moment, or message us on WhatsApp.", code: "persist_failed" },
       { status: 500 }
     );
   }
+
+  // Analytics attribution runs only now that the lead is persisted; idempotent per lead and fully isolated from this flow.
+  void runAfterResponse(() => safeRecordLeadConversion({ leadId: saved.leadId, contactId: saved.contactId, ids: readTrackingIds(req), page: e.page, service: solutionByValue(e.solution)?.label ?? e.solution }));
 
   // Duplicate: already saved (and already emailed) — report success without a second email.
   if (saved.duplicate) {

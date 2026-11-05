@@ -7,6 +7,7 @@ import { pollInbox } from "@/lib/os/inbox";
 import { growthEnabled } from "@/lib/growth/config";
 import { processGrowthReplies } from "@/lib/growth/replies";
 import { dispatchDue } from "@/lib/growth/outbox";
+import { evaluateAlerts, runRetention } from "@/lib/analytics/maintenance";
 import { runMarketingAgent } from "@/lib/growth/agents/orchestrator";
 
 export const maxDuration = 60;
@@ -33,7 +34,13 @@ export async function GET(request: NextRequest) {
       // Opt-in autonomy: agents only PREPARE work (drafts, nudges, scouting); sending still needs a human approval.
       agent: process.env.GROWTH_AGENT_AUTORUN === "true" ? await runMarketingAgent({ areas: (process.env.GROWTH_SCOUT_AREAS ?? "").split(",").map((a) => a.trim()).filter(Boolean), limits: { scout: 5, outreach: 10, reply: 5 } }) : undefined,
     }))().catch((e) => ({ error: e instanceof Error ? e.message : "growth failed" })) : undefined;
-    return NextResponse.json({ ok: true, loop, heartbeats, inbox, queue, growth });
+    // RaveSoft Intelligence: alerts every tick (deduplicated per day); retention once a day (03:00–03:14 UTC). Isolated — never fails the tick.
+    const now = new Date();
+    const intel = await (async () => ({
+      alerts: await evaluateAlerts(now),
+      retention: now.getUTCHours() === 3 && now.getUTCMinutes() < 15 ? await runRetention(now) : undefined,
+    }))().catch((e) => ({ error: e instanceof Error ? e.message : "intelligence failed" }));
+    return NextResponse.json({ ok: true, loop, heartbeats, inbox, queue, growth, intel });
   } catch (e) {
     await audit({ actor: "cron", actorType: "SYSTEM", action: "cron.tick", resource: "scheduler", result: "FAILURE", output: { error: e instanceof Error ? e.message : String(e) } });
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : "tick failed" }, { status: 500 });

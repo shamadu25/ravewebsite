@@ -8,6 +8,7 @@ import OrganizationSchema from "@/components/seo/OrganizationSchema";
 import GoogleAnalytics from "@/components/seo/GoogleAnalytics";
 import MetaPixel from "@/components/seo/MetaPixel";
 import ClarityScript from "@/components/seo/ClarityScript";
+import IntelligenceTracker from "@/components/analytics/IntelligenceTracker";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -168,6 +169,7 @@ export default function RootLayout({
         <GoogleAnalytics />
         <MetaPixel />
         <ClarityScript />
+        <IntelligenceTracker />
         <Header />
         <main id="main-content" tabIndex={-1} className="flex-1 outline-none">{children}</main>
         <Footer />

@@ -1,4 +1,4 @@
-import { Bot, BookOpen, MessageSquare, Boxes, ClipboardCheck, Cog, FileBarChart, House, Rocket, Megaphone, Plug, Settings, Target, Users, Wallet, Workflow, type LucideIcon } from "lucide-react";
+import { Bot, BookOpen, MessageSquare, Boxes, ClipboardCheck, ChartNoAxesCombined, Cog, FileBarChart, House, Rocket, Megaphone, Plug, Settings, Target, Users, Wallet, Workflow, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -16,6 +16,7 @@ export const NAV: NavItem[] = [
   { href: "/admin/conversations", label: "Live chats", icon: MessageSquare, badge: "chats" },
   { href: "/admin/growth", label: "Growth Engine", icon: Rocket },
   { href: "/admin/customers", label: "Customers", icon: Users },
+  { href: "/admin/intelligence", label: "RaveSoft Intelligence", icon: ChartNoAxesCombined },
   { href: "/admin/marketing", label: "Marketing", icon: Megaphone },
   { href: "/admin/products", label: "Products", icon: Boxes },
   { href: "/admin/finance", label: "Finance", icon: Wallet },

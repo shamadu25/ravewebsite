@@ -1181,3 +1181,209 @@ model GrProviderUsage {
   @@index([provider, createdAt])
   @@map("gr_provider_usage")
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// RaveSoft Intelligence — first-party website analytics (tables prefixed analytics_)
+// Purely additive. Independent of the chat-era `visitors` / `visitor_sessions` tables, which are untouched.
+// No raw IP address is ever stored. Retention is enforced by src/lib/analytics/retention.ts.
+// ═══════════════════════════════════════════════════════════════════════
+
+model AnalyticsVisitor {
+  id               Int                   @id @default(autoincrement())
+  visitorId        String                @unique @map("visitor_id") @db.VarChar(40)
+  firstSeenAt      DateTime              @map("first_seen_at")
+  lastSeenAt       DateTime              @map("last_seen_at")
+  sessionCount     Int                   @default(0) @map("session_count")
+  leadCount        Int                   @default(0) @map("lead_count")
+  // First-touch attribution is written once and never overwritten.
+  ftChannel        String?               @map("ft_channel") @db.VarChar(40)
+  ftSource         String?               @map("ft_source") @db.VarChar(150)
+  ftMedium         String?               @map("ft_medium") @db.VarChar(150)
+  ftCampaign       String?               @map("ft_campaign") @db.VarChar(150)
+  ftLandingPage    String?               @map("ft_landing_page") @db.VarChar(500)
+  ftReferrerDomain String?               @map("ft_referrer_domain") @db.VarChar(255)
+  countryCode      String?               @map("country_code") @db.VarChar(2)
+  device           String?               @db.VarChar(20)
+  sessions         AnalyticsSession[]
+  events           AnalyticsEvent[]
+  createdAt        DateTime              @default(now()) @map("created_at")
+
+  @@index([lastSeenAt])
+  @@index([firstSeenAt])
+  @@map("analytics_visitors")
+}
+
+model AnalyticsSession {
+  id               Int                 @id @default(autoincrement())
+  sessionId        String              @unique @map("session_id") @db.VarChar(40)
+  visitorRef       Int                 @map("visitor_ref")
+  visitor          AnalyticsVisitor    @relation(fields: [visitorRef], references: [id], onDelete: Cascade)
+  startedAt        DateTime            @map("started_at")
+  lastActivityAt   DateTime            @map("last_activity_at")
+  visitNumber      Int                 @default(1) @map("visit_number")
+  isNewVisitor     Boolean             @default(true) @map("is_new_visitor")
+  landingPage      String              @map("landing_page") @db.VarChar(500)
+  exitPage         String?             @map("exit_page") @db.VarChar(500)
+  currentPage      String?             @map("current_page") @db.VarChar(500)
+  currentTitle     String?             @map("current_title") @db.VarChar(255)
+  referrer         String?             @db.VarChar(500)
+  referrerDomain   String?             @map("referrer_domain") @db.VarChar(255)
+  channel          String              @default("direct") @db.VarChar(40)
+  utmSource        String?             @map("utm_source") @db.VarChar(150)
+  utmMedium        String?             @map("utm_medium") @db.VarChar(150)
+  utmCampaign      String?             @map("utm_campaign") @db.VarChar(150)
+  utmContent       String?             @map("utm_content") @db.VarChar(150)
+  utmTerm          String?             @map("utm_term") @db.VarChar(150)
+  clickIdType      String?             @map("click_id_type") @db.VarChar(12)
+  clickId          String?             @map("click_id") @db.VarChar(300)
+  device           String              @default("desktop") @db.VarChar(20)
+  browser          String?             @db.VarChar(40)
+  browserVersion   String?             @map("browser_version") @db.VarChar(20)
+  os               String?             @db.VarChar(40)
+  screen           String?             @db.VarChar(20)
+  viewport         String?             @db.VarChar(20)
+  language         String?             @db.VarChar(20)
+  timezone         String?             @db.VarChar(64)
+  country          String?             @db.VarChar(80)
+  countryCode      String?             @map("country_code") @db.VarChar(2)
+  region           String?             @db.VarChar(80)
+  city             String?             @db.VarChar(80)
+  continent        String?             @db.VarChar(20)
+  geoSource        String?             @map("geo_source") @db.VarChar(20)
+  pageViews        Int                 @default(0) @map("page_views")
+  eventCount       Int                 @default(0) @map("event_count")
+  engagedSeconds   Int                 @default(0) @map("engaged_seconds")
+  elapsedSeconds   Int                 @default(0) @map("elapsed_seconds")
+  maxScroll        Int                 @default(0) @map("max_scroll")
+  converted        Boolean             @default(false)
+  leadId           Int?                @map("lead_id")
+  pageviews        AnalyticsPageview[]
+  events           AnalyticsEvent[]
+  createdAt        DateTime            @default(now()) @map("created_at")
+
+  @@index([startedAt])
+  @@index([lastActivityAt])
+  @@index([visitorRef, startedAt])
+  @@index([channel, startedAt])
+  @@index([utmCampaign, startedAt])
+  @@index([countryCode, startedAt])
+  @@map("analytics_sessions")
+}
+
+model AnalyticsPageview {
+  id             Int              @id @default(autoincrement())
+  pageviewId     String           @unique @map("pageview_id") @db.VarChar(40)
+  sessionRef     Int              @map("session_ref")
+  session        AnalyticsSession @relation(fields: [sessionRef], references: [id], onDelete: Cascade)
+  visitorRef     Int              @map("visitor_ref")
+  path           String           @db.VarChar(300)
+  title          String?          @db.VarChar(255)
+  startedAt      DateTime         @map("started_at")
+  engagedSeconds Int              @default(0) @map("engaged_seconds")
+  elapsedSeconds Int              @default(0) @map("elapsed_seconds")
+  maxScroll      Int              @default(0) @map("max_scroll")
+  isExit         Boolean          @default(false) @map("is_exit")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  @@index([path, startedAt])
+  @@index([sessionRef])
+  @@index([startedAt])
+  @@map("analytics_pageviews")
+}
+
+model AnalyticsEvent {
+  id         Int              @id @default(autoincrement())
+  // Client-generated unique id → retries and duplicate beacons are ignored (idempotent ingest).
+  eventId    String           @unique @map("event_id") @db.VarChar(40)
+  sessionRef Int              @map("session_ref")
+  session    AnalyticsSession @relation(fields: [sessionRef], references: [id], onDelete: Cascade)
+  visitorRef Int              @map("visitor_ref")
+  visitor    AnalyticsVisitor @relation(fields: [visitorRef], references: [id], onDelete: Cascade)
+  type       String           @db.VarChar(40)
+  path       String?          @db.VarChar(300)
+  occurredAt DateTime         @map("occurred_at")
+  props      Json?
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  @@index([occurredAt])
+  @@index([type, occurredAt])
+  @@index([sessionRef, occurredAt])
+  @@index([visitorRef, occurredAt])
+  @@index([path, type])
+  @@map("analytics_events")
+}
+
+model AnalyticsConversion {
+  id            Int      @id @default(autoincrement())
+  // `lead:<leadId>` — one conversion per lead, however many times the analytics hook is retried.
+  conversionKey String   @unique @map("conversion_key") @db.VarChar(80)
+  leadId        Int      @unique @map("lead_id")
+  contactId     Int?     @map("contact_id")
+  visitorRef    Int?     @map("visitor_ref")
+  sessionRef    Int?     @map("session_ref")
+  visitorId     String?  @map("visitor_id") @db.VarChar(40)
+  sessionId     String?  @map("session_id") @db.VarChar(40)
+  occurredAt    DateTime @map("occurred_at")
+  landingPage   String?  @map("landing_page") @db.VarChar(500)
+  conversionPage String? @map("conversion_page") @db.VarChar(500)
+  ftChannel     String?  @map("ft_channel") @db.VarChar(40)
+  ftSource      String?  @map("ft_source") @db.VarChar(150)
+  ftCampaign    String?  @map("ft_campaign") @db.VarChar(150)
+  ltChannel     String?  @map("lt_channel") @db.VarChar(40)
+  ltSource      String?  @map("lt_source") @db.VarChar(150)
+  ltMedium      String?  @map("lt_medium") @db.VarChar(150)
+  ltCampaign    String?  @map("lt_campaign") @db.VarChar(150)
+  referrer      String?  @db.VarChar(500)
+  countryCode   String?  @map("country_code") @db.VarChar(2)
+  device        String?  @db.VarChar(20)
+  pagesVisited  Int      @default(0) @map("pages_visited")
+  previousVisits Int     @default(0) @map("previous_visits")
+  engagedSecondsBefore Int @default(0) @map("engaged_seconds_before")
+  service       String?  @db.VarChar(160)
+  attributed    Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([occurredAt])
+  @@index([ltChannel, occurredAt])
+  @@index([ltCampaign, occurredAt])
+  @@index([visitorRef])
+  @@map("analytics_conversions")
+}
+
+/// Rolled-up days. Written before raw rows are purged so long-range trends survive retention.
+model AnalyticsDailySummary {
+  id             Int      @id @default(autoincrement())
+  day            DateTime @db.Date
+  channel        String   @db.VarChar(40)
+  countryCode    String   @default("") @map("country_code") @db.VarChar(2)
+  device         String   @db.VarChar(20)
+  sessions       Int      @default(0)
+  newVisitors    Int      @default(0) @map("new_visitors")
+  pageViews      Int      @default(0) @map("page_views")
+  engagedSeconds Int      @default(0) @map("engaged_seconds")
+  elapsedSeconds Int      @default(0) @map("elapsed_seconds")
+  bounces        Int      @default(0)
+  leads          Int      @default(0)
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([day, channel, countryCode, device])
+  @@index([day])
+  @@map("analytics_daily_summaries")
+}
+
+/// Advertising spend typed in by an administrator (or imported later). Never estimated.
+model AnalyticsAdSpend {
+  id          Int      @id @default(autoincrement())
+  day         DateTime @db.Date
+  channel     String   @db.VarChar(40)
+  campaign    String   @default("") @db.VarChar(150)
+  amountCents Int      @map("amount_cents")
+  currency    String   @default("USD") @db.VarChar(3)
+  source      String   @default("manual") @db.VarChar(20)
+  createdBy   String?  @map("created_by") @db.VarChar(120)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([day, channel, campaign, source])
+  @@index([day])
+  @@map("analytics_ad_spend")
+}

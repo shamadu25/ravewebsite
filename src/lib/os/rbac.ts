@@ -42,7 +42,9 @@ export type Permission =
   | "commander.run"
   | "commander.command"
   | "user.manage"
-  | "report.export";
+  | "report.export"
+  | "analytics.read"
+  | "analytics.manage";
 
 const READ: Permission[] = [
   "os.read",
@@ -60,12 +62,12 @@ const READ: Permission[] = [
 const ROLE_PERMISSIONS: Record<Role, Permission[] | "*"> = {
   SUPER_ADMIN: "*",
   CEO: "*",
-  EXECUTIVE: [...READ, "finance.read", "audit.read", "agent.execute", "agent.pause", "approval.decide", "commander.run"],
-  MANAGER: [...READ, "agent.execute", "agent.pause", "opportunity.write", "customer.update", "brain.write"],
-  SALES: [...READ, "opportunity.write", "outreach.send", "agent.execute"],
-  MARKETING: [...READ, "campaign.create", "campaign.launch", "brain.write", "agent.execute"],
+  EXECUTIVE: [...READ, "analytics.read", "analytics.manage", "finance.read", "audit.read", "agent.execute", "agent.pause", "approval.decide", "commander.run"],
+  MANAGER: [...READ, "analytics.read", "agent.execute", "agent.pause", "opportunity.write", "customer.update", "brain.write"],
+  SALES: [...READ, "analytics.read", "opportunity.write", "outreach.send", "agent.execute"],
+  MARKETING: [...READ, "analytics.read", "campaign.create", "campaign.launch", "brain.write", "agent.execute"],
   SUPPORT: [...READ, "customer.update", "agent.execute"],
-  ENGINEERING: [...READ, "deployment.execute", "agent.configure", "agent.execute"],
+  ENGINEERING: [...READ, "analytics.read", "deployment.execute", "agent.configure", "agent.execute"],
   FINANCE: [...READ, "finance.read", "finance.approve", "finance.execute"],
   VIEWER: READ,
 };

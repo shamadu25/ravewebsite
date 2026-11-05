@@ -3,6 +3,7 @@ import "@/components/ai-orb/ai-orb.css";
 import GoogleAnalytics from "@/components/seo/GoogleAnalytics";
 import MetaPixel from "@/components/seo/MetaPixel";
 import ClarityScript from "@/components/seo/ClarityScript";
+import IntelligenceTracker from "@/components/analytics/IntelligenceTracker";
 import { ROSTER } from "@/components/ai-orb/roster";
 
 const TITLE = "Meet Ama | RaveSoft AI Employee";
@@ -42,6 +43,7 @@ export default function AiOrbRootLayout({ children }: { children: React.ReactNod
         <GoogleAnalytics />
         <MetaPixel />
         <ClarityScript />
+        <IntelligenceTracker />
       </body>
     </html>
   );

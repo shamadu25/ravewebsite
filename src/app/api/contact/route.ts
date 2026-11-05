@@ -4,6 +4,7 @@ import { guardForm, POLICIES } from "@/lib/antispam/guard";
 import { clientIp } from "../ai/_shared";
 import { isSameOrigin, readJsonLimited } from "@/lib/antispam/request";
 import { handleLandingLead } from "@/lib/landingLead";
+import { readTrackingIds, runAfterResponse, safeRecordFormFailure, safeRecordLeadConversion } from "@/lib/analytics/lead";
 import { EnquirySchema, persistEnquiry, recordNotifyFailure, type PersistResult } from "@/lib/enquiry";
 
 function escapeHtml(value: string): string {
@@ -57,6 +58,7 @@ export async function POST(req: NextRequest) {
   if (!guard.ok) {
     // Honeypot hits get a fake success so the bot moves on; everything else gets a real, explained error.
     if (guard.silent) return NextResponse.json({ success: true });
+    void runAfterResponse(() => safeRecordFormFailure(readTrackingIds(req), page, `guard_${guard.reason ?? "blocked"}`));
     return NextResponse.json({ error: guard.error }, { status: guard.status });
   }
 
@@ -67,6 +69,14 @@ export async function POST(req: NextRequest) {
     saved = await persistEnquiry(parsed.data);
   } catch (err) {
     console.error("[contact/route] failed to save enquiry:", err);
+  }
+  // Analytics: attribute the lead ONLY now that the existing backend has persisted it. Runs after the response is sent,
+  // is idempotent per lead, and swallows its own errors — it can never fail or slow the enquiry.
+  if (saved) {
+    const s = saved;
+    void runAfterResponse(() => safeRecordLeadConversion({ leadId: s.leadId, contactId: s.contactId, ids: readTrackingIds(req), page, service: parsed.data.projectType }));
+  } else {
+    void runAfterResponse(() => safeRecordFormFailure(readTrackingIds(req), page, "persist_failed"));
   }
   // Identical re-submission (double click / retry): already saved and already emailed.
   if (saved?.duplicate) return NextResponse.json({ success: true });
