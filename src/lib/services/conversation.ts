@@ -285,7 +285,7 @@ async function notifyAiFailure(conversation: Conversation, error: unknown): Prom
         conversationId: conversation.id,
         contactId: conversation.contactId,
         eventType: "human_handoff",
-        metadata: { reason, automatic: true },
+        metadata: { reason, automatic: true, detail: error instanceof Error ? error.message.slice(0, 300) : String(error).slice(0, 300) },
         occurredAt: new Date(),
       },
     });

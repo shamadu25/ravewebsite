@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { chargeCurrency, fxRate, paystackConfigured } from "@/lib/os/paystack";
 import { ORG_ID } from "@/lib/os/constants";
 import { hoursAgo } from "@/lib/os/chats";
+import { chatAiStatus, diagnoseChatAiError } from "@/lib/ai/health";
 import { alertNumbers, dailyCap, enabledEvents, maskNumber } from "@/lib/sms/alerts";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,8 @@ export default async function IntegrationsPage() {
     prisma.systemSetting.findUnique({ where: { key: `os:${ORG_ID}:inbox_last_poll` } }).catch(() => null),
     prisma.osInboundEmail.findMany({ where: { orgId: ORG_ID }, orderBy: { id: "desc" }, take: 5 }).catch(() => []),
   ]);
+  const chatAi = chatAiStatus();
+  const failedRuns = await prisma.agentRun.findMany({ where: { agentKey: "rave_concierge", status: "error" }, orderBy: { id: "desc" }, take: 5, select: { id: true, error: true, createdAt: true } }).catch(() => []);
   const smsStatus = channels.find((c) => c.channel === "SMS");
   const smsNumbers = alertNumbers();
   const smsSentToday = await prisma.osAuditLog.count({ where: { orgId: ORG_ID, action: "sms.alert", createdAt: { gte: hoursAgo(24) } } }).catch(() => 0);
@@ -39,6 +42,31 @@ export default async function IntegrationsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Integrations" subtitle="Status is computed from server configuration. Secrets are never sent to the browser." />
+      <Card>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-gray-900">Website chat AI (Ama)</h2>
+          <ApiButton label="Test the chat AI now" url="/api/os/chat-ai/test" result="chatAiTest" />
+        </div>
+        <ul className="space-y-1.5 text-[13px]">
+          <li className="flex justify-between gap-3"><span>Assistant switched on</span><span>{chatAi.enabled ? "Yes" : "NO — AI_AGENT_ENABLED is \"false\""}</span></li>
+          <li className="flex justify-between gap-3"><span>OpenAI API key (the only key the chat reads)</span><span>{chatAi.keyConfigured ? "Set" : "MISSING — set OPENAI_API_KEY"}</span></li>
+          <li className="flex justify-between gap-3"><span>Model</span><span>{chatAi.model}</span></li>
+        </ul>
+        {!chatAi.keyConfigured && llm.configured && (
+          <p className="mt-3 rounded-lg bg-amber-50 p-3 text-[13px] text-amber-900">Other AI providers ({llm.providers.filter((p) => p.available).map((p) => p.name).join(", ")}) are configured for the business tools, but the website chat does not use them. Without OPENAI_API_KEY every visitor sees the &ldquo;temporarily unavailable&rdquo; message.</p>
+        )}
+        <div className="mt-4 border-t border-gray-100 pt-3">
+          <p className="mb-2 text-[12px] font-semibold uppercase text-gray-500">Recent chat AI failures</p>
+          {failedRuns.length === 0 ? <p className="text-[13px] text-gray-500">None recorded.</p> : (
+            <ul className="space-y-2 text-[13px]">
+              {failedRuns.map((r) => {
+                const d = diagnoseChatAiError(r.error);
+                return <li key={r.id}><span className="text-gray-400">{ago(r.createdAt)} · </span><span className="font-medium text-gray-900">{d.summary}</span><span className="block text-gray-500">{d.fix}</span></li>;
+              })}
+            </ul>
+          )}
+        </div>
+      </Card>
       <Card>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-gray-900">Instant SMS alerts</h2>
