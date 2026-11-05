@@ -1181,3 +1181,99 @@ model GrProviderUsage {
   @@index([provider, createdAt])
   @@map("gr_provider_usage")
 }
+
+// ── RevenueOS (additive; prefix rv_) ───────────────────────────────────────────────────────
+model RvProduct {
+  id                   Int      @id @default(autoincrement())
+  orgId                String   @default("ravesoft") @map("org_id")
+  key                  String
+  name                 String
+  category             String
+  description          String?  @db.Text
+  targetIndustries     Json?    @map("target_industries")
+  problemsSolved       Json?    @map("problems_solved")
+  capabilities         Json?
+  differentiators      Json?
+  supportedMarkets     Json?    @map("supported_markets")
+  qualificationQuestions Json?  @map("qualification_questions")
+  outreachAngles       Json?    @map("outreach_angles")
+  pricing              Json?    // null until the CEO configures it; never invented
+  websiteUrl           String?  @map("website_url")
+  availability         String   @default("AVAILABLE") // AVAILABLE | LIMITED | DISCONTINUED
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  deletedAt            DateTime? @map("deleted_at")
+
+  @@unique([orgId, key])
+  @@map("rv_products")
+}
+
+model RvSequence {
+  id        Int          @id @default(autoincrement())
+  orgId     String       @default("ravesoft") @map("org_id")
+  key       String
+  name      String
+  active    Boolean      @default(true)
+  maxSteps  Int          @default(5) @map("max_steps")
+  steps     RvSequenceStep[]
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  @@unique([orgId, key])
+  @@map("rv_sequences")
+}
+
+model RvSequenceStep {
+  id         Int        @id @default(autoincrement())
+  sequenceId Int        @map("sequence_id")
+  step       Int
+  dayOffset  Int        @map("day_offset")
+  purpose    String
+  sequence   RvSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  @@unique([sequenceId, step])
+  @@map("rv_sequence_steps")
+}
+
+model RvIntegrationConnection {
+  id           Int       @id @default(autoincrement())
+  orgId        String    @default("ravesoft") @map("org_id")
+  provider     String
+  status       String    @default("DISCONNECTED") // DISCONNECTED | CONNECTED | ERROR
+  credentials  Json?     // values are AES-256-GCM ciphertext (lib/revenueos/crypto); never plaintext
+  lastTestedAt DateTime? @map("last_tested_at")
+  lastError    String?   @map("last_error") @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@unique([orgId, provider])
+  @@map("rv_integration_connections")
+}
+
+model RvWebhookEvent {
+  id          Int       @id @default(autoincrement())
+  provider    String
+  externalId  String    @map("external_id") // provider event id: duplicates are dropped by the unique key
+  type        String
+  payload     Json
+  status      String    @default("RECEIVED") // RECEIVED | PROCESSED | FAILED
+  error       String?   @db.Text
+  receivedAt  DateTime  @default(now()) @map("received_at")
+  processedAt DateTime? @map("processed_at")
+
+  @@unique([provider, externalId])
+  @@index([status, receivedAt])
+  @@map("rv_webhook_events")
+}
+
+model RvLeadScore {
+  id         Int      @id @default(autoincrement())
+  companyId  Int      @map("company_id")
+  total      Int
+  priority   String
+  components Json     // [{key,max,points,evidence}]
+  scoredAt   DateTime @default(now()) @map("scored_at")
+
+  @@index([companyId, scoredAt])
+  @@map("rv_lead_scores")
+}
