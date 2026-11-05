@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { AI_CONFIG, QUICK_ACTIONS } from "@/lib/ai/config";
+import { AI_CONFIG } from "@/lib/ai/config";
+import { quickActionsFor } from "@/lib/ai/i18n";
 import { guardForm, POLICIES } from "@/lib/antispam/guard";
 import { startConversation } from "@/lib/services/conversation";
 import { clientIp } from "../_shared";
@@ -56,6 +57,8 @@ export async function POST(request: NextRequest) {
     orderBy: { id: "asc" },
   });
 
+  const contact = conversation.contactId ? await prisma.contact.findUnique({ where: { id: conversation.contactId } }) : null;
+
   return NextResponse.json(
     {
       id: conversation.externalId,
@@ -67,9 +70,11 @@ export async function POST(request: NextRequest) {
         content: m.content,
         created_at: m.createdAt.toISOString(),
       })),
-      quick_actions: QUICK_ACTIONS,
+      quick_actions: quickActionsFor(conversation.language),
       assistant_name: AI_CONFIG.assistantName,
       contact_captured: Boolean(conversation.contactId),
+      contact: contact ? { first_name: contact.firstName, last_name: contact.lastName, email: contact.email } : null,
+      rating: conversation.rating,
     },
     { status: 201 }
   );

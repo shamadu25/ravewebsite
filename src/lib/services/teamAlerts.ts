@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { sendChatActivityNotification } from "@/lib/mail/notifications";
+import { sendSmsAlert } from "@/lib/sms/alerts";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ravesoftsolutions.com";
 
@@ -59,6 +60,7 @@ export async function alertTeam(kind: AlertKind, input: ChatAlertInput): Promise
     const link = `${APP_URL}/admin/conversations/${input.externalId}`;
     await Promise.allSettled([
       sendChatActivityNotification({ kind, conversationExternalId: input.externalId, visitorName, page: input.page, preview }),
+      sendSmsAlert(kind, { name: visitorName, detail: preview, path: `/admin/conversations/${input.externalId}` }),
       postSlack(`${kind === "new_chat" ? "💬 New website chat" : "⏳ Visitor waiting"}${visitorName ? ` — ${visitorName}` : ""}\n> ${preview}\n${link}`),
     ]);
     return true;

@@ -211,6 +211,28 @@ export async function sendChatActivityNotification(input: ChatActivityNotificati
   await send(`${title}${input.visitorName ? ` — ${input.visitorName}` : ""}`, html);
 }
 
+/** Emails the visitor a copy of their own chat. Returns false when SMTP is not configured or sending fails. */
+export async function sendTranscriptToVisitor(to: string, transcript: string): Promise<boolean> {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn("[notifications] SMTP not configured, cannot email chat transcript");
+    return false;
+  }
+  try {
+    await getMailTransporter().sendMail({
+      from: `"RaveSoft" <${process.env.SMTP_USER}>`,
+      to,
+      subject: "Your chat with RaveSoft",
+      text:
+        `Thanks for chatting with RaveSoft. Here is a copy of your conversation.\n\n${transcript}\n` +
+        `Need anything else? Reply to this email or message us on WhatsApp.\n${APP_URL}\n`,
+    });
+    return true;
+  } catch (error) {
+    console.error("[notifications] Failed to email chat transcript", error);
+    return false;
+  }
+}
+
 export interface WebsiteLeadNotificationInput {
   leadId: number | null;
   fullName: string;

@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import MediaButtons from "@/components/ai/MediaButtons";
+import ChatBooking, { BOOKING_CTAS } from "@/components/ai/ChatBooking";
+import ChatFeedback from "@/components/ai/ChatFeedback";
 import Image from "next/image";
-import { X, Send, Loader2 } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { X, Send, Loader2, Flag } from "lucide-react";
 import { COMPANY } from "@/lib/data";
 import { cn, trackEvent } from "@/lib/utils";
 import {
@@ -14,12 +17,13 @@ import {
   QuickAction,
   sendMessage,
   startConversation,
+  streamUrl,
+  UpdatesResponse,
 } from "@/lib/ai/api";
+import { chatLang, chatStrings, type ChatLang } from "@/lib/ai/i18n";
+import { nudgeForPath, type Nudge } from "@/lib/ai/nudges";
 import { buildVisitorContext, getStoredConversationId, storeConversationId } from "@/lib/ai/session";
 import { OPEN_CHAT_EVENT, OpenChatDetail } from "@/lib/ai/openChat";
-
-const FALLBACK_MESSAGE =
-  "Our AI assistant is temporarily unavailable. Leave a message on WhatsApp and the RaveSoft team will get back to you.";
 
 function whatsAppUrl(text: string): string {
   return `https://wa.me/${COMPANY.whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(text)}`;
@@ -52,6 +56,16 @@ interface DisplayMessage {
 const EXIT_CAPTURE_SHOWN_KEY = "rave_exit_capture_shown";
 const CONTACT_CAPTURED_KEY = "rave_contact_captured";
 const EXIT_INTENT_FALLBACK_MS = 45000;
+const NUDGE_SEEN_PREFIX = "rave_nudge_seen:";
+const FEEDBACK_DONE_PREFIX = "rave_chat_feedback_done:";
+
+function readFeedbackDone(conversationId: string): boolean {
+  try {
+    return sessionStorage.getItem(FEEDBACK_DONE_PREFIX + conversationId) === "1";
+  } catch {
+    return false;
+  }
+}
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -70,6 +84,24 @@ export default function ChatWidget() {
   const [captureSubmitting, setCaptureSubmitting] = useState(false);
   const [unread, setUnread] = useState(0);
   const [humanActive, setHumanActive] = useState(false);
+  const [agentTyping, setAgentTyping] = useState(false);
+  const [contact, setContact] = useState<ConversationResponse["contact"]>(null);
+  const [chatClosed, setChatClosed] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const [feedbackDone, setFeedbackDone] = useState(false);
+  const [sseFailed, setSseFailed] = useState(false);
+  const [nudgeState, setNudge] = useState<(Nudge & { path: string }) | null>(null);
+  const pathname = usePathname();
+  // Browser language without a hydration mismatch: "en" on the server, the real value once on the client.
+  const browserLanguage = useSyncExternalStore(
+    () => () => undefined,
+    () => navigator.language,
+    () => "en"
+  );
+  const lang: ChatLang = chatLang(browserLanguage);
+  const t = chatStrings(lang);
+  // A nudge belongs to the page it was shown for; navigating away hides it.
+  const nudge = nudgeState && nudgeState.path === (pathname ?? "") ? nudgeState : null;
   const lastAgentIdRef = useRef(0);
   const initialized = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -78,6 +110,7 @@ export default function ChatWidget() {
   useEffect(() => {
     isOpenRef.current = isOpen;
   }, [isOpen]);
+
 
   const setContactCaptured = (value: boolean) => {
     setContactCapturedState(value);
@@ -114,6 +147,9 @@ export default function ChatWidget() {
     );
     lastAgentIdRef.current = data.messages.reduce((max, m) => (m.role === "agent" ? Math.max(max, m.id) : max), 0);
     setHumanActive(data.status === "human_active");
+    setContact(data.contact ?? null);
+    setChatClosed(data.status === "closed");
+    if (data.rating || readFeedbackDone(data.id)) setFeedbackDone(true);
     if (data.contact_captured) setContactCaptured(true);
   };
 
@@ -147,6 +183,9 @@ export default function ChatWidget() {
     setMessages((prev) => [...prev, { id: `local-${Date.now()}`, role: "visitor", content: trimmed }]);
     setInputValue("");
     setIsSending(true);
+    // Writing again reopens a closed chat and cancels any pending "end chat" feedback prompt.
+    setChatClosed(false);
+    setEnding(false);
 
     try {
       const result = await sendMessage(id, trimmed, window.location.pathname);
@@ -168,6 +207,8 @@ export default function ChatWidget() {
       if (result.contact_captured) {
         setContactCaptured(true);
         setShowExitCapture(false);
+        // Pull the captured name/email so the inline booking calendar can be pre-filled.
+        if (!contact?.email) void fetchConversation(id).then((d) => setContact(d.contact ?? null)).catch(() => undefined);
       }
     } catch {
       setUnavailable(true);
@@ -179,6 +220,7 @@ export default function ChatWidget() {
   const handleOpen = (detail: OpenChatDetail = {}) => {
     setIsOpen(true);
     setUnread(0);
+    setNudge(null);
     trackEvent("chat_opened", { location: detail.initialMessage ? "cta" : "floating_launcher" });
 
     if (!initialized.current) {
@@ -204,39 +246,126 @@ export default function ChatWidget() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Picks up replies written by the team in the admin. Polls faster while the chat is open and
-   * slower (with an unread badge on the launcher) while it is closed. Pauses when the tab is hidden. */
+  /** Applies team replies / chat state from either the SSE stream or the polling fallback. */
+  const applyUpdates = useCallback((res: Partial<UpdatesResponse> & { messages: UpdatesResponse["messages"] }) => {
+    if (typeof res.human_active === "boolean") setHumanActive(res.human_active);
+    if (typeof res.agent_typing === "boolean") setAgentTyping(res.agent_typing);
+    if (typeof res.closed === "boolean") setChatClosed(res.closed);
+    if (res.messages.length > 0) {
+      lastAgentIdRef.current = Math.max(lastAgentIdRef.current, ...res.messages.map((m) => m.id));
+      setAgentTyping(false);
+      setMessages((prev) => {
+        const known = new Set(prev.map((m) => m.id));
+        const fresh = res.messages.filter((m) => !known.has(String(m.id)));
+        return fresh.length
+          ? [...prev, ...fresh.map((m) => ({ id: String(m.id), role: m.role, content: m.content }))]
+          : prev;
+      });
+      if (!isOpenRef.current) setUnread((n) => n + res.messages.length);
+      trackEvent("team_reply_received", {});
+    }
+  }, []);
+
+  /** Live channel while the chat is open: Server-Sent Events deliver team replies and "typing" within ~2s with
+   * no polling. The server ends each stream after ~25s and the browser reconnects (Last-Event-ID keeps it
+   * gap-free). If SSE is unavailable or keeps failing, `sseFailed` hands over to the polling effect below. */
+  useEffect(() => {
+    if (!conversationId || unavailable || !isOpen || sseFailed || typeof EventSource === "undefined") return;
+
+    let source: EventSource | null = null;
+    let failures = 0;
+
+    const connect = () => {
+      if (source || document.visibilityState !== "visible") return;
+      source = new EventSource(streamUrl(conversationId, lastAgentIdRef.current));
+      source.onopen = () => {
+        failures = 0;
+      };
+      source.addEventListener("message", (e) => {
+        try {
+          applyUpdates({ messages: [JSON.parse((e as MessageEvent).data)] });
+        } catch {
+          // malformed event — ignore, the next one will carry on
+        }
+      });
+      source.addEventListener("state", (e) => {
+        try {
+          applyUpdates({ messages: [], ...JSON.parse((e as MessageEvent).data) });
+        } catch {
+          // ignore
+        }
+      });
+      source.onerror = () => {
+        // The server closes the stream every ~25s on purpose; the browser reconnects by itself. Only a
+        // connection that is closed for good (HTTP error) or fails repeatedly switches to polling.
+        failures += 1;
+        if (source?.readyState === EventSource.CLOSED || failures >= 4) {
+          source?.close();
+          source = null;
+          setSseFailed(true);
+        }
+      };
+    };
+    const disconnect = () => {
+      source?.close();
+      source = null;
+    };
+    const onVisibility = () => (document.visibilityState === "visible" ? connect() : disconnect());
+
+    connect();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      disconnect();
+    };
+  }, [conversationId, unavailable, isOpen, sseFailed, applyUpdates]);
+
+  /** Polling: the whole mechanism while the chat is closed (cheap, feeds the unread badge) and the fallback when
+   * streaming is unavailable. Pauses when the tab is hidden. */
   useEffect(() => {
     if (!conversationId || unavailable) return;
+    const sseActive = isOpen && !sseFailed && typeof EventSource !== "undefined";
+    if (sseActive) return;
     let stopped = false;
     const tick = async () => {
       if (stopped || document.visibilityState !== "visible") return;
       try {
         const res = await fetchUpdates(conversationId, lastAgentIdRef.current);
-        if (stopped) return;
-        setHumanActive(res.human_active);
-        if (res.messages.length > 0) {
-          lastAgentIdRef.current = Math.max(lastAgentIdRef.current, ...res.messages.map((m) => m.id));
-          setMessages((prev) => {
-            const known = new Set(prev.map((m) => m.id));
-            const fresh = res.messages.filter((m) => !known.has(String(m.id)));
-            return fresh.length
-              ? [...prev, ...fresh.map((m) => ({ id: String(m.id), role: m.role, content: m.content }))]
-              : prev;
-          });
-          if (!isOpenRef.current) setUnread((n) => n + res.messages.length);
-          trackEvent("team_reply_received", {});
-        }
+        if (!stopped) applyUpdates(res);
       } catch {
         // transient network error or rate limit — try again on the next tick
       }
     };
-    const timer = window.setInterval(() => void tick(), isOpen ? 5000 : 20000);
+    const timer = window.setInterval(() => void tick(), isOpen ? 4000 : 20000);
     return () => {
       stopped = true;
       window.clearInterval(timer);
     };
-  }, [conversationId, unavailable, isOpen]);
+  }, [conversationId, unavailable, isOpen, sseFailed, applyUpdates]);
+
+  /** Proactive nudge: after a short time on a high-intent page, a small bubble offers help that is specific to
+   * the page. Once per page-type per session; never while the chat is open or after it was dismissed. */
+  useEffect(() => {
+    const path = pathname ?? "";
+    const candidate = nudgeForPath(path, lang);
+    if (!candidate) return;
+    try {
+      if (sessionStorage.getItem(NUDGE_SEEN_PREFIX + candidate.key) === "1") return;
+    } catch {
+      // storage unavailable — fall through; worst case the nudge shows again on reload
+    }
+    const timer = window.setTimeout(() => {
+      if (isOpenRef.current) return;
+      try {
+        sessionStorage.setItem(NUDGE_SEEN_PREFIX + candidate.key, "1");
+      } catch {
+        // ignore
+      }
+      trackEvent("chat_nudge_shown", { nudge: candidate.key });
+      setNudge({ ...candidate, path });
+    }, candidate.delayMs);
+    return () => window.clearTimeout(timer);
+  }, [pathname, lang]);
 
   /** Nudges visitors who haven't left contact details toward doing so before
    * they leave the site — desktop exit-intent (mouse toward the tab/URL bar)
@@ -325,6 +454,36 @@ export default function ChatWidget() {
 
   return (
     <>
+      {nudge && !isOpen && (
+        <div
+          role="status"
+          className="fixed right-6 z-50 w-64 max-w-[calc(100vw-3rem)] rounded-2xl rounded-br-sm bg-white border border-gray-200 shadow-xl p-3 pr-8 animate-in fade-in"
+          style={{ bottom: "calc(var(--fab-bottom-offset, 1.5rem) + 4.25rem)" }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              trackEvent("chat_nudge_clicked", { nudge: nudge.key });
+              handleOpen({ initialMessage: nudge.initialMessage });
+            }}
+            className="text-left text-sm text-gray-800 leading-snug hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+          >
+            {nudge.text}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              trackEvent("chat_nudge_dismissed", { nudge: nudge.key });
+              setNudge(null);
+            }}
+            aria-label={t.nudgeDismiss}
+            className="absolute top-1.5 right-1.5 p-1 rounded-full text-gray-400 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       <div
         className={cn("rave-chat-launcher fixed right-6 z-50", isOpen && "hidden")}
         style={{ bottom: "var(--fab-bottom-offset, 1.5rem)" }}
@@ -336,7 +495,7 @@ export default function ChatWidget() {
         <button
           type="button"
           onClick={() => handleOpen()}
-          aria-label={`Chat with ${assistantName} — online now`}
+          aria-label={`Chat with ${assistantName} — ${t.online.toLowerCase()}`}
           aria-expanded={isOpen}
           className="relative flex items-center justify-center w-14 h-14 rounded-full overflow-hidden ring-2 ring-white shadow-[0_8px_32px_rgba(37,99,235,0.45)] hover:shadow-[0_12px_40px_rgba(37,99,235,0.6)] hover:scale-110 transition-all duration-200 bg-blue-600"
         >
@@ -382,7 +541,7 @@ export default function ChatWidget() {
                 <p className="font-semibold text-sm">{assistantName}</p>
                 <p className="text-xs text-blue-100 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" aria-hidden="true" />
-                  Online now
+                  {t.online}
                 </p>
               </div>
             </div>
@@ -402,10 +561,24 @@ export default function ChatWidget() {
                   </svg>
                 </a>
               )}
+              {conversationId && !unavailable && !feedbackDone && !ending && !chatClosed && messages.some((m) => m.role === "visitor") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEnding(true);
+                    trackEvent("chat_end_clicked", {});
+                  }}
+                  aria-label={t.endChat}
+                  title={t.endChat}
+                  className="p-1.5 rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white"
+                >
+                  <Flag className="w-4 h-4" />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                aria-label="Close chat"
+                aria-label={t.closeChat}
                 className="p-1.5 rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white"
               >
                 <X className="w-5 h-5" />
@@ -416,7 +589,7 @@ export default function ChatWidget() {
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-gray-50">
             {isLoading && (
               <div className="flex items-center gap-2 text-gray-500 text-sm">
-                <Loader2 className="w-4 h-4 animate-spin" /> Connecting…
+                <Loader2 className="w-4 h-4 animate-spin" /> {t.connecting}
               </div>
             )}
 
@@ -424,7 +597,7 @@ export default function ChatWidget() {
               messages.map((m) => (
                 <div key={m.id}>
                   {m.role === "agent" && (
-                    <p className="text-[11px] font-semibold text-blue-700 mb-0.5">RaveSoft team</p>
+                    <p className="text-[11px] font-semibold text-blue-700 mb-0.5">{t.teamLabel}</p>
                   )}
                   <div
                     className={cn(
@@ -445,34 +618,73 @@ export default function ChatWidget() {
                       onClick={() => trackEvent("whatsapp_continue_clicked", { location: "inline_suggestion" })}
                       className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors mr-auto"
                     >
-                      Continue on WhatsApp →
+                      {t.continueWhatsApp}
                     </a>
+                  )}
+
+                  {m.cta && BOOKING_CTAS.includes(m.cta) && (
+                    <div className="mt-2">
+                      <ChatBooking
+                        t={t}
+                        conversationId={conversationId}
+                        name={[contact?.first_name, contact?.last_name].filter(Boolean).join(" ") || null}
+                        email={contact?.email}
+                      />
+                    </div>
                   )}
                 </div>
               ))}
 
             {humanActive && (
               <p className="text-xs text-center text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-                A RaveSoft team member is on this chat — their reply will appear here.
+                {t.teamOnChat}
               </p>
+            )}
+
+            {agentTyping && (
+              <div role="status" className="flex items-center gap-2 text-gray-500 text-xs">
+                <span className="flex gap-0.5" aria-hidden="true">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" />
+                </span>
+                {t.teamTyping}
+              </div>
             )}
 
             {isSending && !humanActive && (
               <div className="flex items-center gap-2 text-gray-500 text-sm">
-                <Loader2 className="w-4 h-4 animate-spin" /> Typing…
+                <Loader2 className="w-4 h-4 animate-spin" /> {t.typing}
               </div>
+            )}
+
+            {conversationId && !unavailable && !feedbackDone && (chatClosed || ending) && (
+              <ChatFeedback
+                t={t}
+                conversationId={conversationId}
+                knownEmail={contact?.email}
+                onDone={() => {
+                  try {
+                    sessionStorage.setItem(FEEDBACK_DONE_PREFIX + conversationId, "1");
+                  } catch {
+                    // ignore
+                  }
+                  setFeedbackDone(true);
+                  setEnding(false);
+                }}
+              />
             )}
 
             {unavailable && (
               <div className="max-w-[90%] rounded-2xl px-4 py-3 text-sm bg-amber-50 border border-amber-200 text-amber-900 mr-auto space-y-2">
-                <p>{FALLBACK_MESSAGE}</p>
+                <p>{t.unavailable}</p>
                 <a
                   href={whatsAppFallbackUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block font-semibold text-blue-700 hover:underline"
                 >
-                  Continue on WhatsApp →
+                  {t.continueWhatsApp}
                 </a>
               </div>
             )}
@@ -494,25 +706,25 @@ export default function ChatWidget() {
 
             {showExitCapture && !contactCaptured && !unavailable && (
               <div className="max-w-[92%] rounded-2xl px-4 py-3 text-sm bg-blue-50 border border-blue-200 text-blue-900 space-y-2">
-                <p className="font-semibold">Before you go — want us to follow up?</p>
+                <p className="font-semibold">{t.exitTitle}</p>
                 <p className="text-blue-800/80 text-xs leading-relaxed">
-                  Leave your email or WhatsApp number and we&apos;ll reach out with more detail. No obligation.
+                  {t.exitBody}
                 </p>
                 <form onSubmit={handleCaptureSubmit} className="space-y-2 pt-1">
                   <input
                     type="email"
                     value={captureEmail}
                     onChange={(e) => setCaptureEmail(e.target.value)}
-                    placeholder="Email address"
-                    aria-label="Email address"
+                    placeholder={t.emailPlaceholder}
+                    aria-label={t.emailPlaceholder}
                     className="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                   <input
                     type="tel"
                     value={captureWhatsapp}
                     onChange={(e) => setCaptureWhatsapp(e.target.value)}
-                    placeholder="or WhatsApp number"
-                    aria-label="WhatsApp number"
+                    placeholder={t.whatsappPlaceholder}
+                    aria-label={t.whatsappPlaceholder}
                     className="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                   <div className="flex items-center gap-2 pt-1">
@@ -521,14 +733,14 @@ export default function ChatWidget() {
                       disabled={captureSubmitting || isLoading || (!captureEmail.trim() && !captureWhatsapp.trim())}
                       className="flex-1 text-xs font-semibold px-3 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-40 hover:bg-blue-500 transition-colors"
                     >
-                      {captureSubmitting ? "Sending…" : "Send"}
+                      {captureSubmitting ? t.exitSending : t.exitSend}
                     </button>
                     <button
                       type="button"
                       onClick={handleCaptureDismiss}
                       className="text-xs font-medium text-blue-700 hover:underline px-2"
                     >
-                      No thanks
+                      {t.exitDismiss}
                     </button>
                   </div>
                 </form>
@@ -537,20 +749,20 @@ export default function ChatWidget() {
           </div>
 
           <form onSubmit={handleSubmit} className="relative flex items-center gap-2 p-3 border-t border-gray-200 shrink-0">
-            <MediaButtons conversationId={conversationId} disabled={isLoading || unavailable || isSending} onText={(t) => void submitMessage(t)} />
+            <MediaButtons conversationId={conversationId} disabled={isLoading || unavailable || isSending} onText={(text) => void submitMessage(text)} />
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your message…"
+              placeholder={t.placeholder}
               disabled={isLoading || unavailable}
-              aria-label="Message"
+              aria-label={t.messageLabel}
               className="flex-1 min-w-0 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
             />
             <button
               type="submit"
               disabled={isLoading || unavailable || isSending || !inputValue.trim()}
-              aria-label="Send message"
+              aria-label={t.send}
               className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-600 text-white disabled:opacity-40 hover:bg-blue-500 transition-colors"
             >
               <Send className="w-4 h-4" />
