@@ -108,11 +108,15 @@ export const metadata: Metadata = {
   authors: [{ name: "RaveSoft Digital Solutions Ltd" }],
   creator: "RaveSoft Digital Solutions Ltd",
   publisher: "RaveSoft Digital Solutions Ltd",
+  // The RaveSoft mark: vector for modern browsers, PNG/ICO fallbacks, and an opaque 180px icon for iOS home screens.
   icons: {
     icon: [
-      { url: "/img/logo.png", type: "image/png" },
+      { url: "/img/icon.svg", type: "image/svg+xml" },
+      { url: "/img/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/img/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
-    apple: "/img/logo.png",
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/img/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     type: "website",
